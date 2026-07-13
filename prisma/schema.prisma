@@ -1,0 +1,265 @@
+// Chopra Capital — managed gold-fund platform.
+// All money is Decimal (USDT). Convert to number only at the display edge
+// via src/lib/money.ts.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Users & auth
+// ---------------------------------------------------------------------------
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum KycStatus {
+  NOT_SUBMITTED
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id           String @id @default(cuid())
+  email        String @unique
+  passwordHash String
+  role         Role   @default(USER)
+
+  fullName     String?
+  mobile       String?
+  country      String?
+
+  kycStatus KycStatus @default(NOT_SUBMITTED)
+  kycNote   String?
+
+  twoFactorSecret  String?
+  twoFactorEnabled Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  wallet         Wallet?
+  ledger         LedgerEntry[]
+  deposits       Deposit[]
+  withdrawals    Withdrawal[]
+  tickets        Ticket[]
+  ticketMessages TicketMessage[]
+  kycDocuments   KycDocument[]
+}
+
+model KycDocument {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  docType   String // ID_DOCUMENT | SELFIE
+  fileName  String
+  filePath  String
+  createdAt DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// Wallet, pool & ledger — the unit/NAV accounting core
+// ---------------------------------------------------------------------------
+
+// queued: confirmed USDT waiting for the next weekly invest run.
+// units:  the investor's share of the pool. Live value = units × NAV,
+//         where NAV = MT5 equity ÷ total pool units.
+model Wallet {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  queued    Decimal  @default(0)
+  units     Decimal  @default(0)
+  updatedAt DateTime @updatedAt
+}
+
+// Single row tracking the whole pool. lastNav is the fallback when the live
+// MT5 feed is unavailable.
+model PoolState {
+  id         String   @id @default("pool")
+  totalUnits Decimal  @default(0)
+  lastNav    Decimal  @default(1)
+  updatedAt  DateTime @updatedAt
+}
+
+enum LedgerType {
+  DEPOSIT // external USDT in -> queued
+  INVEST // queued -> units (weekly invest run)
+  WITHDRAWAL // queued/units -> external USDT out
+  FEE // performance/network fee borne by the investor
+  ADJUSTMENT // manual admin correction
+}
+
+// Append-only audit trail. amount = signed USDT. Unit movements also record
+// units and the NAV used so the books can always be reconstructed.
+model LedgerEntry {
+  id        String     @id @default(cuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      LedgerType
+  amount    Decimal
+  units     Decimal?
+  navPrice  Decimal?
+  reference String?
+  note      String?
+  createdAt DateTime   @default(now())
+
+  @@index([userId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Deposits (USDT in)
+// ---------------------------------------------------------------------------
+
+enum DepositStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+}
+
+model Deposit {
+  id          String        @id @default(cuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount      Decimal
+  network     String // TRC20 | ERC20 | BEP20
+  txHash      String?
+  status      DepositStatus @default(PENDING)
+  adminNote   String?
+  createdAt   DateTime      @default(now())
+  confirmedAt DateTime?
+
+  @@index([userId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Withdrawals (USDT out) — requested Saturday, processed Sunday
+// ---------------------------------------------------------------------------
+
+enum WithdrawalStatus {
+  REQUESTED
+  APPROVED
+  PROCESSED
+  REJECTED
+}
+
+model Withdrawal {
+  id            String           @id @default(cuid())
+  userId        String
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount        Decimal // requested USDT
+  fee           Decimal? // fee applied at approval
+  paidAmount    Decimal? // USDT actually sent
+  unitsRedeemed Decimal?
+  network       String
+  address       String
+  txHash        String?
+  status        WithdrawalStatus @default(REQUESTED)
+  adminNote     String?
+  weekKey       String // e.g. "2026-W23" — the processing week
+  createdAt     DateTime         @default(now())
+  processedAt   DateTime?
+
+  @@index([userId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Support tickets
+// ---------------------------------------------------------------------------
+
+enum TicketStatus {
+  OPEN
+  ANSWERED
+  CLOSED
+}
+
+model Ticket {
+  id        String          @id @default(cuid())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject   String
+  status    TicketStatus    @default(OPEN)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  messages  TicketMessage[]
+
+  @@index([userId, updatedAt])
+}
+
+model TicketMessage {
+  id        String   @id @default(cuid())
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  isStaff   Boolean  @default(false)
+  body      String
+  createdAt DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// MT5 feed (pushed by the external bridge)
+// ---------------------------------------------------------------------------
+
+model Mt5Account {
+  id         String   @id @default(cuid())
+  login      String   @unique
+  name       String?
+  server     String?
+  currency   String   @default("USD")
+  balance    Float    @default(0)
+  equity     Float    @default(0)
+  margin     Float    @default(0)
+  freeMargin Float    @default(0)
+  updatedAt  DateTime @updatedAt
+}
+
+model Mt5Trade {
+  id         String    @id @default(cuid())
+  ticket     String    @unique // MT5 order/deal id
+  symbol     String
+  type       String // BUY | SELL
+  volume     Float
+  openPrice  Float
+  closePrice Float?
+  profit     Float     @default(0)
+  swap       Float     @default(0)
+  commission Float     @default(0)
+  status     String // OPEN | CLOSED
+  openTime   DateTime
+  closeTime  DateTime?
+  updatedAt  DateTime  @updatedAt
+
+  @@index([status, openTime])
+}
+
+// One row per UTC day recording pool NAV — upserted on every MT5 ingest.
+// This is what makes honest historical charts possible; history is never
+// fabricated, only interpolated between real snapshots.
+model NavSnapshot {
+  id         String   @id @default(cuid())
+  day        String   @unique // "YYYY-MM-DD" (UTC)
+  nav        Decimal
+  equity     Decimal
+  totalUnits Decimal
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// Key/value settings (performance fee %, etc.)
+// ---------------------------------------------------------------------------
+
+model Setting {
+  key   String @id
+  value String
+}

@@ -1,26 +1,235 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------------
+   Chopra Capital — "Private Vault" design language
+   Warm espresso blacks, champagne gold, editorial serif. Never neon.
+--------------------------------------------------------------------------- */
+
+@theme {
+  /* Warm blacks — espresso, not blue */
+  --color-vault-950: #0a0806;
+  --color-vault-900: #110d09;
+  --color-vault-800: #19140e;
+  --color-vault-700: #241c12;
+
+  /* Champagne gold scale */
+  --color-gold-300: #e9d9ab;
+  --color-gold-400: #dfc379;
+  --color-gold-500: #d3ab52;
+  --color-gold-600: #c9a23f;
+  --color-gold-700: #a07f2e;
+
+  /* Warm off-white ink */
+  --color-ink: #ece7db;
+  --color-ink-dim: #b8b0a0;
+  --color-ink-faint: #837b6c;
+
+  --color-positive: #34d399;
+  --color-negative: #fb7185;
+
+  --font-serif: var(--font-fraunces), "Fraunces", Georgia, serif;
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-vault-950);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(201, 162, 63, 0.35);
+  color: #fff;
+}
+
+/* --- Signature elements ------------------------------------------------- */
+
+/* 11px uppercase letter-spaced label above titles */
+.eyebrow {
+  font-size: 11px;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--color-gold-500);
+  font-weight: 500;
+}
+
+/* 1px gradient-gold hairline divider */
+.hairline {
+  height: 1px;
+  border: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(201, 162, 63, 0.45) 20%,
+    rgba(233, 217, 171, 0.6) 50%,
+    rgba(201, 162, 63, 0.45) 80%,
+    transparent
+  );
+}
+
+/* Smoked-glass card: warm gradient, hairline border, inner top highlight */
+.glass-card {
+  position: relative;
+  border-radius: 1rem;
+  border: 1px solid rgba(201, 162, 63, 0.14);
+  background:
+    linear-gradient(180deg, rgba(236, 231, 219, 0.045) 0%, rgba(236, 231, 219, 0.012) 100%),
+    linear-gradient(180deg, rgba(25, 20, 14, 0.85), rgba(17, 13, 9, 0.92));
+  box-shadow:
+    inset 0 1px 0 rgba(236, 231, 219, 0.07),
+    0 18px 50px -22px rgba(0, 0, 0, 0.75);
+}
+
+.glass-card-hover {
+  transition: border-color 220ms ease, transform 220ms ease, box-shadow 220ms ease;
+}
+.glass-card-hover:hover {
+  border-color: rgba(201, 162, 63, 0.32);
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(236, 231, 219, 0.09),
+    0 24px 60px -22px rgba(0, 0, 0, 0.85);
+}
+
+/* Faint structural grid overlay for hero/section backgrounds */
+.grid-overlay {
+  background-image:
+    linear-gradient(rgba(236, 231, 219, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(236, 231, 219, 0.035) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, black 30%, transparent 75%);
+}
+
+/* Film-grain noise (SVG turbulence) */
+.grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+}
+
+/* Radial champagne aura */
+.gold-aura {
+  background:
+    radial-gradient(ellipse 60% 45% at 50% 8%, rgba(201, 162, 63, 0.16), transparent 65%),
+    radial-gradient(ellipse 45% 35% at 78% 25%, rgba(211, 171, 82, 0.07), transparent 70%);
+}
+
+/* Gradient gold text for key figures / italic words */
+.gold-text {
+  background: linear-gradient(120deg, #c9a23f 0%, #e9d9ab 45%, #d3ab52 80%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Pill gold-gradient CTA */
+.btn-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  background: linear-gradient(120deg, #c9a23f, #dfc379 55%, #c9a23f);
+  color: #19140e;
+  font-weight: 600;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 10px 30px -10px rgba(201, 162, 63, 0.55);
+  transition: filter 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+.btn-gold:hover {
+  filter: brightness(1.07);
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 14px 36px -10px rgba(201, 162, 63, 0.65);
+}
+.btn-gold:active {
+  transform: translateY(0);
+}
+
+/* Quiet secondary pill */
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(201, 162, 63, 0.3);
+  color: var(--color-ink);
+  font-weight: 500;
+  background: rgba(236, 231, 219, 0.03);
+  transition: border-color 180ms ease, background 180ms ease;
+}
+.btn-ghost:hover {
+  border-color: rgba(201, 162, 63, 0.55);
+  background: rgba(201, 162, 63, 0.07);
+}
+
+/* Marquee strip */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.animate-marquee {
+  animation: marquee 36s linear infinite;
+}
+
+/* Floating ambient orbs in the hero */
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(14px, -22px) scale(1.06);
+  }
+}
+@keyframes float-slower {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-18px, 16px) scale(0.96);
+  }
+}
+.animate-float-slow {
+  animation: float-slow 11s ease-in-out infinite;
+}
+.animate-float-slower {
+  animation: float-slower 16s ease-in-out infinite;
+}
+
+/* Focus visibility — keyboard users must always see where they are */
+:focus-visible {
+  outline: 2px solid rgba(223, 195, 121, 0.8);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Number inputs without spinners (amounts) */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }

@@ -1,36 +1,106 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Chopra Capital — managed gold-fund investor platform
 
-## Getting Started
+A full-stack web platform for a Dubai-based specialist gold fund: public marketing
+site, investor app and admin console. Investors deposit USDT, allocate to a pooled
+trading account, watch performance live via MT5, and withdraw weekly.
 
-First, run the development server:
+> **Important.** Running a fund that pools investor money is a **licensed
+> activity** in most jurisdictions (UAE: DFSA/SCA; crypto custody: VARA). This
+> software is a tool — speak to a financial-services lawyer before going live.
+> Never advertise "risk-free" or guaranteed returns.
+
+## Stack
+
+- **Next.js 16** (App Router, Turbopack) · **React 19** · **TypeScript** (strict)
+- **Tailwind CSS v4** (CSS-first `@theme` tokens) · **framer-motion** · **Recharts** · **lucide-react**
+- **Prisma 6** + SQLite in dev (client generated to `src/generated/prisma`)
+- Custom auth: **bcryptjs** + **jose** JWT (httpOnly cookie `gf_session`) + **TOTP 2FA**
+- All money values are Prisma **Decimal** — converted to numbers only at the display edge (`src/lib/money.ts`)
+
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run db:migrate     # creates prisma/dev.db and generates the client
+npm run db:seed        # demo investor + admin + consistent demo history
+npm run dev            # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Seeded accounts:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Role | Email | Password |
+|---|---|---|
+| Admin | `admin@chopracapital.com` | `Admin123!` |
+| Investor | `demo@chopracapital.com` | `Demo1234!` |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## How the pool works (units / NAV)
 
-## Learn More
+1. **Deposit** — investor sends USDT, admin confirms → credited to the wallet's
+   `queued` balance (`DEPOSIT` ledger entry).
+2. **Weekly invest run** (admin, Sunday) — every queued balance converts into
+   **pool units** at the current NAV (`INVEST` entry records units + NAV used).
+3. **NAV** = live MT5 equity ÷ total pool units. The bridge pushes equity every
+   few seconds; each push upserts a daily `NavSnapshot`, so charts use real
+   history only (interpolated between snapshots, never fabricated).
+4. **Withdraw** — requested Saturday, processed Sunday: queued cash is drawn
+   first, then units are redeemed at the live NAV (`WITHDRAWAL` + `FEE` entries).
 
-To learn more about Next.js, take a look at the following resources:
+Every balance mutation goes through `src/lib/wallet.ts` inside a transaction
+that also writes append-only `LedgerEntry` rows — the books always balance.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## MT5 bridge
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+pip install MetaTrader5 requests
+set MT5_LOGIN=5012345
+set MT5_PASSWORD=read-only-investor-password   # NEVER the master password
+set MT5_SERVER=YourBroker-Live
+set INGEST_URL=https://yourdomain.com/api/mt5/ingest
+set MT5_INGEST_TOKEN=<same as website .env>
+python scripts/mt5_bridge.py
+```
 
-## Deploy on Vercel
+- `POST /api/mt5/ingest` — bridge → platform (X-MT5-Token header)
+- `GET /api/mt5/summary` — latest account snapshot + trades (signed-in users)
+- `GET /api/portfolio?from=&to=` — investor value series (polled every 15s)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Environment (`.env`)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Key | Purpose |
+|---|---|
+| `DATABASE_URL` | `file:./dev.db` locally; Postgres URL in production |
+| `AUTH_SECRET` | JWT signing secret — **change in production** (32+ chars) |
+| `NEXT_PUBLIC_APP_NAME` | "Chopra Capital" |
+| `MT5_INGEST_TOKEN` | shared secret for the bridge |
+| `MT5_SERVER` / `MT5_LOGIN` / `MT5_INVESTOR_PASSWORD` | read-only investor access shown to investors |
+| `MT5_WEBTERMINAL_URL` | MT5 web terminal link |
+| `DEPOSIT_ADDRESS_TRC20/ERC20/BEP20` | company USDT receiving addresses |
+
+## Project layout
+
+```
+src/
+  proxy.ts            route protection (Next 16 proxy convention)
+  app/
+    page.tsx          marketing site (hero, strategy, terms, FAQ)
+    (auth)/           signup, signin, 2FA
+    app/              investor app: dashboard, deposit, withdraw, tickets, profile
+    admin/            console: overview, deposits, withdrawals, KYC, tickets, investors
+    legal/            terms, privacy, risk disclosure
+    api/              portfolio, mt5 ingest/summary, admin kyc-file
+  components/         ui primitives, landing, app shell, admin shell
+  lib/                auth, totp, money, nav, wallet (accounting), portfolio
+prisma/               schema, migrations, seed.mjs
+scripts/              mt5_bridge.py
+uploads/              KYC documents (outside the public web root)
+```
+
+## Production notes
+
+- Switch `prisma/schema.prisma` provider to `postgresql` and set `DATABASE_URL`.
+- Set a strong `AUTH_SECRET`, real deposit addresses and MT5 investor credentials.
+- KYC uploads write to `uploads/` on disk — move to S3/R2 for serverless hosts.
+- Compliance guardrails are deliberate: the 1–4%/month figure is always framed
+  as an objective, "capital at risk" appears on landing/signup/withdraw, KYC is
+  required before deposits, and only the read-only MT5 investor password is
+  ever displayed.
