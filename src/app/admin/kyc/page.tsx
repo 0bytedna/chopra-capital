@@ -6,6 +6,11 @@ import { adminKycDecision } from "../actions";
 
 export const metadata: Metadata = { title: "Admin · KYC review" };
 
+const kycDocLabel: Record<string, string> = {
+  AADHAAR: "Aadhaar card",
+  PAN: "PAN card",
+};
+
 const inputCls =
   "w-full rounded-lg border border-gold-600/20 bg-vault-900/80 px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:border-gold-500/50 focus:outline-none";
 
@@ -52,7 +57,7 @@ export default async function AdminKycPage() {
                   className="inline-flex items-center gap-2 rounded-lg border border-gold-600/25 px-3 py-2 text-xs text-ink-dim transition-colors hover:border-gold-500/50 hover:text-ink"
                 >
                   <FileText className="size-3.5 text-gold-500" aria-hidden />
-                  {doc.docType.replace("_", " ").toLowerCase()} ·{" "}
+                  {kycDocLabel[doc.docType] ?? doc.docType.replace("_", " ").toLowerCase()} ·{" "}
                   {doc.createdAt.toLocaleDateString("en-US", { day: "numeric", month: "short" })}
                 </a>
               ))}
@@ -65,6 +70,17 @@ export default async function AdminKycPage() {
               <AdminActionForm action={adminKycDecision} submitLabel="Approve identity" pendingLabel="Approving…">
                 <input type="hidden" name="userId" value={u.id} />
                 <input type="hidden" name="decision" value="APPROVED" />
+                <fieldset className="space-y-2 rounded-xl border border-gold-600/15 bg-vault-950/40 p-3">
+                  <legend className="px-1 text-xs uppercase tracking-[0.14em] text-ink-dim">Enable deposit methods</legend>
+                  <label className="flex items-center gap-2 text-sm text-ink-dim">
+                    <input type="checkbox" name="bankTransferEnabled" defaultChecked={u.bankTransferEnabled} />
+                    Bank transfer / UPI (INR)
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-ink-dim">
+                    <input type="checkbox" name="cashEnabled" defaultChecked={u.cashEnabled} />
+                    Cash (INR)
+                  </label>
+                </fieldset>
               </AdminActionForm>
               <AdminActionForm action={adminKycDecision} submitLabel="Reject" variant="danger" pendingLabel="Rejecting…">
                 <input type="hidden" name="userId" value={u.id} />

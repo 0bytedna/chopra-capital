@@ -6,6 +6,7 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import { D, ZERO, type Dec } from "@/lib/money";
 import { getCurrentNav, getSettingDecimal, upsertDailySnapshot } from "@/lib/nav";
+import { withdrawalProcessingWindowMessage, withdrawalsProcessableNow } from "@/lib/config";
 
 export async function ensureWallet(userId: string) {
   return prisma.wallet.upsert({
@@ -21,6 +22,13 @@ export async function confirmDeposit(depositId: string, landedAmount: Dec, admin
     const deposit = await tx.deposit.findUniqueOrThrow({ where: { id: depositId } });
     if (deposit.status !== "PENDING") throw new Error("Deposit is not pending");
     if (landedAmount.lte(0)) throw new Error("Landed amount must be positive");
+
+    const methodLabel =
+      deposit.method === "CRYPTO"
+        ? deposit.network ?? "Crypto"
+        : deposit.method === "BANK"
+          ? "Bank transfer"
+          : "Cash";
 
     await tx.deposit.update({
       where: { id: depositId },
@@ -42,7 +50,7 @@ export async function confirmDeposit(depositId: string, landedAmount: Dec, admin
         type: "DEPOSIT",
         amount: landedAmount,
         reference: deposit.id,
-        note: `Deposit confirmed (${deposit.network})`,
+        note: `Deposit confirmed (${methodLabel})`,
       },
     });
   });
@@ -143,6 +151,7 @@ export async function approveWithdrawal(withdrawalId: string, fee: Dec, adminNot
  * current NAV. The investor receives amount − fee.
  */
 export async function processWithdrawal(withdrawalId: string, txHash?: string) {
+  if (!withdrawalsProcessableNow()) throw new Error(withdrawalProcessingWindowMessage());
   const { nav } = await getCurrentNav();
 
   return prisma.$transaction(async (tx) => {

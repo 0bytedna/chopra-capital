@@ -39,7 +39,7 @@ export default function TermsPage() {
 
       <h2>4. Withdrawals</h2>
       <p>
-        Withdrawal requests are submitted on Saturdays and processed on Sundays at the prevailing
+        Withdrawal requests are submitted on Sundays from 12:00 AM to 12:00 PM IST and processed on Mondays at the prevailing
         NAV. There is no lock-in period. Processing fees, where applied, are shown on your ledger
         as separate line items. Payouts are made in USDT to the address you provide; you are
         responsible for its accuracy.

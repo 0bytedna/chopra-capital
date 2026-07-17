@@ -69,7 +69,7 @@ const steps = [
   {
     Icon: Banknote,
     title: "Withdraw weekly",
-    body: "Request a withdrawal any Saturday. It is processed on Sunday at the current NAV and paid to your USDT address. No lock-in, ever.",
+    body: "Request a withdrawal on Sunday from 12:00 AM to 12:00 PM IST. It is processed on Monday at the current NAV. No lock-in, ever.",
   },
 ];
 
@@ -235,8 +235,8 @@ function Transparency() {
 
 const ledgerRows = [
   { term: "Trading window", value: "Monday – Friday", note: "Gold market hours, bot-executed, human-supervised" },
-  { term: "Withdrawal requests", value: "Saturday", note: "Submit from your dashboard once the book is flat" },
-  { term: "Withdrawals processed", value: "Sunday", note: "Settled at current NAV, paid in USDT" },
+  { term: "Withdrawal requests", value: "Sunday morning", note: "Submit from 12:00 AM to 12:00 PM IST" },
+  { term: "Withdrawals processed", value: "Monday", note: "Settled at current NAV using your selected payout method" },
   { term: "Lock-in", value: "None", note: "Your money is never trapped — withdraw any week" },
   { term: "Minimum allocation", value: "$2,000 USDT", note: "One tier — every investor gets the same terms" },
   { term: "Performance objective", value: "1–4% / month", note: "A target, not a promise. Capital at risk" },
@@ -284,7 +284,7 @@ const faqs = [
   },
   {
     q: "How do deposits and withdrawals work?",
-    a: "You deposit USDT (TRC20, ERC20 or BEP20) to the company address shown in your account. Once confirmed, it joins the pool on the weekly invest run. Withdrawals are requested on Saturdays and processed on Sundays at the current NAV — there is no lock-in period.",
+    a: "You deposit USDT (TRC20, ERC20 or BEP20) to the company address shown in your account. Once confirmed, it joins the pool on the weekly invest run. Withdrawals are requested on Sunday from 12:00 AM to 12:00 PM IST and processed on Monday at the current NAV — there is no lock-in period.",
   },
   {
     q: "How can I verify the trading is real?",

@@ -45,7 +45,12 @@ async function main() {
 
   const existingDemo = await prisma.user.findUnique({ where: { email: "demo@chopracapital.com" } });
   if (existingDemo) {
-    console.log("Demo investor already exists — leaving data untouched.");
+  // Ensure the demo investor can exercise the local bank and cash flows.
+    await prisma.user.update({
+      where: { id: existingDemo.id },
+      data: { bankTransferEnabled: true, cashEnabled: true },
+    });
+    console.log("Demo investor already exists — left data untouched (bank and cash enabled).");
     return;
   }
 
@@ -57,6 +62,8 @@ async function main() {
       fullName: "Demo Investor",
       country: "United Arab Emirates",
       kycStatus: "APPROVED",
+      bankTransferEnabled: true,
+      cashEnabled: true,
       wallet: { create: {} },
     },
   });

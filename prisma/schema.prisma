@@ -34,9 +34,17 @@ model User {
   passwordHash String
   role         Role   @default(USER)
 
+  // Deposit methods. Crypto (USDT) is always available; bank transfer and
+  // cash are enabled by an admin per investor.
+  bankTransferEnabled Boolean @default(false)
+  cashEnabled         Boolean @default(false)
+
   fullName     String?
   mobile       String?
   country      String?
+  address      String? // Permanent Residential address
+  city         String?
+  state        String?
 
   kycStatus KycStatus @default(NOT_SUBMITTED)
   kycNote   String?
@@ -54,16 +62,35 @@ model User {
   tickets        Ticket[]
   ticketMessages TicketMessage[]
   kycDocuments   KycDocument[]
+  bankingDetail  BankingDetail?
 }
 
 model KycDocument {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  docType   String // ID_DOCUMENT | SELFIE
+  docType   String // AADHAAR | PAN
   fileName  String
   filePath  String
   createdAt DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// Banking / financial details (one per investor)
+// ---------------------------------------------------------------------------
+
+model BankingDetail {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountNumber String?
+  ifsc          String?
+  upiId         String?
+  accountType   String? // SAVINGS | CURRENT
+  usdtAddress   String? // USDT wallet address (single network)
+  usdtNetwork   String? // TRC20 | ERC20 | BEP20
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 // ---------------------------------------------------------------------------
@@ -122,17 +149,31 @@ model LedgerEntry {
 
 enum DepositStatus {
   PENDING
+  NEEDS_CORRECTION
   CONFIRMED
   REJECTED
+  CANCELLED
+}
+
+enum DepositMethod {
+  CRYPTO // USDT on TRC20 | ERC20 | BEP20
+  BANK // bank transfer / UPI — enabled per investor by an admin
+  CASH // physical cash drop-off — enabled per investor by an admin
 }
 
 model Deposit {
   id          String        @id @default(cuid())
   userId      String
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  method      DepositMethod @default(CRYPTO)
+  // amount is always the USDT amount credited on confirmation. For bank and
+  // cash requests it is 0 while pending, because the admin fixes the USDT
+  // credit after receiving the INR payment.
   amount      Decimal
-  network     String // TRC20 | ERC20 | BEP20
-  txHash      String?
+  inrAmount   Decimal? // INR reported by the investor for BANK and CASH
+  network     String? // TRC20 | ERC20 | BEP20 — only for CRYPTO
+  txHash      String? // on-chain hash — only for CRYPTO
+  reference   String? // UTR / receipt reference — BANK & CASH
   status      DepositStatus @default(PENDING)
   adminNote   String?
   createdAt   DateTime      @default(now())
@@ -142,7 +183,7 @@ model Deposit {
 }
 
 // ---------------------------------------------------------------------------
-// Withdrawals (USDT out) — requested Saturday, processed Sunday
+// Withdrawals (USDT out) — requested Sunday morning, processed Monday
 // ---------------------------------------------------------------------------
 
 enum WithdrawalStatus {
@@ -150,12 +191,20 @@ enum WithdrawalStatus {
   APPROVED
   PROCESSED
   REJECTED
+  CANCELLED
+}
+
+enum WithdrawalMethod {
+  CRYPTO // payout to the saved USDT address
+  BANK // payout to the saved bank / UPI details
+  CASH // cash collection arranged by the team
 }
 
 model Withdrawal {
   id            String           @id @default(cuid())
   userId        String
   user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  method        WithdrawalMethod @default(CRYPTO)
   amount        Decimal // requested USDT
   fee           Decimal? // fee applied at approval
   paidAmount    Decimal? // USDT actually sent

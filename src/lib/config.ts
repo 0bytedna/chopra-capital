@@ -19,6 +19,28 @@ export function depositAddress(network: Network): string {
   }
 }
 
+// Company bank details shown to investors who are allowed to deposit by bank
+// transfer / UPI. Empty strings mean "not configured" — the UI prompts the
+// investor to contact support.
+export function bankDepositDetails(): {
+  accountNumber: string;
+  ifsc: string;
+  holder: string;
+  upi: string;
+} {
+  return {
+    accountNumber: process.env.DEPOSIT_BANK_ACCOUNT ?? "",
+    ifsc: process.env.DEPOSIT_BANK_IFSC ?? "",
+    holder: process.env.DEPOSIT_BANK_HOLDER ?? "",
+    upi: process.env.DEPOSIT_BANK_UPI ?? "",
+  };
+}
+
+// Instruction text for physical cash deposits (drop-off location, hours, etc.).
+export const cashDepositInstruction: string =
+  process.env.DEPOSIT_CASH_INSTRUCTION ??
+  "Visit our office during business hours, hand the cash to the desk, and note the receipt number they give you.";
+
 export const mt5Access = {
   server: process.env.MT5_SERVER ?? "",
   login: process.env.MT5_LOGIN ?? "",
@@ -28,11 +50,39 @@ export const mt5Access = {
   webTerminalUrl: process.env.MT5_WEBTERMINAL_URL ?? "https://metatraderweb.app/trade",
 };
 
-// Withdrawals: requested Saturdays, processed Sundays. Always open outside
-// production so the flow can be exercised in dev.
-export function withdrawalsOpenNow(): boolean {
-  if (process.env.NODE_ENV !== "production") return true;
-  return new Date().getUTCDay() === 6; // Saturday
+export const WITHDRAWAL_TIME_ZONE = "Asia/Kolkata";
+
+function withdrawalTimeParts(date = new Date()): { weekday: string; hour: number } {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: WITHDRAWAL_TIME_ZONE,
+    weekday: "short",
+    hour: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date);
+
+  return {
+    weekday: parts.find((part) => part.type === "weekday")?.value ?? "",
+    hour: Number(parts.find((part) => part.type === "hour")?.value ?? -1),
+  };
+}
+
+export function withdrawalRequestWindowMessage(): string {
+  return "Withdrawal requests are open on Sundays from 12:00 AM to 12:00 PM IST. Withdrawals are processed on Mondays.";
+}
+
+// Requests are intentionally governed by the same IST schedule in every
+// environment so local testing cannot bypass a rule that protects balances.
+export function withdrawalsOpenNow(date = new Date()): boolean {
+  const { weekday, hour } = withdrawalTimeParts(date);
+  return weekday === "Sun" && hour >= 0 && hour < 12;
+}
+
+export function withdrawalProcessingWindowMessage(): string {
+  return "Withdrawals are processed on Mondays (IST).";
+}
+
+export function withdrawalsProcessableNow(date = new Date()): boolean {
+  return withdrawalTimeParts(date).weekday === "Mon";
 }
 
 // ISO week key like "2026-W24" — used to group withdrawal processing runs.

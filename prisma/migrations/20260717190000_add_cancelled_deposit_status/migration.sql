@@ -1,0 +1,3 @@
+-- SQLite stores Prisma enums as TEXT, so this migration intentionally has no
+-- database-level change. It records the new CANCELLED DepositStatus value for
+-- consistent deployment history.

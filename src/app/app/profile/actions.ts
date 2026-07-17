@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { profileSchema, changePasswordSchema, totpCodeSchema } from "@/lib/validation";
+import { profileSchema, bankingSchema, changePasswordSchema, totpCodeSchema } from "@/lib/validation";
 import { generateTotpSecret, totpEnrolmentQr, verifyTotp } from "@/lib/totp";
 
 export type ProfileFormState = { error?: string; success?: string };
@@ -17,6 +17,9 @@ export async function updateProfile(_prev: ProfileFormState, formData: FormData)
     fullName: formData.get("fullName"),
     mobile: formData.get("mobile"),
     country: formData.get("country"),
+    address: formData.get("address"),
+    city: formData.get("city"),
+    state: formData.get("state"),
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Please check the form" };
@@ -28,10 +31,55 @@ export async function updateProfile(_prev: ProfileFormState, formData: FormData)
       fullName: parsed.data.fullName,
       mobile: parsed.data.mobile || null,
       country: parsed.data.country || null,
+      address: parsed.data.address || null,
+      city: parsed.data.city || null,
+      state: parsed.data.state || null,
     },
   });
   revalidatePath("/app/profile");
   return { success: "Profile updated." };
+}
+
+// --- Banking / financial details -------------------------------------------
+
+export type BankingFormState = { error?: string; success?: string };
+
+export async function updateBanking(_prev: BankingFormState, formData: FormData): Promise<BankingFormState> {
+  const user = await requireUser();
+  const parsed = bankingSchema.safeParse({
+    accountNumber: formData.get("accountNumber"),
+    ifsc: formData.get("ifsc"),
+    upiId: formData.get("upiId"),
+    accountType: formData.get("accountType") || "SAVINGS",
+    usdtAddress: formData.get("usdtAddress"),
+    usdtNetwork: formData.get("usdtNetwork") || "TRC20",
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Please check the form" };
+  }
+
+  await prisma.bankingDetail.upsert({
+    where: { userId: user.id },
+    create: {
+      userId: user.id,
+      accountNumber: parsed.data.accountNumber || null,
+      ifsc: parsed.data.ifsc || null,
+      upiId: parsed.data.upiId || null,
+      accountType: parsed.data.accountType,
+      usdtAddress: parsed.data.usdtAddress || null,
+      usdtNetwork: parsed.data.usdtAddress ? parsed.data.usdtNetwork : null,
+    },
+    update: {
+      accountNumber: parsed.data.accountNumber || null,
+      ifsc: parsed.data.ifsc || null,
+      upiId: parsed.data.upiId || null,
+      accountType: parsed.data.accountType,
+      usdtAddress: parsed.data.usdtAddress || null,
+      usdtNetwork: parsed.data.usdtAddress ? parsed.data.usdtNetwork : null,
+    },
+  });
+  revalidatePath("/app/profile");
+  return { success: "Banking details saved." };
 }
 
 // --- KYC upload -------------------------------------------------------------
@@ -62,14 +110,14 @@ export async function submitKyc(_prev: ProfileFormState, formData: FormData): Pr
   if (user.kycStatus === "PENDING") return { error: "Your documents are already in review." };
   if (user.kycStatus === "APPROVED") return { error: "Your identity is already verified." };
 
-  const idDoc = formData.get("idDoc");
-  const selfie = formData.get("selfie");
-  if (!(idDoc instanceof File) || idDoc.size === 0) return { error: "Please attach your ID document." };
-  if (!(selfie instanceof File) || selfie.size === 0) return { error: "Please attach a selfie holding your ID." };
+  const aadhaar = formData.get("aadhaar");
+  const pan = formData.get("pan");
+  if (!(aadhaar instanceof File) || aadhaar.size === 0) return { error: "Please attach your Aadhaar card." };
+  if (!(pan instanceof File) || pan.size === 0) return { error: "Please attach your PAN card." };
 
   try {
-    await saveKycFile(user.id, idDoc, "ID_DOCUMENT");
-    await saveKycFile(user.id, selfie, "SELFIE");
+    await saveKycFile(user.id, aadhaar, "AADHAAR");
+    await saveKycFile(user.id, pan, "PAN");
   } catch (err) {
     return { error: err instanceof Error ? err.message : "Upload failed — please try again." };
   }

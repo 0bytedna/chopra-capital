@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { getCurrentNav } from "@/lib/nav";
 import { D, toNumber, formatUsdt } from "@/lib/money";
+import { DepositMethodsToggle } from "@/components/admin/DepositMethodsToggle";
 
 export const metadata: Metadata = { title: "Admin · Investors" };
 
@@ -31,6 +32,8 @@ export default async function AdminInvestorsPage() {
       queued,
       value,
       share,
+      bankEnabled: u.bankTransferEnabled,
+      cashEnabled: u.cashEnabled,
     };
   });
 
@@ -62,6 +65,10 @@ export default async function AdminInvestorsPage() {
               <dt className="text-ink-faint">Share</dt>
               <dd className="text-right">{r.share.toFixed(2)}%</dd>
             </dl>
+            <div className="mt-4 border-t border-gold-600/10 pt-4">
+              <p className="mb-2 text-[11px] uppercase tracking-[0.14em] text-ink-faint">Deposit methods</p>
+              <DepositMethodsToggle userId={r.id} bankEnabled={r.bankEnabled} cashEnabled={r.cashEnabled} />
+            </div>
           </div>
         ))}
       </div>
@@ -71,7 +78,7 @@ export default async function AdminInvestorsPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gold-600/15 text-left">
-              {["Investor", "KYC", "Units", "Queued", "Value (USDT)", "Share"].map((h) => (
+              {["Investor", "KYC", "Units", "Queued", "Value (USDT)", "Share", "Deposit methods"].map((h) => (
                 <th key={h} className="px-5 py-3.5 text-[11px] font-medium uppercase tracking-[0.14em] text-ink-faint">
                   {h}
                 </th>
@@ -90,6 +97,9 @@ export default async function AdminInvestorsPage() {
                 <td className="px-5 py-3.5 font-mono text-xs">{formatUsdt(r.queued)}</td>
                 <td className="px-5 py-3.5 font-mono text-xs text-gold-300">{formatUsdt(r.value)}</td>
                 <td className="px-5 py-3.5 font-mono text-xs">{r.share.toFixed(2)}%</td>
+                <td className="px-5 py-3.5">
+                  <DepositMethodsToggle userId={r.id} bankEnabled={r.bankEnabled} cashEnabled={r.cashEnabled} />
+                </td>
               </tr>
             ))}
           </tbody>

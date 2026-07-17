@@ -25,6 +25,14 @@ export function formatUsdt(value: Prisma.Decimal.Value | null | undefined, decim
   });
 }
 
+export function formatInr(value: Prisma.Decimal.Value | null | undefined, decimals = 2): string {
+  const n = toNumber(value);
+  return n.toLocaleString("en-IN", {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+}
+
 export function formatSignedUsdt(value: Prisma.Decimal.Value | null | undefined): string {
   const n = toNumber(value);
   const formatted = Math.abs(n).toLocaleString("en-US", {

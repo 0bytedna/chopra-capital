@@ -58,7 +58,7 @@ export default function RiskPage() {
 
       <h2>Liquidity and scheduling</h2>
       <p>
-        Withdrawals follow a weekly cycle: requests on Saturday, processing on Sunday. While there
+        Withdrawals follow a weekly cycle: requests on Sunday morning, processing on Monday. While there
         is no lock-in, your funds are not available instantly at all times, and processing values
         depend on the NAV at the time of settlement.
       </p>

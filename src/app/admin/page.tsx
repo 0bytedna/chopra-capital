@@ -15,12 +15,12 @@ export default async function AdminOverviewPage() {
     await Promise.all([
       getCurrentNav(),
       prisma.wallet.aggregate({ _sum: { units: true, queued: true } }),
-      prisma.deposit.count({ where: { status: "PENDING" } }),
+      prisma.deposit.count({ where: { status: { in: ["PENDING", "NEEDS_CORRECTION"] } } }),
       prisma.withdrawal.count({ where: { status: "REQUESTED" } }),
       prisma.withdrawal.count({ where: { status: "APPROVED" } }),
       prisma.user.count({ where: { kycStatus: "PENDING" } }),
       prisma.ticket.count({ where: { status: "OPEN" } }),
-      prisma.deposit.aggregate({ where: { status: "PENDING" }, _sum: { amount: true } }),
+      prisma.deposit.aggregate({ where: { status: { in: ["PENDING", "NEEDS_CORRECTION"] } }, _sum: { amount: true } }),
     ]);
 
   const investorUnits = D(walletAgg._sum.units ?? 0);
@@ -118,7 +118,7 @@ export default async function AdminOverviewPage() {
             <p className="mt-2 text-sm leading-relaxed text-ink-dim">
               Converts every confirmed queued balance ({formatUsdt(queuedTotal)} USDT
               {pendingDeposits > 0 ? `, plus ${formatUsdt(toNumber(queuedAgg._sum.amount ?? 0))} USDT still pending confirmation` : ""}
-              ) into pool units at the current NAV. Run this on Sunday after moving the cash to the
+              ) into pool units at the current NAV. Run this on Monday after moving the cash to the
               broker, so issued units are backed by real equity.
             </p>
           </div>

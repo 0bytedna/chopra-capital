@@ -5,14 +5,16 @@ import Image from "next/image";
 import {
   updateProfile,
   submitKyc,
+  updateBanking,
   startTotpEnrolment,
   enableTotp,
   disableTotp,
   changePassword,
   type ProfileFormState,
+  type BankingFormState,
   type TotpEnrolState,
 } from "./actions";
-import { Field } from "@/components/ui/Field";
+import { Field, SelectField, TextareaField } from "@/components/ui/Field";
 import { Alert } from "@/components/ui/Alert";
 import { SubmitButton } from "@/components/ui/SubmitButton";
 import { Button } from "@/components/ui/Button";
@@ -21,10 +23,18 @@ import { CopyButton } from "@/components/ui/CopyButton";
 export function ProfileDetailsForm({
   fullName,
   mobile,
+  email,
+  address,
+  city,
+  stateField,
   country,
 }: {
   fullName: string;
   mobile: string;
+  email: string;
+  address: string;
+  city: string;
+  stateField: string;
   country: string;
 }) {
   const [state, action] = useActionState<ProfileFormState, FormData>(updateProfile, {});
@@ -36,7 +46,18 @@ export function ProfileDetailsForm({
       <Field label="Full name" name="fullName" defaultValue={fullName} required />
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Mobile" name="mobile" defaultValue={mobile} placeholder="+971 …" />
-        <Field label="Country" name="country" defaultValue={country} placeholder="United Arab Emirates" />
+        <Field label="Email address" name="email" defaultValue={email} type="email" disabled readOnly />
+      </div>
+      <TextareaField
+        label="Permanent residential address"
+        name="address"
+        defaultValue={address}
+        placeholder="House / flat, street, area"
+      />
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Field label="City" name="city" defaultValue={city} placeholder="Mumbai" />
+        <Field label="State" name="state" defaultValue={stateField} placeholder="Maharashtra" />
+        <Field label="Country" name="country" defaultValue={country} placeholder="India" />
       </div>
       <SubmitButton size="sm" pendingLabel="Saving…">
         Save details
@@ -54,23 +75,75 @@ export function KycForm() {
     <form action={action} className="space-y-4">
       {state.error && <Alert tone="error">{state.error}</Alert>}
       <Field
-        label="Government ID (passport / ID card)"
-        name="idDoc"
+        label="Aadhaar card"
+        name="aadhaar"
         type="file"
         accept=".jpg,.jpeg,.png,.webp,.pdf"
         required
         hint="JPG, PNG, WEBP or PDF — up to 8 MB."
       />
       <Field
-        label="Selfie holding your ID"
-        name="selfie"
+        label="PAN card"
+        name="pan"
         type="file"
         accept=".jpg,.jpeg,.png,.webp,.pdf"
         required
-        hint="Your face and the ID details must both be clearly visible."
+        hint="JPG, PNG, WEBP or PDF — up to 8 MB."
       />
       <SubmitButton size="sm" pendingLabel="Uploading…">
         Submit for review
+      </SubmitButton>
+    </form>
+  );
+}
+
+export type BankingInitial = {
+  accountNumber: string;
+  ifsc: string;
+  upiId: string;
+  accountType: string;
+  usdtAddress: string;
+  usdtNetwork: string;
+};
+
+export function BankingForm({ initial }: { initial: BankingInitial }) {
+  const [state, action] = useActionState<BankingFormState, FormData>(updateBanking, {});
+
+  return (
+    <form action={action} className="space-y-4">
+      {state.error && <Alert tone="error">{state.error}</Alert>}
+      {state.success && <Alert tone="success">{state.success}</Alert>}
+      <Field
+        label="Account number"
+        name="accountNumber"
+        defaultValue={initial.accountNumber}
+        inputMode="numeric"
+        placeholder="•••• •••• •••• ••••"
+      />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="IFSC code" name="ifsc" defaultValue={initial.ifsc} placeholder="SBIN0001234" />
+        <SelectField label="Account type" name="accountType" defaultValue={initial.accountType || "SAVINGS"}>
+          <option value="SAVINGS">Savings</option>
+          <option value="CURRENT">Current</option>
+        </SelectField>
+      </div>
+      <Field label="UPI ID" name="upiId" defaultValue={initial.upiId} placeholder="name@bank" />
+      <div className="space-y-1.5">
+        <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-dim">Crypto · USDT wallet</p>
+        <SelectField label="Network" name="usdtNetwork" defaultValue={initial.usdtNetwork || "TRC20"}>
+          <option value="TRC20">USDT · TRC20 (Tron)</option>
+          <option value="ERC20">USDT · ERC20 (Ethereum)</option>
+          <option value="BEP20">USDT · BEP20 (BNB Chain)</option>
+        </SelectField>
+        <Field
+          label="USDT wallet address"
+          name="usdtAddress"
+          defaultValue={initial.usdtAddress}
+          placeholder="Paste your USDT address"
+        />
+      </div>
+      <SubmitButton size="sm" pendingLabel="Saving…">
+        Save
       </SubmitButton>
     </form>
   );

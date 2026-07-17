@@ -50,6 +50,53 @@ export async function adminRejectDeposit(_prev: AdminFormState, formData: FormDa
   return { success: "Deposit rejected." };
 }
 
+export async function adminRequestDepositCorrection(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const note = String(formData.get("note") ?? "").trim();
+  if (!id || !note) return { error: "Explain what the investor needs to correct." };
+
+  const deposit = await prisma.deposit.findUnique({ where: { id }, select: { method: true, status: true } });
+  if (!deposit) return { error: "Deposit not found." };
+  if (deposit.status !== "PENDING") return { error: "Only pending deposits can be sent back for correction." };
+  if (deposit.method === "CASH") return { error: "Cash deposits do not have a UTR or transaction hash to correct." };
+
+  const result = await prisma.deposit.updateMany({
+    where: { id, status: "PENDING" },
+    data: { status: "NEEDS_CORRECTION", adminNote: note },
+  });
+  if (result.count === 0) return { error: "Deposit is no longer pending." };
+
+  revalidatePath("/app/deposit");
+  revalidatePath("/admin/deposits");
+  revalidatePath("/admin");
+  return { success: "Correction requested. The deposit cannot be credited until the investor resubmits the details." };
+}
+
+// --- Deposit method enablement (per investor) -------------------------------
+
+export async function adminSetDepositMethods(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
+  await requireAdmin();
+  const userId = String(formData.get("userId") ?? "");
+  if (!userId) return { error: "Missing investor." };
+  const bankTransferEnabled = formData.get("bankTransferEnabled") != null;
+  const cashEnabled = formData.get("cashEnabled") != null;
+  try {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { bankTransferEnabled, cashEnabled },
+    });
+  } catch (err) {
+    return fail(err);
+  }
+  revalidatePath("/admin/investors");
+  revalidatePath("/admin");
+  return { success: "Deposit methods updated." };
+}
+
 // --- Withdrawals ------------------------------------------------------------
 
 export async function adminApproveWithdrawal(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
@@ -65,6 +112,7 @@ export async function adminApproveWithdrawal(_prev: AdminFormState, formData: Fo
   }
   revalidatePath("/admin/withdrawals");
   revalidatePath("/admin");
+  revalidatePath("/app/withdraw");
   return { success: "Withdrawal approved." };
 }
 
@@ -78,6 +126,7 @@ export async function adminProcessWithdrawal(_prev: AdminFormState, formData: Fo
   }
   revalidatePath("/admin/withdrawals");
   revalidatePath("/admin");
+  revalidatePath("/app/withdraw");
   return { success: "Withdrawal processed and ledgered." };
 }
 
@@ -91,6 +140,7 @@ export async function adminRejectWithdrawal(_prev: AdminFormState, formData: For
   }
   revalidatePath("/admin/withdrawals");
   revalidatePath("/admin");
+  revalidatePath("/app/withdraw");
   return { success: "Withdrawal rejected." };
 }
 
@@ -120,10 +170,20 @@ export async function adminKycDecision(_prev: AdminFormState, formData: FormData
 
   await prisma.user.update({
     where: { id: userId },
-    data: { kycStatus: decision, kycNote: note || null },
+    data: {
+      kycStatus: decision,
+      kycNote: note || null,
+      ...(decision === "APPROVED"
+        ? {
+            bankTransferEnabled: formData.get("bankTransferEnabled") != null,
+            cashEnabled: formData.get("cashEnabled") != null,
+          }
+        : {}),
+    },
   });
   revalidatePath("/admin/kyc");
   revalidatePath("/admin");
+  revalidatePath("/app/deposit");
   return { success: decision === "APPROVED" ? "KYC approved." : "KYC rejected." };
 }
 
