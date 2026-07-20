@@ -5,6 +5,7 @@ import { createTicket, replyToTicket, type TicketFormState } from "./actions";
 import { Field, TextareaField } from "@/components/ui/Field";
 import { Alert } from "@/components/ui/Alert";
 import { SubmitButton } from "@/components/ui/SubmitButton";
+import { AttachmentInput } from "@/components/tickets/AttachmentInput";
 
 export function NewTicketForm() {
   const [state, action] = useActionState<TicketFormState, FormData>(createTicket, {});
@@ -14,6 +15,7 @@ export function NewTicketForm() {
       {state.error && <Alert tone="error">{state.error}</Alert>}
       <Field label="Subject" name="subject" required placeholder="What can we help with?" />
       <TextareaField label="Message" name="body" required placeholder="Describe the issue or question…" />
+      <AttachmentInput />
       <SubmitButton pendingLabel="Opening ticket…">Open ticket</SubmitButton>
     </form>
   );
@@ -33,6 +35,7 @@ export function ReplyForm({ ticketId }: { ticketId: string }) {
       {state.error && <Alert tone="error">{state.error}</Alert>}
       <input type="hidden" name="ticketId" value={ticketId} />
       <TextareaField label="Reply" name="body" required placeholder="Write your reply…" />
+      <AttachmentInput />
       <SubmitButton size="sm" pendingLabel="Sending…">
         Send reply
       </SubmitButton>

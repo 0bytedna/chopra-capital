@@ -6,6 +6,7 @@ import { Field } from "@/components/ui/Field";
 import { Alert } from "@/components/ui/Alert";
 import { SubmitButton } from "@/components/ui/SubmitButton";
 import { cn } from "@/lib/cn";
+import type { FinancialRestriction } from "@/lib/financialEligibility";
 
 type Method = "CRYPTO" | "BANK" | "CASH";
 
@@ -14,12 +15,18 @@ export type PayoutDetails = {
   bank: { accountNumber: string; ifsc: string; upiId: string } | null;
 };
 
-type Props = { open: boolean; available: number; payout: PayoutDetails };
+type Props = {
+  open: boolean;
+  available: number;
+  referenceRate: number;
+  payout: PayoutDetails;
+  restrictions: Record<Method, FinancialRestriction | null>;
+};
 
 const methods: { id: Method; label: string; note: string }[] = [
-  { id: "CRYPTO", label: "Crypto (USDT)", note: "Saved wallet address" },
-  { id: "BANK", label: "Bank transfer", note: "Saved bank / UPI details" },
-  { id: "CASH", label: "Cash", note: "Collection arranged by our team" },
+  { id: "CRYPTO", label: "Crypto wallet", note: "USD request · USDT to saved wallet" },
+  { id: "BANK", label: "Bank transfer", note: "USD request · INR to saved bank" },
+  { id: "CASH", label: "Cash", note: "USD request · INR cash payout" },
 ];
 
 function Step({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
@@ -64,7 +71,7 @@ function PayoutDetailsCard({ method, payout }: { method: Method; payout: PayoutD
             {payout.bank.ifsc && <p>IFSC: <span className="font-mono text-ink">{payout.bank.ifsc}</span></p>}
           </div>
         ) : (
-          <p className="text-sm text-ink-faint">Add your bank account or UPI details in Profile &amp; Security before submitting this request.</p>
+          <p className="text-sm text-ink-faint">Add your bank account number and IFSC in Profile &amp; Security before submitting this request.</p>
         )}
       </div>
     );
@@ -117,11 +124,19 @@ function WithdrawalDialog({
   );
 }
 
-function WithdrawalDetailsForm({ method, available, onDismiss }: { method: Method; available: number; onDismiss: () => void }) {
+function WithdrawalDetailsForm({ method, available, referenceRate, onDismiss }: { method: Method; available: number; referenceRate: number; onDismiss: () => void }) {
   const [state, action] = useActionState<WithdrawFormState, FormData>(requestWithdrawal, {});
+  const [amountInput, setAmountInput] = useState("");
+  const amountNumber = Number(amountInput);
+  const estimatedInr =
+    Number.isFinite(amountNumber) && amountNumber > 0 ? amountNumber * referenceRate : 0;
 
   if (state.windowError) {
     return <WithdrawalDialog eyebrow="Withdrawal schedule" title="Withdrawals are currently closed" message={state.windowError} onConfirm={onDismiss} />;
+  }
+
+  if (state.restriction) {
+    return <WithdrawalDialog eyebrow="Withdrawal unavailable" title={state.restriction.title} message={state.restriction.message} onConfirm={onDismiss} />;
   }
 
   if (state.success) {
@@ -134,30 +149,64 @@ function WithdrawalDetailsForm({ method, available, onDismiss }: { method: Metho
       <input type="hidden" name="method" value={method} />
       <Field
         id={`withdraw-${method.toLowerCase()}-amount`}
-        label="Amount (USDT)"
+        label="Amount (USD)"
         name="amount"
         type="number"
         step="0.01"
         min="0.01"
         max={Math.max(available, 0.01)}
+        value={amountInput}
+        onChange={(event) => setAmountInput(event.target.value)}
         required
-        hint={`Available: ${available.toLocaleString("en-US", { maximumFractionDigits: 2 })} USDT`}
+        hint={`Available: ${available.toLocaleString("en-US", { maximumFractionDigits: 2 })} USD`}
       />
+      {method !== "CRYPTO" && (
+        <div
+          className="rounded-xl border border-gold-600/20 bg-gold-600/8 px-4 py-3"
+          aria-live="polite"
+        >
+          <p className="text-[10px] uppercase tracking-[0.16em] text-ink-faint">
+            Estimated INR payout
+          </p>
+          <p className="mt-1 font-mono text-lg text-gold-300">
+            {estimatedInr > 0
+              ? estimatedInr.toLocaleString("en-IN", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }) + " INR"
+              : "—"}
+          </p>
+          <p className="mt-1 text-xs leading-relaxed text-ink-faint">
+            Based on the current reference rate of{" "}
+            {referenceRate.toLocaleString("en-IN", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}{" "}
+            INR/USD. The actual INR payout will be updated after the USD is sold for INR.
+          </p>
+        </div>
+      )}
       <SubmitButton pendingLabel="Submitting...">Request withdrawal</SubmitButton>
     </form>
   );
 }
 
-export function WithdrawForm({ open, available, payout }: Props) {
+export function WithdrawForm({ open, available, referenceRate, payout, restrictions }: Props) {
   const [method, setMethod] = useState<Method>("CRYPTO");
   const [formVersion, setFormVersion] = useState(0);
+  const restriction = restrictions[method];
 
   return (
     <div className="space-y-9">
-      {!open && (
-        <Alert tone="warning">
-          Withdrawal requests are open on <strong>Sundays from 12:00 AM to 12:00 PM IST</strong>. Approved withdrawals are processed on Monday. You can still select a method and submit to see the schedule reminder.
-        </Alert>
+      {(!open || restriction) && (
+        <div className="space-y-3">
+          {!open && (
+            <Alert tone="warning">
+              Withdrawal requests are open on <strong>Sundays from 12:00 AM to 12:00 PM IST</strong>. Approved withdrawals are processed on Monday. You can still select a method and submit to see the schedule reminder.
+            </Alert>
+          )}
+          {restriction && <Alert tone="warning">{restriction.message}</Alert>}
+        </div>
       )}
       <Step n={1} title="Choose a withdrawal method">
         <div className="grid gap-2.5 sm:grid-cols-3" role="radiogroup" aria-label="Withdrawal method">
@@ -191,6 +240,7 @@ export function WithdrawForm({ open, available, payout }: Props) {
           key={`${method}-${formVersion}`}
           method={method}
           available={available}
+          referenceRate={referenceRate}
           onDismiss={() => setFormVersion((version) => version + 1)}
         />
       </Step>

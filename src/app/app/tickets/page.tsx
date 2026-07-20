@@ -27,7 +27,7 @@ export default async function TicketsPage() {
       <header>
         <p className="eyebrow">Support</p>
         <h1 className="mt-2 font-serif text-3xl text-ink">
-          We're <em className="gold-text italic">here</em>
+          We&apos;re <em className="gold-text italic">here</em>
         </h1>
         <p className="mt-2 text-sm text-ink-dim">
           Questions about deposits, withdrawals or your account — open a ticket and the team will

@@ -1,110 +1,131 @@
 import type { Metadata } from "next";
-import { prisma } from "@/lib/prisma";
+import {
+  BadgeCheck,
+  Clock3,
+  Landmark,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
+import { InvestorDirectory } from "@/components/admin/InvestorDirectory";
+import { D, formatUsdt, toNumber } from "@/lib/money";
 import { getCurrentNav } from "@/lib/nav";
-import { D, toNumber, formatUsdt } from "@/lib/money";
-import { DepositMethodsToggle } from "@/components/admin/DepositMethodsToggle";
+import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = { title: "Admin · Investors" };
+
+function SummaryCard({
+  label,
+  value,
+  detail,
+  Icon,
+}: {
+  label: string;
+  value: string;
+  detail: string;
+  Icon: LucideIcon;
+}) {
+  return (
+    <article className="glass-card rounded-xl p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[10px] uppercase tracking-[0.14em] text-ink-faint">{label}</p>
+          <p className="mt-2 truncate font-mono text-xl text-ink">{value}</p>
+        </div>
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-gold-600/15 bg-gold-600/8 text-gold-400">
+          <Icon className="size-4" aria-hidden />
+        </span>
+      </div>
+      <p className="mt-2 text-xs text-ink-faint">{detail}</p>
+    </article>
+  );
+}
 
 export default async function AdminInvestorsPage() {
   const [users, { nav, totalUnits }] = await Promise.all([
     prisma.user.findMany({
+      where: { role: "USER" },
       orderBy: { createdAt: "asc" },
-      include: { wallet: true },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        mobile: true,
+        kycStatus: true,
+        isCompanyAccount: true,
+        wallet: { select: { units: true, queued: true } },
+        _count: { select: { ledger: true, deposits: true, withdrawals: true, tickets: true, internalTransfersSent: true, internalTransfersReceived: true, profitShareAllocations: true } },
+      },
     }),
     getCurrentNav(),
   ]);
 
-  const totalUnitsNum = toNumber(totalUnits);
+  const totalUnitsNumber = toNumber(totalUnits);
+  const rows = users.map((user) => {
+    const units = D(user.wallet?.units ?? 0);
+    const queued = D(user.wallet?.queued ?? 0);
+    const balance = units.mul(nav).add(queued);
+    const share = totalUnitsNumber > 0 ? (toNumber(units) / totalUnitsNumber) * 100 : 0;
 
-  const rows = users.map((u) => {
-    const units = D(u.wallet?.units ?? 0);
-    const queued = toNumber(u.wallet?.queued ?? 0);
-    const value = toNumber(units.mul(nav));
-    const share = totalUnitsNum > 0 ? (toNumber(units) / totalUnitsNum) * 100 : 0;
     return {
-      id: u.id,
-      name: u.fullName ?? "—",
-      email: u.email,
-      role: u.role,
-      kyc: u.kycStatus,
-      units: toNumber(units),
-      queued,
-      value,
+      id: user.id,
+      name: user.fullName ?? "Unnamed investor",
+      email: user.email,
+      mobile: user.mobile ?? "Not provided",
+      kyc: user.kycStatus,
+      queued: toNumber(queued),
+      balance: toNumber(balance),
       share,
-      bankEnabled: u.bankTransferEnabled,
-      cashEnabled: u.cashEnabled,
+      isCompanyAccount: user.isCompanyAccount,
+      canDelete: !user.isCompanyAccount && user._count.ledger === 0 && user._count.deposits === 0 && user._count.withdrawals === 0 && user._count.tickets === 0 && user._count.internalTransfersSent === 0 && user._count.internalTransfersReceived === 0 && user._count.profitShareAllocations === 0,
     };
-  });
+  }).sort((a, b) => Number(b.isCompanyAccount) - Number(a.isCompanyAccount));
+
+  const investorRows = rows.filter((row) => !row.isCompanyAccount);
+  const verifiedCount = investorRows.filter((row) => row.kyc === "APPROVED").length;
+  const totalBalance = investorRows.reduce((sum, row) => sum + row.balance, 0);
+  const totalQueued = investorRows.reduce((sum, row) => sum + row.queued, 0);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8">
+    <div className="mx-auto max-w-7xl space-y-6 sm:space-y-8">
       <header>
         <p className="eyebrow">Register</p>
         <h1 className="mt-2 font-serif text-3xl text-ink">
-          Investor <em className="gold-text italic">register</em>
+          Investor <em className="gold-text italic">directory</em>
         </h1>
-        <p className="mt-2 text-sm text-ink-dim">
-          {rows.length} account(s) · pool NAV {formatUsdt(nav, 6)} USDT/unit
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-dim">
+          Search investor accounts or select a row to open the complete profile,
+          financial details, portfolio performance and account activity.
         </p>
       </header>
 
-      {/* Mobile cards */}
-      <div className="space-y-3 md:hidden">
-        {rows.map((r) => (
-          <div key={r.id} className="glass-card rounded-xl p-4">
-            <p className="truncate text-sm text-ink">{r.name}</p>
-            <p className="truncate text-xs text-ink-faint">{r.email}</p>
-            <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5 font-mono text-xs text-ink-dim">
-              <dt className="text-ink-faint">Units</dt>
-              <dd className="text-right">{r.units.toFixed(4)}</dd>
-              <dt className="text-ink-faint">Value</dt>
-              <dd className="text-right">{formatUsdt(r.value)}</dd>
-              <dt className="text-ink-faint">Queued</dt>
-              <dd className="text-right">{formatUsdt(r.queued)}</dd>
-              <dt className="text-ink-faint">Share</dt>
-              <dd className="text-right">{r.share.toFixed(2)}%</dd>
-            </dl>
-            <div className="mt-4 border-t border-gold-600/10 pt-4">
-              <p className="mb-2 text-[11px] uppercase tracking-[0.14em] text-ink-faint">Deposit methods</p>
-              <DepositMethodsToggle userId={r.id} bankEnabled={r.bankEnabled} cashEnabled={r.cashEnabled} />
-            </div>
-          </div>
-        ))}
-      </div>
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Investor summary">
+        <SummaryCard
+          label="Investors"
+          value={investorRows.length.toLocaleString("en-IN")}
+          detail="Registered investor accounts"
+          Icon={Users}
+        />
+        <SummaryCard
+          label="KYC verified"
+          value={`${verifiedCount}/${investorRows.length}`}
+          detail="Approved investor accounts"
+          Icon={BadgeCheck}
+        />
+        <SummaryCard
+          label="Total balance"
+          value={`${formatUsdt(totalBalance)} USD`}
+          detail="Combined invested and queued value"
+          Icon={Landmark}
+        />
+        <SummaryCard
+          label="In queue"
+          value={`${formatUsdt(totalQueued)} USD`}
+          detail="Confirmed funds awaiting investment"
+          Icon={Clock3}
+        />
+      </section>
 
-      {/* Desktop table */}
-      <div className="glass-card hidden overflow-hidden rounded-2xl md:block">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-gold-600/15 text-left">
-              {["Investor", "KYC", "Units", "Queued", "Value (USDT)", "Share", "Deposit methods"].map((h) => (
-                <th key={h} className="px-5 py-3.5 text-[11px] font-medium uppercase tracking-[0.14em] text-ink-faint">
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.id} className="border-b border-gold-600/8 last:border-0">
-                <td className="px-5 py-3.5">
-                  <p className="text-ink">{r.name}{r.role === "ADMIN" ? " · staff" : ""}</p>
-                  <p className="text-xs text-ink-faint">{r.email}</p>
-                </td>
-                <td className="px-5 py-3.5 text-xs text-ink-dim">{r.kyc.toLowerCase().replace("_", " ")}</td>
-                <td className="px-5 py-3.5 font-mono text-xs">{r.units.toFixed(4)}</td>
-                <td className="px-5 py-3.5 font-mono text-xs">{formatUsdt(r.queued)}</td>
-                <td className="px-5 py-3.5 font-mono text-xs text-gold-300">{formatUsdt(r.value)}</td>
-                <td className="px-5 py-3.5 font-mono text-xs">{r.share.toFixed(2)}%</td>
-                <td className="px-5 py-3.5">
-                  <DepositMethodsToggle userId={r.id} bankEnabled={r.bankEnabled} cashEnabled={r.cashEnabled} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <InvestorDirectory rows={rows} />
     </div>
   );
 }

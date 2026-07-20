@@ -8,6 +8,7 @@ import { Field } from "@/components/ui/Field";
 import { Alert } from "@/components/ui/Alert";
 import { SubmitButton } from "@/components/ui/SubmitButton";
 import { cn } from "@/lib/cn";
+import type { FinancialRestriction } from "@/lib/financialEligibility";
 
 type Network = "TRC20" | "ERC20" | "BEP20";
 type Method = "CRYPTO" | "BANK" | "CASH";
@@ -16,7 +17,7 @@ type Props = {
   addresses: Record<Network, string>;
   qrCodes: Record<Network, string>;
   minDeposit: number;
-  kycApproved: boolean;
+  restriction: FinancialRestriction | null;
   bankEnabled: boolean;
   cashEnabled: boolean;
   bank: { accountNumber: string; ifsc: string; holder: string; upi: string };
@@ -46,9 +47,9 @@ function Step({ n, title, children }: { n: number; title: string; children: Reac
 
 function BankRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-3 py-1.5">
+    <div className="flex flex-col items-start gap-1.5 py-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
       <span className="text-xs uppercase tracking-[0.14em] text-ink-faint">{label}</span>
-      <span className="flex min-w-0 items-center gap-2">
+      <span className="flex min-w-0 max-w-full items-center gap-2">
         <span className="truncate font-mono text-sm text-ink">{value}</span>
         {value && <CopyButton value={value} label={`Copy ${label}`} className="shrink-0" />}
       </span>
@@ -60,7 +61,7 @@ export function DepositForm({
   addresses,
   qrCodes,
   minDeposit,
-  kycApproved,
+  restriction,
   bankEnabled,
   cashEnabled,
   bank,
@@ -70,9 +71,9 @@ export function DepositForm({
   const [network, setNetwork] = useState<Network>("TRC20");
   const [formVersion, setFormVersion] = useState(0);
   const methods: { id: Method; label: string; note: string }[] = [
-    { id: "CRYPTO", label: "Crypto (USDT)", note: "TRC20 / ERC20 / BEP20" },
-    ...(bankEnabled ? [{ id: "BANK" as const, label: "Bank transfer / UPI", note: "Enabled on your account" }] : []),
-    ...(cashEnabled ? [{ id: "CASH" as const, label: "Cash", note: "Enabled on your account" }] : []),
+    { id: "CRYPTO", label: "Crypto (USDT)", note: "Processed by end of day" },
+    ...(bankEnabled ? [{ id: "BANK" as const, label: "Bank transfer / UPI", note: "Processed in 4-7 days" }] : []),
+    ...(cashEnabled ? [{ id: "CASH" as const, label: "Cash", note: "Processed in 7-15 days" }] : []),
   ];
   const activeMethod = methods.some((option) => option.id === method) ? method : "CRYPTO";
   const address = addresses[network];
@@ -148,6 +149,7 @@ export function DepositForm({
           <p className="mt-3 text-xs leading-relaxed text-ink-faint">
             Send only USDT on the <strong className="text-ink-dim">{network}</strong> network to this address. Transfers on the wrong network can be lost permanently. Minimum deposit: ${minDeposit.toLocaleString()} USDT.
           </p>
+          <Alert className="mt-3">Crypto deposits are processed by the end of the same day.</Alert>
         </Step>
       )}
 
@@ -166,8 +168,9 @@ export function DepositForm({
             )}
           </div>
           <p className="mt-3 text-xs leading-relaxed text-ink-faint">
-            Enter the INR amount you transfer and the UTR number below. Our team will match the payment and confirm the USDT amount credited to your account.
+            Enter the INR amount you transfer and the UTR number below. After verification, the INR will be converted with other deposits and its USDT share will enter the company-wallet queue.
           </p>
+          <Alert className="mt-3">Bank transfer deposits are processed in 4-7 days.</Alert>
         </Step>
       )}
 
@@ -177,8 +180,9 @@ export function DepositForm({
             <p className="text-sm leading-relaxed text-ink-dim">{cashInstruction}</p>
           </div>
           <p className="mt-3 text-xs leading-relaxed text-ink-faint">
-            Enter the INR cash amount below to create a request. Our team will confirm the USDT amount credited to your account after receiving the cash.
+            Enter the INR cash amount below to create a request. After receiving it, our team will convert it with other INR deposits and move its USDT share into the company-wallet queue.
           </p>
+          <Alert className="mt-3">Cash deposits are processed in 7-15 days.</Alert>
         </Step>
       )}
 
@@ -187,14 +191,24 @@ export function DepositForm({
         method={activeMethod}
         network={network}
         minDeposit={minDeposit}
-        kycApproved={kycApproved}
+        restriction={restriction}
         onDismiss={() => setFormVersion((version) => version + 1)}
       />
     </ol>
   );
 }
 
-function DepositSubmittedDialog({ message, onConfirm }: { message: string; onConfirm: () => void }) {
+function DepositDialog({
+  eyebrow,
+  title,
+  message,
+  onConfirm,
+}: {
+  eyebrow: string;
+  title: string;
+  message: string;
+  onConfirm: () => void;
+}) {
   const confirmButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -206,12 +220,12 @@ function DepositSubmittedDialog({ message, onConfirm }: { message: string; onCon
       <div
         role="dialog"
         aria-modal="true"
-        aria-labelledby="deposit-submitted-title"
+        aria-labelledby="deposit-dialog-title"
         className="w-full max-w-md rounded-2xl border border-gold-500/30 bg-vault-900 p-6 shadow-2xl shadow-vault-950/60"
       >
-        <p className="eyebrow">Deposit request received</p>
-        <h2 id="deposit-submitted-title" className="mt-2 font-serif text-2xl text-ink">
-          Deposit submitted
+        <p className="eyebrow">{eyebrow}</p>
+        <h2 id="deposit-dialog-title" className="mt-2 font-serif text-2xl text-ink">
+          {title}
         </h2>
         <p className="mt-3 text-sm leading-relaxed text-ink-dim">{message}</p>
         <div className="mt-6 flex justify-end">
@@ -228,29 +242,37 @@ function DepositDetailsForm({
   method,
   network,
   minDeposit,
-  kycApproved,
+  restriction,
   onDismiss,
 }: {
   method: Method;
   network: Network;
   minDeposit: number;
-  kycApproved: boolean;
+  restriction: FinancialRestriction | null;
   onDismiss: () => void;
 }) {
   const [state, action] = useActionState<DepositFormState, FormData>(submitDeposit, {});
 
   return (
     <Step n={3} title="Tell us what you sent">
-      {state.success ? (
-        <DepositSubmittedDialog message={state.success} onConfirm={onDismiss} />
+      {state.restriction ? (
+        <DepositDialog
+          eyebrow="Deposit unavailable"
+          title={state.restriction.title}
+          message={state.restriction.message}
+          onConfirm={onDismiss}
+        />
+      ) : state.success ? (
+        <DepositDialog
+          eyebrow="Deposit request received"
+          title="Deposit submitted"
+          message={state.success}
+          onConfirm={onDismiss}
+        />
       ) : (
         <form action={action} className="space-y-4">
           {state.error && <Alert tone="error">{state.error}</Alert>}
-          {!kycApproved && (
-            <Alert tone="warning">
-              Identity verification is required before depositing - complete KYC from your profile page first.
-            </Alert>
-          )}
+          {restriction && <Alert tone="warning">{restriction.message}</Alert>}
           <input type="hidden" name="method" value={method} />
           {method === "CRYPTO" && <input type="hidden" name="network" value={network} />}
           <Field
@@ -284,7 +306,7 @@ function DepositDetailsForm({
               }}
             />
           ) : null}
-          <SubmitButton pendingLabel="Submitting..." disabled={!kycApproved}>
+          <SubmitButton pendingLabel="Submitting...">
             Submit deposit for confirmation
           </SubmitButton>
         </form>

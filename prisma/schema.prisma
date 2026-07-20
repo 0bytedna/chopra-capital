@@ -29,22 +29,23 @@ enum KycStatus {
 }
 
 model User {
-  id           String @id @default(cuid())
-  email        String @unique
-  passwordHash String
-  role         Role   @default(USER)
+  id               String  @id @default(cuid())
+  email            String  @unique
+  passwordHash     String
+  role             Role    @default(USER)
+  isCompanyAccount Boolean @default(false)
 
   // Deposit methods. Crypto (USDT) is always available; bank transfer and
   // cash are enabled by an admin per investor.
   bankTransferEnabled Boolean @default(false)
   cashEnabled         Boolean @default(false)
 
-  fullName     String?
-  mobile       String?
-  country      String?
-  address      String? // Permanent Residential address
-  city         String?
-  state        String?
+  fullName String?
+  mobile   String?
+  country  String?
+  address  String? // Permanent Residential address
+  city     String?
+  state    String?
 
   kycStatus KycStatus @default(NOT_SUBMITTED)
   kycNote   String?
@@ -55,14 +56,24 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  wallet         Wallet?
-  ledger         LedgerEntry[]
-  deposits       Deposit[]
-  withdrawals    Withdrawal[]
-  tickets        Ticket[]
-  ticketMessages TicketMessage[]
-  kycDocuments   KycDocument[]
-  bankingDetail  BankingDetail?
+  wallet                        Wallet?
+  ledger                        LedgerEntry[]
+  deposits                      Deposit[]
+  depositAllocationBatches      DepositAllocationBatch[] @relation("DepositAllocationAdmin")
+  brokerTransferBatches         BrokerTransferBatch[]    @relation("BrokerTransferAdmin")
+  withdrawals                   Withdrawal[]
+  tickets                       Ticket[]
+  ticketMessages                TicketMessage[]
+  kycDocuments                  KycDocument[]
+  bankingDetail                 BankingDetail?
+  internalTransfersSent         InternalTransfer[]       @relation("InternalTransferFrom")
+  internalTransfersReceived     InternalTransfer[]       @relation("InternalTransferTo")
+  internalTransfersAdministered InternalTransfer[]       @relation("InternalTransferAdmin")
+  profitShareAllocations        ProfitShareAllocation[]
+  profitSharePosition           ProfitSharePosition?
+  companyProfitShareRuns        ProfitShareRun[]         @relation("ProfitShareCompany")
+  administeredProfitShareRuns   ProfitShareRun[]         @relation("ProfitShareAdmin")
+  reversedProfitShareRuns       ProfitShareRun[]         @relation("ProfitShareReversalAdmin")
 }
 
 model KycDocument {
@@ -143,6 +154,96 @@ model LedgerEntry {
   @@index([userId, createdAt])
 }
 
+// Admin-authorized value movement between investor accounts. The paired ledger
+// entries remain the accounting source of truth; this row is the audit record
+// that ties both sides and the responsible administrator together.
+model InternalTransfer {
+  id             String   @id @default(cuid())
+  fromUserId     String
+  fromUser       User     @relation("InternalTransferFrom", fields: [fromUserId], references: [id], onDelete: Restrict)
+  toUserId       String
+  toUser         User     @relation("InternalTransferTo", fields: [toUserId], references: [id], onDelete: Restrict)
+  adminId        String
+  admin          User     @relation("InternalTransferAdmin", fields: [adminId], references: [id], onDelete: Restrict)
+  amount         Decimal
+  queuedAmount   Decimal
+  investedAmount Decimal
+  units          Decimal
+  navPrice       Decimal
+  note           String?
+  createdAt      DateTime @default(now())
+
+  @@index([fromUserId, createdAt])
+  @@index([toUserId, createdAt])
+  @@index([adminId, createdAt])
+}
+
+enum ProfitShareFrequency {
+  WEEKLY
+  MONTHLY
+}
+
+enum ProfitShareMode {
+  PERCENTAGE
+  FIXED_TOTAL
+}
+
+// One immutable admin-confirmed settlement per week or month. The unique period
+// key is the final safeguard against charging the same period twice.
+model ProfitShareRun {
+  id                  String                  @id @default(cuid())
+  frequency           ProfitShareFrequency
+  periodKey           String
+  cutoffDate          String
+  mode                ProfitShareMode
+  ratePercent         Decimal?
+  fixedAmount         Decimal?
+  navPrice            Decimal
+  totalEligibleProfit Decimal
+  totalCompanyShare   Decimal
+  activePeriodKey     String?                 @unique
+  companyUserId       String
+  companyUser         User                    @relation("ProfitShareCompany", fields: [companyUserId], references: [id], onDelete: Restrict)
+  adminId             String
+  admin               User                    @relation("ProfitShareAdmin", fields: [adminId], references: [id], onDelete: Restrict)
+  reversedAt          DateTime?
+  reversedById        String?
+  reversedBy          User?                   @relation("ProfitShareReversalAdmin", fields: [reversedById], references: [id], onDelete: Restrict)
+  allocations         ProfitShareAllocation[]
+  createdAt           DateTime                @default(now())
+
+  @@index([createdAt])
+}
+
+// Per-account calculation captured exactly as it was at settlement.
+model ProfitShareAllocation {
+  id                String         @id @default(cuid())
+  runId             String
+  run               ProfitShareRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+  profitBeforeShare Decimal
+  highWaterBefore   Decimal
+  eligibleProfit    Decimal
+  companyShare      Decimal
+  unitsTransferred  Decimal
+  highWaterAfter    Decimal
+  createdAt         DateTime       @default(now())
+
+  @@unique([runId, userId])
+  @@index([userId, createdAt])
+}
+
+// The post-fee cumulative-profit high-water mark prevents repeat charges and
+// requires an investor to recover losses before further profit sharing.
+model ProfitSharePosition {
+  userId          String    @id
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  highWaterProfit Decimal   @default(0)
+  lastRunAt       DateTime?
+  updatedAt       DateTime  @updatedAt
+}
+
 // ---------------------------------------------------------------------------
 // Deposits (USDT in)
 // ---------------------------------------------------------------------------
@@ -150,6 +251,8 @@ model LedgerEntry {
 enum DepositStatus {
   PENDING
   NEEDS_CORRECTION
+  RECEIVED
+  QUEUED
   CONFIRMED
   REJECTED
   CANCELLED
@@ -162,24 +265,65 @@ enum DepositMethod {
 }
 
 model Deposit {
-  id          String        @id @default(cuid())
-  userId      String
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  method      DepositMethod @default(CRYPTO)
-  // amount is always the USDT amount credited on confirmation. For bank and
-  // cash requests it is 0 while pending, because the admin fixes the USDT
-  // credit after receiving the INR payment.
-  amount      Decimal
-  inrAmount   Decimal? // INR reported by the investor for BANK and CASH
-  network     String? // TRC20 | ERC20 | BEP20 — only for CRYPTO
-  txHash      String? // on-chain hash — only for CRYPTO
-  reference   String? // UTR / receipt reference — BANK & CASH
-  status      DepositStatus @default(PENDING)
-  adminNote   String?
-  createdAt   DateTime      @default(now())
-  confirmedAt DateTime?
+  id                    String                  @id @default(cuid())
+  userId                String
+  user                  User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  method                DepositMethod           @default(CRYPTO)
+  // amount is the net USD/USDT share invested after the weekend broker
+  // transfer. queuedUsdtAmount is the amount held in the company wallet first.
+  amount                Decimal
+  queuedUsdtAmount      Decimal?
+  inrAmount             Decimal? // INR reported by the investor for BANK and CASH
+  reportedUsdtAmount    Decimal? // original crypto amount; preserved after allocation
+  network               String? // TRC20 | ERC20 | BEP20 — only for CRYPTO
+  txHash                String? // on-chain hash — only for CRYPTO
+  reference             String? // UTR / receipt reference — BANK & CASH
+  status                DepositStatus           @default(PENDING)
+  adminNote             String?
+  createdAt             DateTime                @default(now())
+  receivedAt            DateTime?
+  confirmedAt           DateTime?
+  allocationBatchId     String?
+  allocationBatch       DepositAllocationBatch? @relation(fields: [allocationBatchId], references: [id], onDelete: SetNull)
+  brokerTransferBatchId String?
+  brokerTransferBatch   BrokerTransferBatch?    @relation(fields: [brokerTransferBatchId], references: [id], onDelete: SetNull)
 
   @@index([userId, createdAt])
+  @@index([status, method])
+  @@index([allocationBatchId])
+  @@index([brokerTransferBatchId])
+}
+
+// Audit record for converting a group of received INR deposits into USDT held
+// in the company wallet. This moves bank/cash receipts into QUEUED.
+model DepositAllocationBatch {
+  id                String        @id @default(cuid())
+  method            DepositMethod
+  totalSourceAmount Decimal
+  totalUsdt         Decimal
+  adminId           String
+  admin             User          @relation("DepositAllocationAdmin", fields: [adminId], references: [id], onDelete: Restrict)
+  deposits          Deposit[]
+  createdAt         DateTime      @default(now())
+
+  @@index([method, createdAt])
+  @@index([adminId])
+}
+
+// Weekend transfer from the company wallet to the broker. The net amount
+// received after transfer fees is distributed proportionally and invested.
+model BrokerTransferBatch {
+  id                String    @id @default(cuid())
+  totalQueuedUsdt   Decimal
+  totalReceivedUsdt Decimal
+  navPrice          Decimal
+  adminId           String
+  admin             User      @relation("BrokerTransferAdmin", fields: [adminId], references: [id], onDelete: Restrict)
+  deposits          Deposit[]
+  createdAt         DateTime  @default(now())
+
+  @@index([createdAt])
+  @@index([adminId])
 }
 
 // ---------------------------------------------------------------------------
@@ -189,6 +333,8 @@ model Deposit {
 enum WithdrawalStatus {
   REQUESTED
   APPROVED
+  BROKER_RECEIVED
+  INR_READY
   PROCESSED
   REJECTED
   CANCELLED
@@ -201,24 +347,37 @@ enum WithdrawalMethod {
 }
 
 model Withdrawal {
-  id            String           @id @default(cuid())
-  userId        String
-  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  method        WithdrawalMethod @default(CRYPTO)
-  amount        Decimal // requested USDT
-  fee           Decimal? // fee applied at approval
-  paidAmount    Decimal? // USDT actually sent
-  unitsRedeemed Decimal?
-  network       String
-  address       String
-  txHash        String?
-  status        WithdrawalStatus @default(REQUESTED)
-  adminNote     String?
-  weekKey       String // e.g. "2026-W23" — the processing week
-  createdAt     DateTime         @default(now())
-  processedAt   DateTime?
+  id                  String           @id @default(cuid())
+  userId              String
+  user                User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  method              WithdrawalMethod @default(CRYPTO)
+  // USD amount requested by the investor and removed from holdings after
+  // approval and inclusion in the bulk broker withdrawal.
+  amount              Decimal
+  requestedInrAmount  Decimal? // estimated INR shown when the USD request was submitted
+  requestExchangeRate Decimal? // INR per USD reference rate shown at request time
+  fee                 Decimal? // gross USD minus net USDT received from broker
+  brokerReceivedUsdt  Decimal?
+  convertedInrAmount  Decimal?
+  paidAmount          Decimal? // USDT sent for crypto withdrawals
+  paidInrAmount       Decimal? // INR paid for bank/cash withdrawals
+  unitsRedeemed       Decimal?
+  network             String
+  address             String
+  brokerReference     String?
+  conversionReference String?
+  txHash              String? // final payout UTR / receipt / crypto tx hash
+  status              WithdrawalStatus @default(REQUESTED)
+  adminNote           String?
+  weekKey             String // e.g. "2026-W23" — the processing week
+  createdAt           DateTime         @default(now())
+  approvedAt          DateTime?
+  brokerReceivedAt    DateTime?
+  convertedAt         DateTime?
+  processedAt         DateTime?
 
   @@index([userId, createdAt])
+  @@index([status, method])
 }
 
 // ---------------------------------------------------------------------------
@@ -245,14 +404,28 @@ model Ticket {
 }
 
 model TicketMessage {
-  id        String   @id @default(cuid())
-  ticketId  String
-  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  authorId  String
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  isStaff   Boolean  @default(false)
-  body      String
-  createdAt DateTime @default(now())
+  id          String             @id @default(cuid())
+  ticketId    String
+  ticket      Ticket             @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorId    String
+  author      User               @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  isStaff     Boolean            @default(false)
+  body        String
+  createdAt   DateTime           @default(now())
+  attachments TicketAttachment[]
+}
+
+model TicketAttachment {
+  id        String        @id @default(cuid())
+  messageId String
+  message   TicketMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  fileName  String
+  filePath  String
+  mimeType  String
+  size      Int
+  createdAt DateTime      @default(now())
+
+  @@index([messageId])
 }
 
 // ---------------------------------------------------------------------------

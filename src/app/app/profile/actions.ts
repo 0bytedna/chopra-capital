@@ -6,7 +6,13 @@ import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { profileSchema, bankingSchema, changePasswordSchema, totpCodeSchema } from "@/lib/validation";
+import {
+  profileSchema,
+  bankingDetailsSchema,
+  cryptoWalletSchema,
+  changePasswordSchema,
+  totpCodeSchema,
+} from "@/lib/validation";
 import { generateTotpSecret, totpEnrolmentQr, verifyTotp } from "@/lib/totp";
 
 export type ProfileFormState = { error?: string; success?: string };
@@ -42,17 +48,18 @@ export async function updateProfile(_prev: ProfileFormState, formData: FormData)
 
 // --- Banking / financial details -------------------------------------------
 
-export type BankingFormState = { error?: string; success?: string };
+export type FinancialDetailsFormState = { error?: string; success?: string };
 
-export async function updateBanking(_prev: BankingFormState, formData: FormData): Promise<BankingFormState> {
+export async function updateBanking(
+  _prev: FinancialDetailsFormState,
+  formData: FormData,
+): Promise<FinancialDetailsFormState> {
   const user = await requireUser();
-  const parsed = bankingSchema.safeParse({
+  const parsed = bankingDetailsSchema.safeParse({
     accountNumber: formData.get("accountNumber"),
     ifsc: formData.get("ifsc"),
     upiId: formData.get("upiId"),
     accountType: formData.get("accountType") || "SAVINGS",
-    usdtAddress: formData.get("usdtAddress"),
-    usdtNetwork: formData.get("usdtNetwork") || "TRC20",
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Please check the form" };
@@ -66,20 +73,45 @@ export async function updateBanking(_prev: BankingFormState, formData: FormData)
       ifsc: parsed.data.ifsc || null,
       upiId: parsed.data.upiId || null,
       accountType: parsed.data.accountType,
-      usdtAddress: parsed.data.usdtAddress || null,
-      usdtNetwork: parsed.data.usdtAddress ? parsed.data.usdtNetwork : null,
     },
     update: {
       accountNumber: parsed.data.accountNumber || null,
       ifsc: parsed.data.ifsc || null,
       upiId: parsed.data.upiId || null,
       accountType: parsed.data.accountType,
+    },
+  });
+  revalidatePath("/app/profile");
+  return { success: "Banking details saved." };
+}
+
+export async function updateCryptoWallet(
+  _prev: FinancialDetailsFormState,
+  formData: FormData,
+): Promise<FinancialDetailsFormState> {
+  const user = await requireUser();
+  const parsed = cryptoWalletSchema.safeParse({
+    usdtAddress: formData.get("usdtAddress"),
+    usdtNetwork: formData.get("usdtNetwork") || "TRC20",
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Please check the form" };
+  }
+
+  await prisma.bankingDetail.upsert({
+    where: { userId: user.id },
+    create: {
+      userId: user.id,
+      usdtAddress: parsed.data.usdtAddress || null,
+      usdtNetwork: parsed.data.usdtAddress ? parsed.data.usdtNetwork : null,
+    },
+    update: {
       usdtAddress: parsed.data.usdtAddress || null,
       usdtNetwork: parsed.data.usdtAddress ? parsed.data.usdtNetwork : null,
     },
   });
   revalidatePath("/app/profile");
-  return { success: "Banking details saved." };
+  return { success: "Crypto wallet saved." };
 }
 
 // --- KYC upload -------------------------------------------------------------

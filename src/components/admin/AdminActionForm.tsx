@@ -3,7 +3,7 @@
 // Generic inline admin form: binds a server action, shows its error/success
 // state, and renders whatever fields are passed as children.
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import type { AdminFormState } from "@/app/admin/actions";
 import { Alert } from "@/components/ui/Alert";
@@ -16,6 +16,7 @@ type Props = {
   pendingLabel?: string;
   variant?: "gold" | "ghost" | "danger";
   confirmMessage?: string;
+  resetOnSuccess?: boolean;
   className?: string;
   children?: ReactNode;
 };
@@ -26,13 +27,20 @@ export function AdminActionForm({
   pendingLabel = "Working…",
   variant = "gold",
   confirmMessage,
+  resetOnSuccess = false,
   className,
   children,
 }: Props) {
   const [state, formAction] = useActionState<AdminFormState, FormData>(action, {});
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (resetOnSuccess && state.success) formRef.current?.reset();
+  }, [resetOnSuccess, state.success]);
 
   return (
     <form
+      ref={formRef}
       action={formAction}
       className={cn("space-y-3", className)}
       onSubmit={(e) => {

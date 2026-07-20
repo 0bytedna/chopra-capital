@@ -1,26 +1,24 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowDownToLine, ArrowUpFromLine, BadgeCheck, LifeBuoy, Play } from "lucide-react";
+import { ArrowDownToLine, ArrowUpFromLine, BadgeCheck, LifeBuoy } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { getCurrentNav } from "@/lib/nav";
 import { D, toNumber, formatUsdt } from "@/lib/money";
-import { AdminActionForm } from "@/components/admin/AdminActionForm";
-import { adminRunWeeklyInvest } from "./actions";
 import { cn } from "@/lib/cn";
 
 export const metadata: Metadata = { title: "Admin · Overview" };
 
 export default async function AdminOverviewPage() {
-  const [poolNav, walletAgg, pendingDeposits, requestedWds, approvedWds, pendingKyc, openTickets, queuedAgg] =
+  const [poolNav, walletAgg, pendingDeposits, activeWithdrawals, pendingKyc, openTickets] =
     await Promise.all([
       getCurrentNav(),
       prisma.wallet.aggregate({ _sum: { units: true, queued: true } }),
-      prisma.deposit.count({ where: { status: { in: ["PENDING", "NEEDS_CORRECTION"] } } }),
-      prisma.withdrawal.count({ where: { status: "REQUESTED" } }),
-      prisma.withdrawal.count({ where: { status: "APPROVED" } }),
+      prisma.deposit.count({ where: { status: { in: ["PENDING", "NEEDS_CORRECTION", "RECEIVED", "QUEUED"] } } }),
+      prisma.withdrawal.count({
+        where: { status: { in: ["REQUESTED", "APPROVED", "BROKER_RECEIVED", "INR_READY"] } },
+      }),
       prisma.user.count({ where: { kycStatus: "PENDING" } }),
       prisma.ticket.count({ where: { status: "OPEN" } }),
-      prisma.deposit.aggregate({ where: { status: { in: ["PENDING", "NEEDS_CORRECTION"] } }, _sum: { amount: true } }),
     ]);
 
   const investorUnits = D(walletAgg._sum.units ?? 0);
@@ -31,8 +29,8 @@ export default async function AdminOverviewPage() {
   const equityGap = equity - poolValueAtNav;
 
   const queues = [
-    { href: "/admin/deposits", label: "Pending deposits", count: pendingDeposits, Icon: ArrowDownToLine },
-    { href: "/admin/withdrawals", label: "Withdrawals to review", count: requestedWds + approvedWds, Icon: ArrowUpFromLine },
+    { href: "/admin/deposits", label: "Deposit work queue", count: pendingDeposits, Icon: ArrowDownToLine },
+    { href: "/admin/withdrawals", label: "Withdrawals to review", count: activeWithdrawals, Icon: ArrowUpFromLine },
     { href: "/admin/kyc", label: "KYC in review", count: pendingKyc, Icon: BadgeCheck },
     { href: "/admin/tickets", label: "Open tickets", count: openTickets, Icon: LifeBuoy },
   ];
@@ -52,7 +50,7 @@ export default async function AdminOverviewPage() {
           { label: "MT5 equity", value: `${formatUsdt(equity)}`, hint: poolNav.live ? "live feed" : "no live feed yet" },
           { label: "Total units", value: formatUsdt(poolNav.totalUnits, 4), hint: "pool units issued" },
           { label: "NAV / unit", value: formatUsdt(poolNav.nav, 6), hint: poolNav.live ? "equity ÷ units" : "last settled" },
-          { label: "Queued cash", value: formatUsdt(queuedTotal), hint: "awaiting invest run" },
+          { label: "Company wallet queue", value: formatUsdt(queuedTotal), hint: "awaiting weekend broker transfer" },
         ].map((t) => (
           <div key={t.label} className="glass-card rounded-xl p-4 sm:p-5">
             <p className="text-[10px] uppercase tracking-[0.14em] text-ink-faint sm:text-[11px]">{t.label}</p>
@@ -83,7 +81,7 @@ export default async function AdminOverviewPage() {
             </p>
             <p className="mt-1 text-[11px] leading-relaxed text-ink-faint">
               A persistent gap means broker cash and issued units are out of sync — fix before the
-              next invest run.
+              next weekend transfer.
             </p>
           </div>
         </div>
@@ -109,33 +107,6 @@ export default async function AdminOverviewPage() {
         ))}
       </section>
 
-      {/* Weekly invest run */}
-      <section className="glass-card rounded-2xl border-gold-500/25 p-5 sm:p-7">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-          <div className="max-w-xl">
-            <p className="eyebrow">Weekly cycle</p>
-            <h2 className="mt-1.5 font-serif text-xl text-ink">Run the invest queue</h2>
-            <p className="mt-2 text-sm leading-relaxed text-ink-dim">
-              Converts every confirmed queued balance ({formatUsdt(queuedTotal)} USDT
-              {pendingDeposits > 0 ? `, plus ${formatUsdt(toNumber(queuedAgg._sum.amount ?? 0))} USDT still pending confirmation` : ""}
-              ) into pool units at the current NAV. Run this on Monday after moving the cash to the
-              broker, so issued units are backed by real equity.
-            </p>
-          </div>
-          <AdminActionForm
-            action={adminRunWeeklyInvest}
-            submitLabel="Run weekly invest"
-            pendingLabel="Running…"
-            confirmMessage={`Invest ${formatUsdt(queuedTotal)} USDT of queued balances into the pool at the current NAV? This cannot be undone.`}
-            className="shrink-0"
-          >
-            <input type="hidden" name="confirm" value="yes" />
-            <span className="sr-only">
-              <Play className="size-4" aria-hidden />
-            </span>
-          </AdminActionForm>
-        </div>
-      </section>
     </div>
   );
 }

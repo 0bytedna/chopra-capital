@@ -29,6 +29,7 @@ type WalkState = {
   basis: Dec;
   totalDeposits: Dec;
   netWithdrawals: Dec;
+  netAdjustments: Dec;
   bookedProfit: Dec;
   totalFees: Dec;
 };
@@ -40,9 +41,24 @@ function freshState(): WalkState {
     basis: ZERO,
     totalDeposits: ZERO,
     netWithdrawals: ZERO,
+    netAdjustments: ZERO,
     bookedProfit: ZERO,
     totalFees: ZERO,
   };
+}
+
+function removeUnits(s: WalkState, unitsMoved: Dec, navPrice: Dec): void {
+  const redeemed = unitsMoved.neg();
+  if (redeemed.gt(0) && s.units.gt(0)) {
+    const fraction = redeemed.div(s.units);
+    const basisRemoved = s.basis.mul(fraction.gt(1) ? D(1) : fraction);
+    const value = redeemed.mul(navPrice);
+    s.bookedProfit = s.bookedProfit.add(value.sub(basisRemoved));
+    s.basis = s.basis.sub(basisRemoved);
+  }
+  s.units = s.units.add(unitsMoved);
+  if (s.units.lt(0)) s.units = ZERO;
+  if (s.basis.lt(0)) s.basis = ZERO;
 }
 
 /** Applies one ledger entry to the running state. */
@@ -56,45 +72,52 @@ function applyEntry(s: WalkState, e: LedgerEntry): void {
       return;
     }
     case "INVEST": {
-      // amount > 0 invested, units > 0 issued
       s.queued = s.queued.sub(amount);
       s.basis = s.basis.add(amount);
       s.units = s.units.add(D(e.units ?? 0));
       return;
     }
-    case "WITHDRAWAL":
-    case "FEE":
-    case "ADJUSTMENT": {
-      const isRedemption = e.units !== null && e.navPrice !== null;
-      if (isRedemption) {
-        const unitsMoved = D(e.units ?? 0); // negative when redeeming
-        const redeemed = unitsMoved.neg();
-        if (redeemed.gt(0) && s.units.gt(0)) {
-          const fraction = redeemed.div(s.units);
-          const basisRemoved = s.basis.mul(fraction.gt(1) ? D(1) : fraction);
-          const value = redeemed.mul(D(e.navPrice ?? 0));
-          s.bookedProfit = s.bookedProfit.add(value.sub(basisRemoved));
-          s.basis = s.basis.sub(basisRemoved);
-        }
-        s.units = s.units.add(unitsMoved);
-        if (s.units.lt(0)) s.units = ZERO;
-        if (s.basis.lt(0)) s.basis = ZERO;
+    case "WITHDRAWAL": {
+      const hasUnits = e.units !== null && e.navPrice !== null;
+      if (hasUnits) {
+        removeUnits(s, D(e.units ?? 0), D(e.navPrice ?? 0));
       } else {
-        s.queued = s.queued.add(amount); // amount is signed
+        s.queued = s.queued.add(amount);
       }
-      if (e.type === "WITHDRAWAL") {
-        s.netWithdrawals = s.netWithdrawals.add(amount.neg());
+      s.netWithdrawals = s.netWithdrawals.add(amount.neg());
+      return;
+    }
+    case "FEE": {
+      const hasUnits = e.units !== null && e.navPrice !== null;
+      if (hasUnits) {
+        removeUnits(s, D(e.units ?? 0), D(e.navPrice ?? 0));
+      } else {
+        s.queued = s.queued.add(amount);
       }
-      if (e.type === "FEE") {
-        const fee = amount.neg();
-        s.totalFees = s.totalFees.add(fee);
-        s.bookedProfit = s.bookedProfit.sub(fee);
+      const fee = amount.neg();
+      s.totalFees = s.totalFees.add(fee);
+      s.bookedProfit = s.bookedProfit.sub(fee);
+      return;
+    }
+    case "ADJUSTMENT": {
+      const unitsMoved = D(e.units ?? 0);
+      const hasUnits = e.units !== null && e.navPrice !== null;
+      if (!hasUnits) {
+        s.queued = s.queued.add(amount);
+      } else if (unitsMoved.lt(0)) {
+        removeUnits(s, unitsMoved, D(e.navPrice ?? 0));
+      } else if (unitsMoved.gt(0)) {
+        s.units = s.units.add(unitsMoved);
+        // Incoming internal-transfer units start at their transfer-time market
+        // value, so only future movement is attributed to the recipient.
+        s.basis = s.basis.add(amount.gt(0) ? amount : unitsMoved.mul(D(e.navPrice ?? 0)));
       }
+      // Adjustments are account contributions/distributions, not trading P/L.
+      s.netAdjustments = s.netAdjustments.add(amount);
       return;
     }
   }
 }
-
 export async function getPortfolioMetrics(userId: string): Promise<PortfolioMetrics> {
   const [entries, { nav, live }] = await Promise.all([
     prisma.ledgerEntry.findMany({ where: { userId }, orderBy: { createdAt: "asc" } }),
@@ -128,6 +151,7 @@ export type SeriesPoint = {
   date: string; // YYYY-MM-DD
   value: number; // queued + units × nav(day)
   invested: number; // queued + cost basis (net money at work)
+  profit: number; // cumulative P/L with external deposits and withdrawals removed
 };
 
 function dayKey(d: Date): string {
@@ -174,7 +198,7 @@ export async function getPortfolioSeries(
   userId: string,
   from?: string,
   to?: string,
-): Promise<{ series: SeriesPoint[]; profitInRange: number }> {
+): Promise<{ series: SeriesPoint[]; profitInRange: number; firstActivityDate: string }> {
   const [entries, snapshots, { nav: currentNav }] = await Promise.all([
     prisma.ledgerEntry.findMany({ where: { userId }, orderBy: { createdAt: "asc" } }),
     prisma.navSnapshot.findMany({ orderBy: { day: "asc" }, select: { day: true, nav: true } }),
@@ -210,10 +234,12 @@ export async function getPortfolioSeries(
       cursor++;
     }
     const nav = day === today ? currentNav : navOn(day);
+    const value = s.queued.add(s.units.mul(nav));
     series.push({
       date: day,
-      value: toNumber(s.queued.add(s.units.mul(nav))),
+      value: toNumber(value),
       invested: toNumber(s.queued.add(s.basis)),
+      profit: toNumber(value.add(s.netWithdrawals).sub(s.totalDeposits).sub(s.netAdjustments)),
     });
   }
   // Make sure the last point is the end day even when stepping.
@@ -223,18 +249,23 @@ export async function getPortfolioSeries(
       cursor++;
     }
     const nav = end === today ? currentNav : navOn(end);
+    const value = s.queued.add(s.units.mul(nav));
     series.push({
       date: end,
-      value: toNumber(s.queued.add(s.units.mul(nav))),
+      value: toNumber(value),
       invested: toNumber(s.queued.add(s.basis)),
+      profit: toNumber(value.add(s.netWithdrawals).sub(s.totalDeposits).sub(s.netAdjustments)),
     });
   }
 
-  const first = series[0];
+  const startingProfit = series[0]?.profit ?? 0;
+  for (const point of series) {
+    point.profit -= startingProfit;
+  }
+
   const last = series[series.length - 1];
   // Profit over the window = growth in value not explained by net contributions.
-  const profitInRange =
-    series.length > 1 ? last.value - first.value - (last.invested - first.invested) : 0;
+  const profitInRange = series.length > 1 ? last.profit : 0;
 
-  return { series, profitInRange };
+  return { series, profitInRange, firstActivityDate: firstActivity };
 }

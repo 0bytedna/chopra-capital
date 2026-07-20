@@ -62,18 +62,53 @@ export const profileSchema = z.object({
   state: z.string().trim().max(100).optional().or(z.literal("")),
 });
 
-export const bankingSchema = z.object({
-  accountNumber: z.string().trim().max(40).optional().or(z.literal("")),
-  ifsc: z
+export const bankingDetailsSchema = z
+  .object({
+    accountNumber: z
+      .string()
+      .trim()
+      .max(40)
+      .refine((value) => !value || value.length >= 6, "Bank account number must be at least 6 characters")
+      .optional()
+      .or(z.literal("")),
+    ifsc: z
+      .string()
+      .trim()
+      .max(20)
+      .refine((value) => !value || /^[A-Za-z0-9]+$/.test(value), "IFSC should be alphanumeric")
+      .optional()
+      .or(z.literal("")),
+    upiId: z.string().trim().max(100).optional().or(z.literal("")),
+    accountType: z.enum(["SAVINGS", "CURRENT"]).default("SAVINGS"),
+  })
+  .superRefine((data, ctx) => {
+    const hasAccountNumber = Boolean(data.accountNumber?.trim());
+    const hasIfsc = Boolean(data.ifsc?.trim());
+
+    if (hasAccountNumber && !hasIfsc) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["ifsc"],
+        message: "Enter the IFSC code for this bank account",
+      });
+    }
+    if (hasIfsc && !hasAccountNumber) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["accountNumber"],
+        message: "Enter the bank account number for this IFSC code",
+      });
+    }
+  });
+
+export const cryptoWalletSchema = z.object({
+  usdtAddress: z
     .string()
     .trim()
-    .regex(/^[A-Za-z0-9]+$/, "IFSC should be alphanumeric")
-    .max(20)
+    .max(100)
+    .refine((value) => !value || value.length >= 10, "USDT wallet address must be at least 10 characters")
     .optional()
     .or(z.literal("")),
-  upiId: z.string().trim().max(100).optional().or(z.literal("")),
-  accountType: z.enum(["SAVINGS", "CURRENT"]).default("SAVINGS"),
-  usdtAddress: z.string().trim().max(100).optional().or(z.literal("")),
   usdtNetwork: z.enum(["TRC20", "ERC20", "BEP20"]).default("TRC20"),
 });
 

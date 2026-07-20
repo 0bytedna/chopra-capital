@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, EyeOff, ExternalLink, MonitorCheck } from "lucide-react";
+import { Apple, Download, Eye, EyeOff, ExternalLink, MonitorCheck } from "lucide-react";
 import { CopyButton } from "@/components/ui/CopyButton";
 
 type Props = {
@@ -10,6 +10,10 @@ type Props = {
   investorPassword: string;
   webTerminalUrl: string;
 };
+
+const MT5_APP_STORE_URL = "https://apps.apple.com/app/metatrader-5/id413251709";
+const MT5_ANDROID_APK_URL =
+  "https://download.terminal.free/cdn/web/metaquotes.software.corp/mt5/metatrader5.apk?utm_campaign=install.metaquotes&utm_source=www.metatrader5.com";
 
 /**
  * Read-only MT5 access so investors can watch the pooled account live.
@@ -78,6 +82,26 @@ export function Mt5AccessCard({ server, login, investorPassword, webTerminalUrl 
         Open MT5 web terminal
         <ExternalLink className="size-3.5" aria-hidden />
       </a>
+      <div className="mt-2 grid gap-2 sm:grid-cols-2">
+        <a
+          href={MT5_APP_STORE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-ghost justify-center px-4 py-2.5 text-sm"
+        >
+          <Apple className="size-4" aria-hidden />
+          Download on App Store
+        </a>
+        <a
+          href={MT5_ANDROID_APK_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-ghost justify-center px-4 py-2.5 text-sm"
+        >
+          <Download className="size-4" aria-hidden />
+          Download Android APK
+        </a>
+      </div>
       <p className="mt-3 text-[11px] leading-relaxed text-ink-faint">
         This login can only view the account — it cannot place, modify or close trades.
       </p>

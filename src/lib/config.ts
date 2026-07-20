@@ -70,9 +70,14 @@ export function withdrawalRequestWindowMessage(): string {
   return "Withdrawal requests are open on Sundays from 12:00 AM to 12:00 PM IST. Withdrawals are processed on Mondays.";
 }
 
-// Requests are intentionally governed by the same IST schedule in every
-// environment so local testing cannot bypass a rule that protects balances.
+// The bypass is deliberately opt-in and should only be enabled in a local test
+// environment. Production keeps the Sunday window unless explicitly changed.
+export function withdrawalWindowTestMode(): boolean {
+  return process.env.WITHDRAWAL_WINDOW_TEST_MODE === "true";
+}
+
 export function withdrawalsOpenNow(date = new Date()): boolean {
+  if (withdrawalWindowTestMode()) return true;
   const { weekday, hour } = withdrawalTimeParts(date);
   return weekday === "Sun" && hour >= 0 && hour < 12;
 }
@@ -82,6 +87,7 @@ export function withdrawalProcessingWindowMessage(): string {
 }
 
 export function withdrawalsProcessableNow(date = new Date()): boolean {
+  if (withdrawalWindowTestMode()) return true;
   return withdrawalTimeParts(date).weekday === "Mon";
 }
 

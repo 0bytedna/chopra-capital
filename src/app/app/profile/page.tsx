@@ -2,7 +2,14 @@ import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Alert } from "@/components/ui/Alert";
-import { ProfileDetailsForm, KycForm, BankingForm, TotpSection, PasswordForm } from "./ProfileForms";
+import {
+  ProfileDetailsForm,
+  KycForm,
+  BankingForm,
+  CryptoWalletForm,
+  TotpSection,
+  PasswordForm,
+} from "./ProfileForms";
 
 export const metadata: Metadata = { title: "Profile & security" };
 
@@ -39,10 +46,10 @@ export default async function ProfilePage() {
         <h2 className="font-serif text-xl text-ink">Identity verification (KYC)</h2>
         <div className="mt-4 space-y-4">
           {user.kycStatus === "APPROVED" && (
-            <Alert tone="success">Your identity is verified — you can deposit and invest.</Alert>
+            <Alert tone="success">Your identity is verified. Deposits are enabled.</Alert>
           )}
           {user.kycStatus === "PENDING" && (
-            <Alert tone="warning">Your documents are in review. We'll update your status shortly.</Alert>
+            <Alert tone="warning">Your documents are in review. We&apos;ll update your status shortly.</Alert>
           )}
           {user.kycStatus === "REJECTED" && (
             <Alert tone="error">
@@ -55,9 +62,9 @@ export default async function ProfilePage() {
       </section>
 
       <section className="glass-card rounded-2xl p-5 sm:p-7">
-        <h2 className="font-serif text-xl text-ink">Financial details</h2>
+        <h2 className="font-serif text-xl text-ink">Banking details</h2>
         <p className="mt-1 text-xs text-ink-faint">
-          Banking information used for payouts and withdrawals.
+          Required only when you choose bank transfer for a withdrawal.
         </p>
         <div className="mt-5">
           <BankingForm
@@ -66,6 +73,19 @@ export default async function ProfilePage() {
               ifsc: banking?.ifsc ?? "",
               upiId: banking?.upiId ?? "",
               accountType: banking?.accountType ?? "SAVINGS",
+            }}
+          />
+        </div>
+      </section>
+
+      <section className="glass-card rounded-2xl p-5 sm:p-7">
+        <h2 className="font-serif text-xl text-ink">Crypto wallet</h2>
+        <p className="mt-1 text-xs text-ink-faint">
+          Required only when you choose crypto for a withdrawal.
+        </p>
+        <div className="mt-5">
+          <CryptoWalletForm
+            initial={{
               usdtAddress: banking?.usdtAddress ?? "",
               usdtNetwork: banking?.usdtNetwork ?? "TRC20",
             }}

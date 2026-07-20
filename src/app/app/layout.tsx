@@ -15,8 +15,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       email={user.email}
       isAdmin={user.role === "ADMIN"}
       kycStatus={user.kycStatus}
-      investedDisplay={`${formatUsdt(invested)} USDT`}
-      queuedDisplay={`${formatUsdt(metrics.queued)} USDT`}
+      investedDisplay={`${formatUsdt(invested)} USD`}
+      queuedDisplay={`${formatUsdt(metrics.queued)} USD`}
     >
       {children}
     </AppShell>

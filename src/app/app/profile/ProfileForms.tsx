@@ -6,12 +6,13 @@ import {
   updateProfile,
   submitKyc,
   updateBanking,
+  updateCryptoWallet,
   startTotpEnrolment,
   enableTotp,
   disableTotp,
   changePassword,
   type ProfileFormState,
-  type BankingFormState,
+  type FinancialDetailsFormState,
   type TotpEnrolState,
 } from "./actions";
 import { Field, SelectField, TextareaField } from "@/components/ui/Field";
@@ -45,7 +46,7 @@ export function ProfileDetailsForm({
       {state.success && <Alert tone="success">{state.success}</Alert>}
       <Field label="Full name" name="fullName" defaultValue={fullName} required />
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Mobile" name="mobile" defaultValue={mobile} placeholder="+971 …" />
+        <Field label="Mobile" name="mobile" defaultValue={mobile} placeholder="+91 98765 43210" />
         <Field label="Email address" name="email" defaultValue={email} type="email" disabled readOnly />
       </div>
       <TextareaField
@@ -102,12 +103,15 @@ export type BankingInitial = {
   ifsc: string;
   upiId: string;
   accountType: string;
+};
+
+export type CryptoWalletInitial = {
   usdtAddress: string;
   usdtNetwork: string;
 };
 
 export function BankingForm({ initial }: { initial: BankingInitial }) {
-  const [state, action] = useActionState<BankingFormState, FormData>(updateBanking, {});
+  const [state, action] = useActionState<FinancialDetailsFormState, FormData>(updateBanking, {});
 
   return (
     <form action={action} className="space-y-4">
@@ -118,7 +122,7 @@ export function BankingForm({ initial }: { initial: BankingInitial }) {
         name="accountNumber"
         defaultValue={initial.accountNumber}
         inputMode="numeric"
-        placeholder="•••• •••• •••• ••••"
+        placeholder="Enter your bank account number"
       />
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="IFSC code" name="ifsc" defaultValue={initial.ifsc} placeholder="SBIN0001234" />
@@ -128,22 +132,33 @@ export function BankingForm({ initial }: { initial: BankingInitial }) {
         </SelectField>
       </div>
       <Field label="UPI ID" name="upiId" defaultValue={initial.upiId} placeholder="name@bank" />
-      <div className="space-y-1.5">
-        <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-dim">Crypto · USDT wallet</p>
-        <SelectField label="Network" name="usdtNetwork" defaultValue={initial.usdtNetwork || "TRC20"}>
-          <option value="TRC20">USDT · TRC20 (Tron)</option>
-          <option value="ERC20">USDT · ERC20 (Ethereum)</option>
-          <option value="BEP20">USDT · BEP20 (BNB Chain)</option>
-        </SelectField>
-        <Field
-          label="USDT wallet address"
-          name="usdtAddress"
-          defaultValue={initial.usdtAddress}
-          placeholder="Paste your USDT address"
-        />
-      </div>
       <SubmitButton size="sm" pendingLabel="Saving…">
-        Save
+        Save bank details
+      </SubmitButton>
+    </form>
+  );
+}
+
+export function CryptoWalletForm({ initial }: { initial: CryptoWalletInitial }) {
+  const [state, action] = useActionState<FinancialDetailsFormState, FormData>(updateCryptoWallet, {});
+
+  return (
+    <form action={action} className="space-y-4">
+      {state.error && <Alert tone="error">{state.error}</Alert>}
+      {state.success && <Alert tone="success">{state.success}</Alert>}
+      <SelectField label="Network" name="usdtNetwork" defaultValue={initial.usdtNetwork || "TRC20"}>
+        <option value="TRC20">USDT · TRC20 (Tron)</option>
+        <option value="ERC20">USDT · ERC20 (Ethereum)</option>
+        <option value="BEP20">USDT · BEP20 (BNB Chain)</option>
+      </SelectField>
+      <Field
+        label="USDT wallet address"
+        name="usdtAddress"
+        defaultValue={initial.usdtAddress}
+        placeholder="Paste your USDT address"
+      />
+      <SubmitButton size="sm" pendingLabel="Saving…">
+        Save crypto wallet
       </SubmitButton>
     </form>
   );
@@ -220,7 +235,7 @@ export function TotpSection({ enabled }: { enabled: boolean }) {
           className="rounded-lg border border-gold-600/25 bg-white p-1.5"
         />
         <div className="min-w-0 text-xs text-ink-faint">
-          <p>Can't scan? Enter this key manually:</p>
+          <p>Can&apos;t scan? Enter this key manually:</p>
           <p className="mt-1.5 break-all font-mono text-ink-dim">{enrol.secret}</p>
           {enrol.secret && <CopyButton value={enrol.secret} className="mt-2" />}
         </div>

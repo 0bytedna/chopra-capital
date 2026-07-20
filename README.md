@@ -59,6 +59,20 @@ set INGEST_URL=https://yourdomain.com/api/mt5/ingest
 set MT5_INGEST_TOKEN=<same as website .env>
 python scripts/mt5_bridge.py
 ```
+### Linux VPS / Wine terminal
+
+The official `MetaTrader5` Python package ships Windows wheels, so use the
+native MQL5 bridge when MT5 itself is running under Wine on Linux:
+
+1. Copy `scripts/ChopraMt5Bridge.mq5` into the terminal's `MQL5/Experts/`
+   folder and compile it in MetaEditor.
+2. Attach it to any chart, then set the HTTPS ingest URL and the same
+   `MT5_INGEST_TOKEN` configured on the website.
+3. In MT5, add the site origin (for example `https://test.yourdomain.com`) to
+   **Tools → Options → Expert Advisors → Allow WebRequest for listed URL**.
+
+The Expert Advisor only reads account/trade data and pushes it to the website;
+it does not submit orders.
 
 - `POST /api/mt5/ingest` — bridge → platform (X-MT5-Token header)
 - `GET /api/mt5/summary` — latest account snapshot + trades (signed-in users)

@@ -12,8 +12,10 @@ import { cn } from "@/lib/cn";
 type Deposit = {
   id: string;
   method: "CRYPTO" | "BANK" | "CASH";
-  status: "PENDING" | "NEEDS_CORRECTION" | "CONFIRMED" | "REJECTED" | "CANCELLED";
+  status: "PENDING" | "NEEDS_CORRECTION" | "RECEIVED" | "QUEUED" | "CONFIRMED" | "REJECTED" | "CANCELLED";
   amount: string;
+  queuedUsdtAmount: string | null;
+  reportedUsdtAmount: string | null;
   inrAmount: string | null;
   editAmount: string;
   editInrAmount: string | null;
@@ -29,6 +31,8 @@ type Props = { deposits: Deposit[] };
 const statusClass: Record<Deposit["status"], string> = {
   PENDING: "border-gold-500/40 bg-gold-600/10 text-gold-300",
   NEEDS_CORRECTION: "border-negative/40 bg-negative/10 text-negative",
+  RECEIVED: "border-sky-400/35 bg-sky-400/10 text-sky-300",
+  QUEUED: "border-gold-500/40 bg-gold-600/10 text-gold-300",
   CONFIRMED: "border-positive/40 bg-positive/10 text-positive",
   REJECTED: "border-negative/40 bg-negative/10 text-negative",
   CANCELLED: "border-gold-600/20 bg-vault-900/70 text-ink-faint",
@@ -41,12 +45,19 @@ function methodLabel(deposit: Deposit): string {
 }
 
 function reportedAmount(deposit: Deposit): string {
-  if (deposit.method === "CRYPTO") return `${deposit.amount} USDT`;
-  return deposit.inrAmount ? `₹ ${deposit.inrAmount}` : `${deposit.amount} USDT`;
+  if (deposit.method === "CRYPTO") {
+    return (deposit.reportedUsdtAmount ?? deposit.amount) + " USDT";
+  }
+  return deposit.inrAmount
+    ? deposit.inrAmount + " INR"
+    : deposit.amount + " USDT";
 }
-
 function statusLabel(status: Deposit["status"]): string {
-  return status === "NEEDS_CORRECTION" ? "action needed" : status.toLowerCase();
+  if (status === "NEEDS_CORRECTION") return "action needed";
+  if (status === "RECEIVED") return "INR received";
+  if (status === "QUEUED") return "in queue";
+  if (status === "CONFIRMED") return "invested";
+  return status.toLowerCase();
 }
 
 function DepositEditForm({ deposit, onCancel }: { deposit: Deposit; onCancel: () => void }) {
@@ -185,7 +196,7 @@ export function DepositHistory({ deposits }: Props) {
 
         return (
           <li key={deposit.id} className="glass-card rounded-xl px-4 py-3.5">
-            <div className="flex items-start justify-between gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
                 <p className="font-mono text-sm text-ink">{reportedAmount(deposit)}</p>
                 <p className="mt-0.5 text-xs text-ink-faint">
@@ -194,11 +205,13 @@ export function DepositHistory({ deposits }: Props) {
                     month: "short",
                     year: "numeric",
                   })}
-                  {deposit.status === "CONFIRMED" && deposit.method !== "CRYPTO" ? ` · ${deposit.amount} USDT credited` : ""}
+                  {deposit.status === "RECEIVED" ? " · awaiting conversion to USDT" : ""}
+                  {deposit.status === "QUEUED" ? ` · ${deposit.queuedUsdtAmount ?? "—"} USD in company wallet` : ""}
+                  {deposit.status === "CONFIRMED" ? ` · ${deposit.amount} USD invested` : ""}
                   {deposit.adminNote ? ` · ${deposit.adminNote}` : ""}
                 </p>
               </div>
-              <div className="flex shrink-0 items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2 sm:shrink-0 sm:justify-end">
                 <span className={cn("rounded-full border px-2.5 py-1 text-[11px] font-medium", statusClass[deposit.status])}>
                   {statusLabel(deposit.status)}
                 </span>

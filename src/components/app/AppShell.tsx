@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   ArrowDownToLine,
   ArrowUpFromLine,
+  History,
   LifeBuoy,
   UserCog,
   ShieldCheck,
@@ -39,6 +40,7 @@ const groups = [
     items: [
       { href: "/app/deposit", label: "Deposit", Icon: ArrowDownToLine },
       { href: "/app/withdraw", label: "Withdraw", Icon: ArrowUpFromLine },
+      { href: "/app/history", label: "History", Icon: History },
     ],
   },
   {

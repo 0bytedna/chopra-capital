@@ -14,6 +14,8 @@ import {
   Menu,
   X,
   ArrowLeft,
+  ArrowLeftRight,
+  Percent,
 } from "lucide-react";
 import { signout } from "@/app/(auth)/actions";
 import { cn } from "@/lib/cn";
@@ -25,6 +27,8 @@ const items = [
   { href: "/admin/kyc", label: "KYC review", Icon: BadgeCheck },
   { href: "/admin/tickets", label: "Tickets", Icon: LifeBuoy },
   { href: "/admin/investors", label: "Investors", Icon: Users },
+  { href: "/admin/internal-transfers", label: "Internal transfers", Icon: ArrowLeftRight },
+  { href: "/admin/profit-share", label: "Profit share", Icon: Percent },
 ];
 
 function Nav({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {

@@ -6,6 +6,7 @@ import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ReplyForm } from "../TicketForms";
 import { cn } from "@/lib/cn";
+import { TicketAttachments } from "@/components/tickets/TicketAttachments";
 
 export const metadata: Metadata = { title: "Ticket" };
 
@@ -15,7 +16,12 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
 
   const ticket = await prisma.ticket.findUnique({
     where: { id },
-    include: { messages: { orderBy: { createdAt: "asc" } } },
+    include: {
+      messages: {
+        orderBy: { createdAt: "asc" },
+        include: { attachments: { orderBy: { createdAt: "asc" } } },
+      },
+    },
   });
   if (!ticket || ticket.userId !== user.id) notFound();
 
@@ -53,6 +59,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
               })}
             </p>
             <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed text-ink">{m.body}</p>
+            <TicketAttachments attachments={m.attachments} />
           </div>
         ))}
       </section>

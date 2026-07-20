@@ -6,8 +6,9 @@ import { prisma } from "@/lib/prisma";
 import { depositSchema } from "@/lib/validation";
 import { MIN_DEPOSIT_USDT } from "@/lib/config";
 import { D } from "@/lib/money";
+import { getDepositEligibility, type FinancialRestriction } from "@/lib/financialEligibility";
 
-export type DepositFormState = { error?: string; success?: string };
+export type DepositFormState = { error?: string; success?: string; restriction?: FinancialRestriction };
 
 function isCryptoAmountValid(method: "CRYPTO" | "BANK" | "CASH", amount: number): boolean {
   return method !== "CRYPTO" || amount >= MIN_DEPOSIT_USDT;
@@ -19,10 +20,8 @@ function cryptoAmountError(): DepositFormState {
 
 export async function submitDeposit(_prev: DepositFormState, formData: FormData): Promise<DepositFormState> {
   const user = await requireUser();
-
-  if (user.kycStatus !== "APPROVED") {
-    return { error: "Identity verification is required before depositing. Complete KYC from your profile." };
-  }
+  const eligibility = getDepositEligibility(user);
+  if (eligibility.restriction) return { restriction: eligibility.restriction };
 
   const parsed = depositSchema.safeParse({
     amount: formData.get("amount"),
@@ -50,6 +49,7 @@ export async function submitDeposit(_prev: DepositFormState, formData: FormData)
       userId: user.id,
       method,
       amount: method === "CRYPTO" ? D(amount) : D(0),
+      reportedUsdtAmount: method === "CRYPTO" ? D(amount) : null,
       inrAmount: method === "CRYPTO" ? null : D(amount),
       network: method === "CRYPTO" ? (network || null) : null,
       txHash: method === "CRYPTO" ? (txHash || null) : null,
@@ -58,15 +58,17 @@ export async function submitDeposit(_prev: DepositFormState, formData: FormData)
   });
 
   revalidatePath("/app/deposit");
+  revalidatePath("/app/history");
   const methodLabel = method === "CRYPTO" ? "crypto" : method === "BANK" ? "bank transfer" : "cash";
   return {
-    success:
-      `Deposit submitted via ${methodLabel}. Our team will confirm it — it will appear in your balance once confirmed.`,
+    success: `Deposit submitted via ${methodLabel}. Crypto enters the queue after wallet verification. INR deposits enter after conversion to USDT, then queued funds are transferred to the broker on the weekend.`,
   };
 }
 
 export async function editDeposit(_prev: DepositFormState, formData: FormData): Promise<DepositFormState> {
   const user = await requireUser();
+  const eligibility = getDepositEligibility(user);
+  if (eligibility.restriction) return { error: eligibility.restriction.message };
   const id = String(formData.get("id") ?? "");
 
   const deposit = await prisma.deposit.findFirst({ where: { id, userId: user.id } });
@@ -92,7 +94,7 @@ export async function editDeposit(_prev: DepositFormState, formData: FormData): 
   if (!isCryptoAmountValid(method, amount)) return cryptoAmountError();
 
   if (isCorrection) {
-    const originalAmount = method === "CRYPTO" ? deposit.amount : deposit.inrAmount;
+    const originalAmount = method === "CRYPTO" ? deposit.reportedUsdtAmount ?? deposit.amount : deposit.inrAmount;
     if (!originalAmount || !D(amount).eq(originalAmount)) {
       return { error: "The deposited amount cannot be changed while correcting payment details." };
     }
@@ -110,6 +112,7 @@ export async function editDeposit(_prev: DepositFormState, formData: FormData): 
     });
 
     revalidatePath("/app/deposit");
+  revalidatePath("/app/history");
     revalidatePath("/admin");
     revalidatePath("/admin/deposits");
     return { success: "Corrected payment details submitted for review." };
@@ -119,6 +122,7 @@ export async function editDeposit(_prev: DepositFormState, formData: FormData): 
     where: { id: deposit.id },
     data: {
       amount: method === "CRYPTO" ? D(amount) : D(0),
+      reportedUsdtAmount: method === "CRYPTO" ? D(amount) : null,
       inrAmount: method === "CRYPTO" ? null : D(amount),
       network: method === "CRYPTO" ? (network || null) : null,
       txHash: method === "CRYPTO" ? (txHash || null) : null,
@@ -127,6 +131,7 @@ export async function editDeposit(_prev: DepositFormState, formData: FormData): 
   });
 
   revalidatePath("/app/deposit");
+  revalidatePath("/app/history");
   revalidatePath("/admin/deposits");
   return { success: "Deposit information updated." };
 }
@@ -145,6 +150,7 @@ export async function cancelDeposit(_prev: DepositFormState, formData: FormData)
   });
 
   revalidatePath("/app/deposit");
+  revalidatePath("/app/history");
   revalidatePath("/admin");
   revalidatePath("/admin/deposits");
   return { success: "Deposit request cancelled." };

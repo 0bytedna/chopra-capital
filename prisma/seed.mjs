@@ -15,6 +15,24 @@ const DAY = 86_400_000;
 const daysAgo = (n) => new Date(Date.now() - n * DAY);
 const dayKey = (d) => d.toISOString().slice(0, 10);
 
+const DEMO_PROFILE = {
+  fullName: "Demo Investor",
+  mobile: "+91 98765 43210",
+  country: "India",
+  address: "101 Demo Residency, MG Road",
+  city: "Mumbai",
+  state: "Maharashtra",
+};
+
+const DEMO_BANKING = {
+  accountNumber: "00001234567890",
+  ifsc: "SBIN0001234",
+  upiId: "demo@upi",
+  accountType: "SAVINGS",
+  usdtAddress: "TDemoInvestorPayoutAddress0000000000",
+  usdtNetwork: "TRC20",
+};
+
 // Deterministic gentle NAV path over the last 28 days (≈ +1.9% overall, with
 // flat and down days included — honest demo data, not a fantasy curve).
 const NAV_DELTAS = [
@@ -45,12 +63,22 @@ async function main() {
 
   const existingDemo = await prisma.user.findUnique({ where: { email: "demo@chopracapital.com" } });
   if (existingDemo) {
-  // Ensure the demo investor can exercise the local bank and cash flows.
+    // Ensure the demo investor can exercise every local funding flow.
     await prisma.user.update({
       where: { id: existingDemo.id },
-      data: { bankTransferEnabled: true, cashEnabled: true },
+      data: {
+        ...DEMO_PROFILE,
+        kycStatus: "APPROVED",
+        bankTransferEnabled: true,
+        cashEnabled: true,
+      },
     });
-    console.log("Demo investor already exists — left data untouched (bank and cash enabled).");
+    await prisma.bankingDetail.upsert({
+      where: { userId: existingDemo.id },
+      create: { userId: existingDemo.id, ...DEMO_BANKING },
+      update: DEMO_BANKING,
+    });
+    console.log("Demo investor already exists — refreshed its test profile and payout details.");
     return;
   }
 
@@ -59,12 +87,12 @@ async function main() {
       email: "demo@chopracapital.com",
       passwordHash: demoHash,
       role: "USER",
-      fullName: "Demo Investor",
-      country: "United Arab Emirates",
+      ...DEMO_PROFILE,
       kycStatus: "APPROVED",
       bankTransferEnabled: true,
       cashEnabled: true,
       wallet: { create: {} },
+      bankingDetail: { create: DEMO_BANKING },
     },
   });
 
@@ -77,11 +105,13 @@ async function main() {
     data: {
       userId: demo.id,
       amount: depositAmount,
+      reportedUsdtAmount: depositAmount,
       network: "TRC20",
       txHash: "demo-seed-tx-0001",
       status: "CONFIRMED",
       adminNote: "Seed data",
       createdAt: daysAgo(35),
+      receivedAt: daysAgo(34),
       confirmedAt: daysAgo(34),
     },
   });
@@ -133,14 +163,17 @@ async function main() {
       userId: demo.id,
       amount: gross,
       fee,
+      brokerReceivedUsdt: payout,
       paidAmount: payout,
       unitsRedeemed,
       network: "TRC20",
-      address: "TDemoInvestorPayoutAddress0000000000",
+      address: DEMO_BANKING.usdtAddress,
       txHash: "demo-seed-tx-0002",
       status: "PROCESSED",
       weekKey: "seed",
       createdAt: daysAgo(wdDaysAgo + 1),
+      approvedAt: daysAgo(wdDaysAgo + 1),
+      brokerReceivedAt: daysAgo(wdDaysAgo),
       processedAt: daysAgo(wdDaysAgo),
     },
   });
