@@ -8563,3 +8563,13 @@ Import trace:
  GET /admin/withdrawals 200 in 193ms (next.js: 13ms, proxy.ts: 16ms, application-code: 164ms)
  GET /admin/withdrawals 200 in 172ms (next.js: 6ms, proxy.ts: 66ms, application-code: 100ms)
  GET /admin/withdrawals 200 in 170ms (next.js: 42ms, proxy.ts: 64ms, application-code: 64ms)
+⚠ Found a change in next.config.ts. Restarting the server to apply the changes...
+▲ Next.js 16.2.9 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.20:3000
+- Environments: .env.local, .env
+✓ Ready in 591ms
+- Experiments (use with caution):
+  · serverActions
+
+ GET /admin/withdrawals 200 in 3.1s (next.js: 936ms, proxy.ts: 361ms, application-code: 1831ms)

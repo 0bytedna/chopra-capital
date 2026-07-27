@@ -2,6 +2,9 @@ import path from "node:path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Set a unique value for every production build to prevent old clients
+  // from submitting Server Action IDs to a newer deployment.
+  deploymentId: process.env.NEXT_DEPLOYMENT_ID,
   experimental: {
     serverActions: {
       // Ticket replies may include photos, videos, or documents. Application-level

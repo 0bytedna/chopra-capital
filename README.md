@@ -30,8 +30,11 @@ Copy the project source (excluding `.next`, `node_modules`, local `.env`, and lo
 ```bash
 npm ci
 npm run db:deploy
-npm run build
-sudo systemctl restart chopra-capital
+sudo systemctl stop chopra-capital
+NEXT_DEPLOYMENT_ID="$(git rev-parse --short HEAD)-$(date +%s)" npm run build
+sudo systemctl start chopra-capital
 ```
+
+`NEXT_DEPLOYMENT_ID` must be different for every production build. It lets Next.js detect an older browser tab and perform a full reload instead of sending obsolete Server Action IDs to the new server. Stopping the service before rebuilding also prevents the running process from serving files while `.next` is being replaced.
 
 Keep `.env` and the production SQLite database on the server and back them up before migrations.
