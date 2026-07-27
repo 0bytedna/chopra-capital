@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     template: "%s · Chopra Capital",
   },
   description:
-    "A Dubai-based specialist gold fund. Hedged XAU positions executed by AI-powered bots under 24/7 human supervision, with live MT5 transparency. Capital at risk.",
+    "A Dubai-based specialist gold fund. Hedged XAU positions executed by AI-powered bots under 24/7 human supervision, with administrator-maintained account reporting. Capital at risk.",
 };
 
 export default function RootLayout({

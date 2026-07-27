@@ -64,7 +64,7 @@ const steps = [
   {
     Icon: LineChart,
     title: "Watch it live",
-    body: "Your dashboard tracks your value in real time, and read-only MT5 access lets you watch the actual trading account — every position, every trade.",
+    body: "Your dashboard tracks your value in real time, and your account shows the balance, equity and performance figures recorded by the operations team.",
   },
   {
     Icon: Banknote,
@@ -171,7 +171,7 @@ function Transparency() {
           <div className="space-y-5 text-sm leading-relaxed text-ink-dim sm:text-base">
             <p>
               Most funds send you a PDF once a quarter. We hand you the keys to the window:
-              read-only investor access to the live MT5 trading account, so you can see every
+              administrator-maintained account reporting, so you can review
               position, every hedge and the account equity move in real time.
             </p>
             <p>
@@ -180,7 +180,7 @@ function Transparency() {
             </p>
             <ul className="space-y-2.5 pt-1">
               {[
-                "Read-only MT5 investor login, shown inside your account",
+                "Administrator-maintained balance and equity history",
                 "Web terminal access from any browser — nothing to install",
                 "Daily NAV history recorded from the live feed, never back-filled",
               ].map((item) => (
@@ -194,10 +194,10 @@ function Transparency() {
         </Reveal>
 
         <Reveal delay={0.12}>
-          {/* Stylized MT5 panel mock — illustrative UI, not market data */}
+          {/* Stylized account panel mock — illustrative UI, not market data */}
           <div className="glass-card overflow-hidden rounded-2xl">
             <div className="flex items-center justify-between border-b border-gold-600/12 px-5 py-3.5">
-              <span className="font-mono text-xs text-ink-faint">MT5 · Investor (read-only)</span>
+              <span className="font-mono text-xs text-ink-faint">Account · Audited performance</span>
               <span className="inline-flex items-center gap-1.5 text-xs text-positive">
                 <span className="relative flex size-2">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-positive opacity-60" />
@@ -288,7 +288,7 @@ const faqs = [
   },
   {
     q: "How can I verify the trading is real?",
-    a: "Your account area shows read-only MT5 investor credentials for the pooled trading account. Log into the MT5 web terminal at any time and watch positions, hedges and equity live. Your dashboard NAV is computed from that same broker equity.",
+    a: "Your dashboard shows the balance, equity and NAV recorded by the operations team. Trading results, deposits, withdrawals, fees and profit-share settlements are reflected through audited account adjustments.",
   },
   {
     q: "Who can invest, and what is the minimum?",

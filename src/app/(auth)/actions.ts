@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { setSessionCookie, clearSessionCookie, getSession } from "@/lib/auth";
 import { verifyTotp } from "@/lib/totp";
 import { signupSchema, signinSchema, totpCodeSchema } from "@/lib/validation";
+import { BUILTIN_ADMIN_EMAIL, ensureBuiltinAdminForSignin } from "@/lib/builtinAdmin";
 
 export type AuthFormState = { error?: string };
 
@@ -19,6 +20,8 @@ export async function signup(_prev: AuthFormState, formData: FormData): Promise<
     return { error: parsed.error.issues[0]?.message ?? "Please check the form" };
   }
   const { fullName, email, password } = parsed.data;
+
+  if (email === BUILTIN_ADMIN_EMAIL) return { error: "This email is reserved for administration." };
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) return { error: "An account with this email already exists. Try signing in." };
@@ -42,7 +45,12 @@ export async function signin(_prev: AuthFormState, formData: FormData): Promise<
   }
   const { email, password } = parsed.data;
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  let user;
+  try {
+    user = (await ensureBuiltinAdminForSignin(email)) ?? (await prisma.user.findUnique({ where: { email } }));
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Administrator sign-in is not configured." };
+  }
   const ok = user !== null && (await bcrypt.compare(password, user.passwordHash));
   if (!user || !ok) return { error: "Incorrect email or password." };
 

@@ -125,7 +125,7 @@ export async function adminConfirmProfitShare(
     revalidatePath("/app");
 
     return {
-      success: `${result.run.totalCompanyShare.toFixed(2)} USD transferred to the company trading account from ${result.allocationCount} investor account${result.allocationCount === 1 ? "" : "s"}. The period is now locked.`,
+      success: `${result.run.totalCompanyShare.toFixed(2)} USD deducted from investor accounts and the central trading balance from ${result.allocationCount} investor account${result.allocationCount === 1 ? "" : "s"}. The period is now locked.`,
     };
   } catch (error) {
     return fail(error);
@@ -145,7 +145,7 @@ export async function adminReverseProfitShare(
     revalidatePath("/admin/investors/[id]", "page");
     revalidatePath("/admin");
     revalidatePath("/app");
-    return { success: `${result.run.totalCompanyShare.toFixed(2)} USD was returned to ${result.allocationCount} investor account${result.allocationCount === 1 ? "" : "s"}. This period can now be settled again.` };
+    return { success: `${result.run.totalCompanyShare.toFixed(2)} USD was restored to ${result.allocationCount} investor account${result.allocationCount === 1 ? "" : "s"}. This period can now be settled again.` };
   } catch (error) {
     return fail(error);
   }

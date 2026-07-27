@@ -28,7 +28,7 @@ function DeleteInvestorButton({ userId, name }: { userId: string; name: string }
       action={action}
       onClick={(event) => event.stopPropagation()}
       onSubmit={(event) => {
-        if (!window.confirm(`Permanently delete ${name}? This is only available for accounts with no activity.`)) event.preventDefault();
+        if (!window.confirm(`Permanently delete ${name}? This also removes all linked history and cannot be undone.`)) event.preventDefault();
       }}
     >
       <input type="hidden" name="userId" value={userId} />
@@ -262,10 +262,10 @@ export function InvestorDirectory({ rows }: { rows: InvestorDirectoryRow[] }) {
                     {row.share.toFixed(2)}%
                   </td>
                   <td className="px-3 py-4">
-                    <ArrowUpRight
-                      className="size-4 text-ink-faint transition-colors group-hover:text-gold-400"
-                      aria-hidden
-                    />
+                    <div className="flex items-center gap-2">
+                      <DeleteInvestorButton userId={row.id} name={row.name} />
+                      <ArrowUpRight className="size-4 text-ink-faint transition-colors group-hover:text-gold-400" aria-hidden />
+                    </div>
                   </td>
                 </tr>
               ))}

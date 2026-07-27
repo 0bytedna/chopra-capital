@@ -218,7 +218,7 @@ export function ProfitShareForm() {
             className="flex flex-col gap-3 border-t border-gold-600/15 p-4 sm:flex-row sm:items-center sm:justify-between"
             onSubmit={(event) => {
               const confirmed = window.confirm(
-                `Confirm ${formatUsd(preview.totalCompanyShare)} to the company trading account for ${preview.periodLabel}? This permanently locks the period.`,
+                `Confirm ${formatUsd(preview.totalCompanyShare)} as the company share for ${preview.periodLabel}? This permanently locks the period.`,
               );
               if (!confirmed) event.preventDefault();
             }}
@@ -229,7 +229,7 @@ export function ProfitShareForm() {
             <p className="flex max-w-2xl items-start gap-2 text-xs leading-5 text-ink-faint">
               <LockKeyhole className="mt-0.5 size-3.5 shrink-0 text-gold-400" aria-hidden />
               {chargeableCount} account{chargeableCount === 1 ? "" : "s"} will transfer
-              pool units to the company trading account. Total pool units stay unchanged.
+              pool units as the company share. Total pool units stay unchanged.
             </p>
             <SubmitButton
               disabled={preview.totalCompanyShare <= 0}

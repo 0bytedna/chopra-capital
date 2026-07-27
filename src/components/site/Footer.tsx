@@ -48,7 +48,7 @@ export function Footer() {
             </div>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-faint">
               A Dubai-based specialist gold strategy. Hedged XAU positions executed by AI-powered
-              bots under continuous human supervision, with live MT5 transparency.
+              bots under continuous human supervision, with administrator-maintained account reporting.
             </p>
           </div>
 

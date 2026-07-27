@@ -2,9 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { randomUUID } from "node:crypto";
+import bcrypt from "bcryptjs";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { D, formatInr } from "@/lib/money";
+import { getCurrentNav } from "@/lib/nav";
 import {
   removeStoredTicketAttachments,
   storeTicketAttachments,
@@ -22,7 +24,7 @@ import {
   rejectWithdrawal,
   createInternalTransfer,
 } from "@/lib/wallet";
-import { investQueuedCompanyCapital, queueCompanyCapital, withdrawCompanyCapital } from "@/lib/companyCapital";
+import { recordTradingAdjustment, setTradingSnapshot } from "@/lib/tradingAccount";
 
 export type AdminFormState = { error?: string; success?: string };
 
@@ -30,97 +32,150 @@ function fail(err: unknown): AdminFormState {
   return { error: err instanceof Error ? err.message : "Something went wrong" };
 }
 
+// --- Manual trading account -------------------------------------------------
+
+export async function adminSetTradingSnapshot(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
+  const admin = await requireAdmin();
+  try {
+    const balance = D(String(formData.get("balance") ?? ""));
+    const equity = D(String(formData.get("equity") ?? ""));
+    const note = String(formData.get("note") ?? "");
+    await setTradingSnapshot({ balance, equity, note, adminId: admin.id });
+    revalidatePath("/admin");
+    revalidatePath("/app");
+    return { success: "Trading balance and equity updated." };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+export async function adminRecordTradingAdjustment(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
+  const admin = await requireAdmin();
+  const type = String(formData.get("type") ?? "");
+  const allowed = ["USER_DEPOSIT", "TRADING_PROFIT", "TRADING_LOSS", "SERVER_FEE", "ADMIN_SHARE", "USER_WITHDRAWAL", "OTHER_INCREASE", "OTHER_DECREASE"] as const;
+  if (!allowed.includes(type as (typeof allowed)[number])) return { error: "Choose a valid reason." };
+  try {
+    await recordTradingAdjustment({
+      type: type as (typeof allowed)[number],
+      amount: D(String(formData.get("amount") ?? "")),
+      note: String(formData.get("note") ?? ""),
+      adminId: admin.id,
+    });
+    revalidatePath("/admin");
+    revalidatePath("/app");
+    return { success: "Trading account adjustment recorded." };
+  } catch (error) {
+    return fail(error);
+  }
+}
 // --- Investor accounts ------------------------------------------------------
 
-export async function adminDeleteInvestor(
-  _prev: AdminFormState,
-  formData: FormData,
-): Promise<AdminFormState> {
+export async function adminUpdateInvestorProfile(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
+  await requireAdmin();
+  const userId = String(formData.get("userId") ?? "");
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  if (!userId || !email) return { error: "Investor and email are required." };
+  try {
+    await prisma.user.update({
+      where: { id: userId, role: "USER" },
+      data: {
+        email,
+        fullName: String(formData.get("fullName") ?? "").trim() || null,
+        mobile: String(formData.get("mobile") ?? "").trim() || null,
+        country: String(formData.get("country") ?? "").trim() || null,
+        address: String(formData.get("address") ?? "").trim() || null,
+        city: String(formData.get("city") ?? "").trim() || null,
+        state: String(formData.get("state") ?? "").trim() || null,
+        kycStatus: String(formData.get("kycStatus") ?? "NOT_SUBMITTED") as "NOT_SUBMITTED" | "PENDING" | "APPROVED" | "REJECTED",
+        kycNote: String(formData.get("kycNote") ?? "").trim() || null,
+        bankTransferEnabled: formData.get("bankTransferEnabled") != null,
+        cashEnabled: formData.get("cashEnabled") != null,
+        bankingDetail: {
+          upsert: {
+            create: {
+              accountNumber: String(formData.get("accountNumber") ?? "").trim() || null,
+              ifsc: String(formData.get("ifsc") ?? "").trim().toUpperCase() || null,
+              upiId: String(formData.get("upiId") ?? "").trim() || null,
+              accountType: String(formData.get("accountType") ?? "").trim() || null,
+              usdtAddress: String(formData.get("usdtAddress") ?? "").trim() || null,
+              usdtNetwork: String(formData.get("usdtNetwork") ?? "").trim() || null,
+            },
+            update: {
+              accountNumber: String(formData.get("accountNumber") ?? "").trim() || null,
+              ifsc: String(formData.get("ifsc") ?? "").trim().toUpperCase() || null,
+              upiId: String(formData.get("upiId") ?? "").trim() || null,
+              accountType: String(formData.get("accountType") ?? "").trim() || null,
+              usdtAddress: String(formData.get("usdtAddress") ?? "").trim() || null,
+              usdtNetwork: String(formData.get("usdtNetwork") ?? "").trim() || null,
+            },
+          },
+        },
+      },
+    });
+    revalidatePath(`/admin/investors/${userId}`);
+    revalidatePath("/admin/investors");
+    return { success: "Investor profile and financial details updated." };
+  } catch (error) { return fail(error); }
+}
+
+export async function adminResetInvestorPassword(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
+  await requireAdmin();
+  const userId = String(formData.get("userId") ?? "");
+  const password = String(formData.get("password") ?? "");
+  if (password.length < 8) return { error: "The temporary password must be at least 8 characters." };
+  try {
+    await prisma.user.update({ where: { id: userId, role: "USER" }, data: { passwordHash: await bcrypt.hash(password, 12) } });
+    return { success: "Password reset. Send the temporary password to the investor securely." };
+  } catch (error) { return fail(error); }
+}
+
+export async function adminSetInvestorBalances(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
+  const admin = await requireAdmin();
+  const userId = String(formData.get("userId") ?? "");
+  const note = String(formData.get("note") ?? "").trim();
+  if (!note) return { error: "Enter an audit note." };
+  try {
+    const targetQueued = D(String(formData.get("queued") ?? ""));
+    const targetInvested = D(String(formData.get("invested") ?? ""));
+    if (targetQueued.lt(0) || targetInvested.lt(0)) return { error: "Balances cannot be negative." };
+    const navState = await getCurrentNav();
+    if (navState.nav.lte(0)) return { error: "A positive NAV is required." };
+    await prisma.$transaction(async (tx) => {
+      const wallet = await tx.wallet.findUniqueOrThrow({ where: { userId } });
+      const currentInvested = D(wallet.units).mul(navState.nav);
+      const delta = targetInvested.sub(currentInvested);
+      const targetUnits = targetInvested.div(navState.nav);
+      const unitDelta = targetUnits.sub(D(wallet.units));
+      const pool = await tx.poolState.findUniqueOrThrow({ where: { id: "pool" } });
+      const newBalance = D(pool.tradingBalance).add(delta);
+      const newEquity = D(pool.tradingEquity).add(delta);
+      if (newBalance.lt(0) || newEquity.lt(0)) throw new Error("This correction would make the trading account negative.");
+      await tx.wallet.update({ where: { id: wallet.id }, data: { queued: targetQueued, units: targetUnits } });
+      await tx.poolState.update({ where: { id: "pool" }, data: { totalUnits: { increment: unitDelta }, tradingBalance: newBalance, tradingEquity: newEquity } });
+      await tx.ledgerEntry.create({ data: { userId, type: "ADJUSTMENT", amount: delta.add(targetQueued.sub(D(wallet.queued))), units: unitDelta, navPrice: navState.nav, note } });
+      if (!delta.eq(0)) await tx.tradingAccountEntry.create({ data: { type: delta.gt(0) ? "OTHER_INCREASE" : "OTHER_DECREASE", amount: delta, balanceBefore: pool.tradingBalance, balanceAfter: newBalance, equityBefore: pool.tradingEquity, equityAfter: newEquity, note: `Investor correction: ${note}`, adminId: admin.id } });
+    });
+    revalidatePath(`/admin/investors/${userId}`); revalidatePath("/admin/investors"); revalidatePath("/admin"); revalidatePath("/app");
+    return { success: "Investor balances corrected and audited." };
+  } catch (error) { return fail(error); }
+}
+
+export async function adminDeleteInvestor(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
   await requireAdmin();
   const userId = String(formData.get("userId") ?? "");
   if (!userId) return { error: "Investor not found." };
-
-  const investor = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      role: true,
-      isCompanyAccount: true,
-      _count: {
-        select: {
-          ledger: true,
-          deposits: true,
-          withdrawals: true,
-          tickets: true,
-          internalTransfersSent: true,
-          internalTransfersReceived: true,
-          profitShareAllocations: true,
-        },
-      },
-    },
-  });
-  if (!investor || investor.role !== "USER" || investor.isCompanyAccount) {
-    return { error: "Only ordinary investor accounts can be deleted." };
-  }
-  const activityCount = Object.values(investor._count).reduce((total, count) => total + count, 0);
-  if (activityCount > 0) {
-    return { error: "This investor has financial or support history and cannot be permanently deleted. Audit records must be retained." };
-  }
-
   try {
-    await prisma.user.delete({ where: { id: userId } });
-  } catch (error) {
-    return fail(error);
-  }
-  revalidatePath("/admin/investors");
-  revalidatePath("/admin");
-  return { success: "Investor account deleted." };
-}
-// --- Company capital --------------------------------------------------------
-
-export async function adminQueueCompanyCapital(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
-  await requireAdmin();
-  const amountRaw = String(formData.get("amount") ?? "").trim();
-  const reference = String(formData.get("reference") ?? "").trim();
-  try {
-    const result = await queueCompanyCapital(D(amountRaw), reference || undefined);
-    revalidatePath("/admin/profit-share");
-    revalidatePath("/admin/investors");
-    revalidatePath("/admin/investors/[id]", "page");
-    revalidatePath("/admin");
-    return { success: `${result.amount.toFixed(2)} USD added to the company investment queue.` };
-  } catch (error) {
-    return fail(error);
-  }
-}
-
-export async function adminInvestCompanyCapital(_prev: AdminFormState, _formData: FormData): Promise<AdminFormState> {
-  await requireAdmin();
-  try {
-    const result = await investQueuedCompanyCapital();
-    revalidatePath("/admin/profit-share");
-    revalidatePath("/admin/investors");
-    revalidatePath("/admin/investors/[id]", "page");
-    revalidatePath("/admin");
-    return { success: `${result.amount.toFixed(2)} USD invested for the company at NAV ${result.nav.toFixed(6)}.` };
-  } catch (error) {
-    return fail(error);
-  }
-}
-
-export async function adminWithdrawCompanyCapital(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
-  await requireAdmin();
-  const amountRaw = String(formData.get("amount") ?? "").trim();
-  const reference = String(formData.get("reference") ?? "").trim();
-  try {
-    const result = await withdrawCompanyCapital(D(amountRaw), reference);
-    revalidatePath("/admin/profit-share");
-    revalidatePath("/admin/investors");
-    revalidatePath("/admin/investors/[id]", "page");
-    revalidatePath("/admin");
-    return { success: `${result.queuedUsed.add(result.investedAmount).toFixed(2)} USD withdrawn from the company account.` };
-  } catch (error) {
-    return fail(error);
-  }
+    const investor = await prisma.user.findUnique({ where: { id: userId }, select: { role: true, isCompanyAccount: true } });
+    if (!investor || investor.role !== "USER" || investor.isCompanyAccount) return { error: "Only investor accounts can be deleted." };
+    await prisma.$transaction(async (tx) => {
+      await tx.internalTransfer.deleteMany({ where: { OR: [{ fromUserId: userId }, { toUserId: userId }] } });
+      await tx.profitShareAllocation.deleteMany({ where: { userId } });
+      await tx.ticketMessage.deleteMany({ where: { authorId: userId } });
+      await tx.user.delete({ where: { id: userId } });
+    });
+    revalidatePath("/admin/investors"); revalidatePath("/admin");
+    return { success: "Investor and all linked account data permanently deleted." };
+  } catch (error) { return fail(error); }
 }
 // --- Internal transfers -----------------------------------------------------
 
@@ -300,6 +355,37 @@ export async function adminRequestDepositCorrection(
   return { success: "Correction requested. The deposit cannot be credited until the investor resubmits the details." };
 }
 
+export async function adminEditDepositRecord(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const userId = String(formData.get("userId") ?? "");
+  const status = String(formData.get("status") ?? "");
+  const statuses = ["PENDING", "NEEDS_CORRECTION", "RECEIVED", "QUEUED", "CONFIRMED", "REJECTED", "CANCELLED"] as const;
+  if (!statuses.includes(status as (typeof statuses)[number])) return { error: "Invalid deposit status." };
+  try {
+    const amount = D(String(formData.get("amount") ?? ""));
+    if (amount.lt(0)) return { error: "Deposit amount cannot be negative." };
+    await prisma.deposit.update({ where: { id, userId }, data: { amount, status: status as (typeof statuses)[number], reference: String(formData.get("reference") ?? "").trim() || null, txHash: String(formData.get("txHash") ?? "").trim() || null, adminNote: String(formData.get("adminNote") ?? "").trim() || null } });
+    revalidatePath(`/admin/investors/${userId}`); revalidatePath("/admin/deposits"); revalidatePath("/app/history");
+    return { success: "Deposit record updated. Correct the investor balance separately if this changes credited value." };
+  } catch (error) { return fail(error); }
+}
+
+export async function adminEditWithdrawalRecord(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const userId = String(formData.get("userId") ?? "");
+  const status = String(formData.get("status") ?? "");
+  const statuses = ["REQUESTED", "APPROVED", "BROKER_RECEIVED", "INR_READY", "PROCESSED", "REJECTED", "CANCELLED"] as const;
+  if (!statuses.includes(status as (typeof statuses)[number])) return { error: "Invalid withdrawal status." };
+  try {
+    const amount = D(String(formData.get("amount") ?? ""));
+    if (amount.lt(0)) return { error: "Withdrawal amount cannot be negative." };
+    await prisma.withdrawal.update({ where: { id, userId }, data: { amount, status: status as (typeof statuses)[number], txHash: String(formData.get("reference") ?? "").trim() || null, adminNote: String(formData.get("adminNote") ?? "").trim() || null } });
+    revalidatePath(`/admin/investors/${userId}`); revalidatePath("/admin/withdrawals"); revalidatePath("/app/history");
+    return { success: "Withdrawal record updated. Correct the investor balance separately if this changes debited value." };
+  } catch (error) { return fail(error); }
+}
 // --- Deposit method enablement (per investor) -------------------------------
 
 export async function adminSetDepositMethods(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
@@ -347,7 +433,7 @@ export async function adminRecordBrokerWithdrawalBatch(
   _prev: AdminFormState,
   formData: FormData,
 ): Promise<AdminFormState> {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const withdrawalIds = formData
     .getAll("withdrawalIds")
     .map((value) => String(value))
@@ -358,7 +444,7 @@ export async function adminRecordBrokerWithdrawalBatch(
 
   let result;
   try {
-    result = await recordBrokerWithdrawalBatch(withdrawalIds);
+    result = await recordBrokerWithdrawalBatch(withdrawalIds, admin.id);
   } catch (err) {
     return fail(err);
   }

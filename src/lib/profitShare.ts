@@ -4,10 +4,6 @@ import { D, ZERO, type Dec } from "@/lib/money";
 import { getCurrentNav } from "@/lib/nav";
 import { getPortfolioMetrics } from "@/lib/portfolio";
 
-export const COMPANY_TRADING_ACCOUNT_ID = "company-trading-account";
-export const COMPANY_TRADING_ACCOUNT_EMAIL =
-  "company.trading@chopracapital.internal";
-
 export type ProfitShareFrequency = "WEEKLY" | "MONTHLY";
 export type ProfitShareMode = "PERCENTAGE" | "FIXED_TOTAL";
 
@@ -115,32 +111,6 @@ export function validateProfitShareInput(input: ProfitShareInput): void {
   }
 }
 
-export async function ensureCompanyTradingAccount() {
-  const account = await prisma.user.upsert({
-    where: { id: COMPANY_TRADING_ACCOUNT_ID },
-    update: {
-      isCompanyAccount: true,
-      fullName: "Chopra Capital Company Trading Account",
-      kycStatus: "APPROVED",
-    },
-    create: {
-      id: COMPANY_TRADING_ACCOUNT_ID,
-      email: COMPANY_TRADING_ACCOUNT_EMAIL,
-      passwordHash: "!INTERNAL_ACCOUNT_NO_LOGIN!",
-      role: "USER",
-      isCompanyAccount: true,
-      fullName: "Chopra Capital Company Trading Account",
-      kycStatus: "APPROVED",
-    },
-  });
-  await prisma.wallet.upsert({
-    where: { userId: account.id },
-    update: {},
-    create: { id: "company-trading-wallet", userId: account.id },
-  });
-  return account;
-}
-
 function allocateFixedTotal(
   allocations: Array<{ eligibleProfit: Dec }>,
   totalEligibleProfit: Dec,
@@ -170,7 +140,7 @@ export async function getProfitSharePreview(
   input: ProfitShareInput,
 ): Promise<ProfitSharePreview> {
   validateProfitShareInput(input);
-  await ensureCompanyTradingAccount();
+
 
   const period = currentProfitSharePeriod(input.frequency);
   const [existingRun, navState, investors] = await Promise.all([
@@ -301,196 +271,74 @@ export async function getProfitSharePreview(
   };
 }
 
-export async function applyProfitShareRun(
-  input: ProfitShareInput,
-  adminId: string,
-) {
+export async function applyProfitShareRun(input: ProfitShareInput, adminId: string) {
   const preview = await getProfitSharePreview(input);
-  if (preview.totalCompanyShare.lte(0)) {
-    throw new Error("There is no eligible profit to share in this period");
-  }
-
-  const company = await ensureCompanyTradingAccount();
+  if (preview.totalCompanyShare.lte(0)) throw new Error("There is no eligible profit to share in this period");
 
   return prisma.$transaction(async (tx) => {
-    const run = await tx.profitShareRun.create({
-      data: {
-        frequency: preview.frequency,
-        periodKey: preview.periodKey,
-        cutoffDate: preview.cutoffDate,
-        mode: preview.mode,
-        ratePercent:
-          preview.mode === "PERCENTAGE" ? preview.value : null,
-        fixedAmount:
-          preview.mode === "FIXED_TOTAL" ? preview.value : null,
-        navPrice: preview.navPrice,
-        totalEligibleProfit: preview.totalEligibleProfit,
-        totalCompanyShare: preview.totalCompanyShare,
-        activePeriodKey: `${preview.frequency}:${preview.periodKey}`,
-        companyUserId: company.id,
-        adminId,
-      },
-    });
+    const totalUnitsRemoved = preview.allocations.reduce((sum, allocation) => sum.add(allocation.unitsTransferred), ZERO);
+    const pool = await tx.poolState.findUniqueOrThrow({ where: { id: "pool" } });
+    const balanceAfter = D(pool.tradingBalance).sub(preview.totalCompanyShare);
+    const equityAfter = D(pool.tradingEquity).sub(preview.totalCompanyShare);
+    if (balanceAfter.lt(0) || equityAfter.lt(0)) throw new Error("The trading account does not contain enough value for this company share.");
 
-    const companyWallet = await tx.wallet.upsert({
-      where: { userId: company.id },
-      update: {},
-      create: { id: "company-trading-wallet", userId: company.id },
-    });
-    const totalUnitsTransferred = preview.allocations.reduce(
-      (sum, allocation) => sum.add(allocation.unitsTransferred),
-      ZERO,
-    );
-    if (totalUnitsTransferred.gt(0)) {
-      await tx.wallet.update({
-        where: { id: companyWallet.id },
-        data: { units: { increment: totalUnitsTransferred } },
-      });
-    }
+    const run = await tx.profitShareRun.create({ data: {
+      frequency: preview.frequency,
+      periodKey: preview.periodKey,
+      cutoffDate: preview.cutoffDate,
+      mode: preview.mode,
+      ratePercent: preview.mode === "PERCENTAGE" ? preview.value : null,
+      fixedAmount: preview.mode === "FIXED_TOTAL" ? preview.value : null,
+      navPrice: preview.navPrice,
+      totalEligibleProfit: preview.totalEligibleProfit,
+      totalCompanyShare: preview.totalCompanyShare,
+      activePeriodKey: `${preview.frequency}:${preview.periodKey}`,
+      companyUserId: adminId,
+      adminId,
+    }});
 
     const settledAt = new Date();
-    let ledgerSequence = 0;
-
     for (const allocation of preview.allocations) {
       if (allocation.companyShare.gt(0)) {
-        const wallet = await tx.wallet.findUnique({
-          where: { userId: allocation.userId },
-        });
-        if (!wallet || D(wallet.units).lt(allocation.unitsTransferred)) {
-          throw new Error(
-            `${allocation.name}'s invested balance changed before confirmation. Preview the run again.`,
-          );
-        }
-
-        await tx.wallet.update({
-          where: { id: wallet.id },
-          data: { units: { decrement: allocation.unitsTransferred } },
-        });
-
-        await tx.ledgerEntry.create({
-          data: {
-            userId: allocation.userId,
-            type: "FEE",
-            amount: allocation.companyShare.neg(),
-            units: allocation.unitsTransferred.neg(),
-            navPrice: preview.navPrice,
-            reference: run.id,
-            note: `Company profit share · ${preview.periodLabel}`,
-            createdAt: new Date(settledAt.getTime() + ledgerSequence++),
-          },
-        });
-        await tx.ledgerEntry.create({
-          data: {
-            userId: company.id,
-            type: "ADJUSTMENT",
-            amount: allocation.companyShare,
-            units: allocation.unitsTransferred,
-            navPrice: preview.navPrice,
-            reference: run.id,
-            note: `Profit share received from ${allocation.name} · ${preview.periodLabel}`,
-            createdAt: new Date(settledAt.getTime() + ledgerSequence++),
-          },
-        });
+        const wallet = await tx.wallet.findUnique({ where: { userId: allocation.userId } });
+        if (!wallet || D(wallet.units).lt(allocation.unitsTransferred)) throw new Error(`${allocation.name}'s balance changed before confirmation. Preview again.`);
+        await tx.wallet.update({ where: { id: wallet.id }, data: { units: { decrement: allocation.unitsTransferred } } });
+        await tx.ledgerEntry.create({ data: { userId: allocation.userId, type: "FEE", amount: allocation.companyShare.neg(), units: allocation.unitsTransferred.neg(), navPrice: preview.navPrice, reference: run.id, note: `Company profit share · ${preview.periodLabel}` } });
       }
-
-      await tx.profitSharePosition.upsert({
-        where: { userId: allocation.userId },
-        update: {
-          highWaterProfit: allocation.highWaterAfter,
-          lastRunAt: settledAt,
-        },
-        create: {
-          userId: allocation.userId,
-          highWaterProfit: allocation.highWaterAfter,
-          lastRunAt: settledAt,
-        },
-      });
-
-      await tx.profitShareAllocation.create({
-        data: {
-          runId: run.id,
-          userId: allocation.userId,
-          profitBeforeShare: allocation.profitBeforeShare,
-          highWaterBefore: allocation.highWaterBefore,
-          eligibleProfit: allocation.eligibleProfit,
-          companyShare: allocation.companyShare,
-          unitsTransferred: allocation.unitsTransferred,
-          highWaterAfter: allocation.highWaterAfter,
-        },
-      });
+      await tx.profitSharePosition.upsert({ where: { userId: allocation.userId }, update: { highWaterProfit: allocation.highWaterAfter, lastRunAt: settledAt }, create: { userId: allocation.userId, highWaterProfit: allocation.highWaterAfter, lastRunAt: settledAt } });
+      await tx.profitShareAllocation.create({ data: { runId: run.id, userId: allocation.userId, profitBeforeShare: allocation.profitBeforeShare, highWaterBefore: allocation.highWaterBefore, eligibleProfit: allocation.eligibleProfit, companyShare: allocation.companyShare, unitsTransferred: allocation.unitsTransferred, highWaterAfter: allocation.highWaterAfter } });
     }
 
-    return {
-      run,
-      company,
-      allocationCount: preview.allocations.filter((allocation) =>
-        allocation.companyShare.gt(0),
-      ).length,
-    };
+    await tx.poolState.update({ where: { id: "pool" }, data: { totalUnits: { decrement: totalUnitsRemoved }, tradingBalance: balanceAfter, tradingEquity: equityAfter } });
+    await tx.tradingAccountEntry.create({ data: { type: "ADMIN_SHARE", amount: preview.totalCompanyShare.neg(), balanceBefore: pool.tradingBalance, balanceAfter, equityBefore: pool.tradingEquity, equityAfter, note: `Profit-share settlement ${preview.periodLabel}`, adminId } });
+    return { run, allocationCount: preview.allocations.filter((allocation) => allocation.companyShare.gt(0)).length };
   });
 }
-/** Reverses the newest active settlement using matching, auditable unit transfers. */
+
 export async function reverseProfitShareRun(runId: string, adminId: string) {
   return prisma.$transaction(async (tx) => {
-    const run = await tx.profitShareRun.findUnique({
-      where: { id: runId },
-      include: { allocations: { orderBy: { createdAt: "asc" } } },
-    });
-    if (!run || !run.activePeriodKey) {
-      throw new Error("This profit-share settlement has already been reversed");
-    }
+    const run = await tx.profitShareRun.findUnique({ where: { id: runId }, include: { allocations: { orderBy: { createdAt: "asc" } } } });
+    if (!run || !run.activePeriodKey) throw new Error("This profit-share settlement has already been reversed");
+    const newestActive = await tx.profitShareRun.findFirst({ where: { activePeriodKey: { not: null } }, orderBy: { createdAt: "desc" }, select: { id: true } });
+    if (newestActive?.id !== run.id) throw new Error("Reverse newer active profit-share settlements first");
 
-    const newestActive = await tx.profitShareRun.findFirst({
-      where: { activePeriodKey: { not: null } },
-      orderBy: { createdAt: "desc" },
-      select: { id: true },
-    });
-    if (newestActive?.id !== run.id) {
-      throw new Error("Reverse newer active profit-share settlements first");
-    }
-
-    const companyWallet = await tx.wallet.findUnique({ where: { userId: run.companyUserId } });
-    const totalUnits = run.allocations.reduce(
-      (sum, allocation) => sum.add(D(allocation.unitsTransferred)),
-      ZERO,
-    );
-    if (!companyWallet || D(companyWallet.units).lt(totalUnits)) {
-      throw new Error("The company account no longer holds these units. Reverse its later account activity before undoing this settlement.");
-    }
-
+    const pool = await tx.poolState.findUniqueOrThrow({ where: { id: "pool" } });
+    const totalUnits = run.allocations.reduce((sum, allocation) => sum.add(D(allocation.unitsTransferred)), ZERO);
+    const amount = D(run.totalCompanyShare);
+    const balanceAfter = D(pool.tradingBalance).add(amount);
+    const equityAfter = D(pool.tradingEquity).add(amount);
     const reversedAt = new Date();
-    let ledgerSequence = 0;
     for (const allocation of run.allocations) {
       const units = D(allocation.unitsTransferred);
-      const amount = D(allocation.companyShare);
       if (units.gt(0)) {
-        const investorWallet = await tx.wallet.findUnique({ where: { userId: allocation.userId } });
-        if (!investorWallet) throw new Error("An investor wallet is missing");
-        await tx.wallet.update({ where: { id: investorWallet.id }, data: { units: { increment: units } } });
-        await tx.ledgerEntry.create({ data: {
-          userId: allocation.userId, type: "ADJUSTMENT", amount, units, navPrice: run.navPrice,
-          reference: run.id, note: `Profit share reversal · ${run.periodKey}`,
-          createdAt: new Date(reversedAt.getTime() + ledgerSequence++),
-        } });
-        await tx.ledgerEntry.create({ data: {
-          userId: run.companyUserId, type: "ADJUSTMENT", amount: amount.neg(), units: units.neg(), navPrice: run.navPrice,
-          reference: run.id, note: `Profit share returned · ${run.periodKey}`,
-          createdAt: new Date(reversedAt.getTime() + ledgerSequence++),
-        } });
+        await tx.wallet.update({ where: { userId: allocation.userId }, data: { units: { increment: units } } });
+        await tx.ledgerEntry.create({ data: { userId: allocation.userId, type: "ADJUSTMENT", amount: allocation.companyShare, units, navPrice: run.navPrice, reference: run.id, note: `Profit share reversal · ${run.periodKey}` } });
       }
-      await tx.profitSharePosition.upsert({
-        where: { userId: allocation.userId },
-        update: { highWaterProfit: allocation.highWaterBefore, lastRunAt: null },
-        create: { userId: allocation.userId, highWaterProfit: allocation.highWaterBefore },
-      });
+      await tx.profitSharePosition.upsert({ where: { userId: allocation.userId }, update: { highWaterProfit: allocation.highWaterBefore, lastRunAt: null }, create: { userId: allocation.userId, highWaterProfit: allocation.highWaterBefore } });
     }
-    if (totalUnits.gt(0)) {
-      await tx.wallet.update({ where: { id: companyWallet.id }, data: { units: { decrement: totalUnits } } });
-    }
-    await tx.profitShareRun.update({
-      where: { id: run.id },
-      data: { activePeriodKey: null, reversedAt, reversedById: adminId },
-    });
+    await tx.poolState.update({ where: { id: "pool" }, data: { totalUnits: { increment: totalUnits }, tradingBalance: balanceAfter, tradingEquity: equityAfter } });
+    await tx.tradingAccountEntry.create({ data: { type: "ADMIN_SHARE", amount, balanceBefore: pool.tradingBalance, balanceAfter, equityBefore: pool.tradingEquity, equityAfter, note: `Reversed profit-share settlement ${run.periodKey}`, adminId } });
+    await tx.profitShareRun.update({ where: { id: run.id }, data: { activePeriodKey: null, reversedAt, reversedById: adminId } });
     return { run, allocationCount: run.allocations.filter((item) => D(item.companyShare).gt(0)).length };
   });
 }

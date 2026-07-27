@@ -338,7 +338,7 @@ export async function investQueuedDepositBatch(
   if (navState.live && navState.totalUnits.gt(0)) {
     const equityBeforeTransfer = navState.equity.sub(totalReceivedUsdt);
     if (equityBeforeTransfer.lte(0)) {
-      throw new Error("Broker equity is too low to price this transfer. Refresh the MT5 feed and try again");
+      throw new Error("Trading equity is too low to price this transfer. Update the manual balance and equity first");
     }
     investmentNav = equityBeforeTransfer.div(navState.totalUnits);
   }
@@ -468,12 +468,14 @@ export async function investQueuedDepositBatch(
       });
     }
 
-    const pool = await tx.poolState.upsert({
+    const poolBefore = await tx.poolState.upsert({ where: { id: "pool" }, update: {}, create: { id: "pool" } });
+    const balanceAfter = D(poolBefore.tradingBalance).add(totalReceivedUsdt);
+    const equity = D(poolBefore.tradingEquity).add(totalReceivedUsdt);
+    const pool = await tx.poolState.update({
       where: { id: "pool" },
-      update: { totalUnits: { increment: unitsIssued }, lastNav: investmentNav },
-      create: { id: "pool", totalUnits: unitsIssued, lastNav: investmentNav },
+      data: { totalUnits: { increment: unitsIssued }, lastNav: investmentNav, tradingBalance: balanceAfter, tradingEquity: equity },
     });
-    const equity = navState.live ? navState.equity : D(pool.totalUnits).mul(investmentNav);
+    await tx.tradingAccountEntry.create({ data: { type: "USER_DEPOSIT", amount: totalReceivedUsdt, balanceBefore: poolBefore.tradingBalance, balanceAfter, equityBefore: poolBefore.tradingEquity, equityAfter: equity, note: `Broker deposit batch ${batch.id}`, adminId } });
     const day = new Date().toISOString().slice(0, 10);
     await tx.navSnapshot.upsert({
       where: { day },
@@ -628,7 +630,7 @@ export async function approveWithdrawal(
  * Settle selected approved USD withdrawals as one atomic broker batch, then
  * move every request to its individual wallet or INR payout stage.
  */
-export async function recordBrokerWithdrawalBatch(withdrawalIds: string[]) {
+export async function recordBrokerWithdrawalBatch(withdrawalIds: string[], adminId: string) {
   if (!withdrawalsProcessableNow()) throw new Error(withdrawalProcessingWindowMessage());
 
   const uniqueIds = [...new Set(withdrawalIds.map((id) => id.trim()).filter(Boolean))];
@@ -752,15 +754,15 @@ export async function recordBrokerWithdrawalBatch(withdrawalIds: string[]) {
       totalUnitsRedeemed = totalUnitsRedeemed.add(unitsRedeemed);
     }
 
-    const pool = totalUnitsRedeemed.gt(0)
-      ? await tx.poolState.update({
-          where: { id: "pool" },
-          data: {
-            totalUnits: { decrement: totalUnitsRedeemed },
-            lastNav: redemptionNav,
-          },
-        })
-      : await tx.poolState.findUniqueOrThrow({ where: { id: "pool" } });
+    const poolBefore = await tx.poolState.findUniqueOrThrow({ where: { id: "pool" } });
+    const balanceAfter = D(poolBefore.tradingBalance).sub(totalUsd);
+    const equityAfter = D(poolBefore.tradingEquity).sub(totalUsd);
+    if (balanceAfter.lt(0) || equityAfter.lt(0)) throw new Error("The central trading account is too low for this withdrawal batch.");
+    const pool = await tx.poolState.update({
+      where: { id: "pool" },
+      data: { totalUnits: { decrement: totalUnitsRedeemed }, lastNav: redemptionNav, tradingBalance: balanceAfter, tradingEquity: equityAfter },
+    });
+    await tx.tradingAccountEntry.create({ data: { type: "USER_WITHDRAWAL", amount: totalUsd.neg(), balanceBefore: poolBefore.tradingBalance, balanceAfter, equityBefore: poolBefore.tradingEquity, equityAfter, note: `Bulk user withdrawal (${uniqueIds.length} requests)`, adminId } });
 
     return {
       count: uniqueIds.length,

@@ -74,6 +74,7 @@ model User {
   companyProfitShareRuns        ProfitShareRun[]         @relation("ProfitShareCompany")
   administeredProfitShareRuns   ProfitShareRun[]         @relation("ProfitShareAdmin")
   reversedProfitShareRuns       ProfitShareRun[]         @relation("ProfitShareReversalAdmin")
+  tradingAccountEntries         TradingAccountEntry[]    @relation("TradingAccountEntryAdmin")
 }
 
 model KycDocument {
@@ -110,7 +111,7 @@ model BankingDetail {
 
 // queued: confirmed USDT waiting for the next weekly invest run.
 // units:  the investor's share of the pool. Live value = units × NAV,
-//         where NAV = MT5 equity ÷ total pool units.
+//         where NAV = manually maintained trading equity ÷ total pool units.
 model Wallet {
   id        String   @id @default(cuid())
   userId    String   @unique
@@ -123,10 +124,41 @@ model Wallet {
 // Single row tracking the whole pool. lastNav is the fallback when the live
 // MT5 feed is unavailable.
 model PoolState {
-  id         String   @id @default("pool")
-  totalUnits Decimal  @default(0)
-  lastNav    Decimal  @default(1)
-  updatedAt  DateTime @updatedAt
+  id             String   @id @default("pool")
+  totalUnits     Decimal  @default(0)
+  lastNav        Decimal  @default(1)
+  tradingBalance Decimal  @default(0)
+  tradingEquity  Decimal  @default(0)
+  updatedAt      DateTime @updatedAt
+}
+
+enum TradingAdjustmentType {
+  MANUAL_SNAPSHOT
+  USER_DEPOSIT
+  TRADING_PROFIT
+  TRADING_LOSS
+  SERVER_FEE
+  ADMIN_SHARE
+  USER_WITHDRAWAL
+  OTHER_INCREASE
+  OTHER_DECREASE
+}
+
+model TradingAccountEntry {
+  id            String                @id @default(cuid())
+  type          TradingAdjustmentType
+  amount        Decimal
+  balanceBefore Decimal
+  balanceAfter  Decimal
+  equityBefore  Decimal
+  equityAfter   Decimal
+  note          String
+  adminId       String
+  admin         User                  @relation("TradingAccountEntryAdmin", fields: [adminId], references: [id], onDelete: Restrict)
+  createdAt     DateTime              @default(now())
+
+  @@index([createdAt])
+  @@index([adminId, createdAt])
 }
 
 enum LedgerType {
@@ -428,43 +460,7 @@ model TicketAttachment {
   @@index([messageId])
 }
 
-// ---------------------------------------------------------------------------
-// MT5 feed (pushed by the external bridge)
-// ---------------------------------------------------------------------------
-
-model Mt5Account {
-  id         String   @id @default(cuid())
-  login      String   @unique
-  name       String?
-  server     String?
-  currency   String   @default("USD")
-  balance    Float    @default(0)
-  equity     Float    @default(0)
-  margin     Float    @default(0)
-  freeMargin Float    @default(0)
-  updatedAt  DateTime @updatedAt
-}
-
-model Mt5Trade {
-  id         String    @id @default(cuid())
-  ticket     String    @unique // MT5 order/deal id
-  symbol     String
-  type       String // BUY | SELL
-  volume     Float
-  openPrice  Float
-  closePrice Float?
-  profit     Float     @default(0)
-  swap       Float     @default(0)
-  commission Float     @default(0)
-  status     String // OPEN | CLOSED
-  openTime   DateTime
-  closeTime  DateTime?
-  updatedAt  DateTime  @updatedAt
-
-  @@index([status, openTime])
-}
-
-// One row per UTC day recording pool NAV — upserted on every MT5 ingest.
+// One row per UTC day recording pool NAV from administrator-maintained equity.
 // This is what makes honest historical charts possible; history is never
 // fabricated, only interpolated between real snapshots.
 model NavSnapshot {

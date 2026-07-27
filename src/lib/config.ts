@@ -41,14 +41,6 @@ export const cashDepositInstruction: string =
   process.env.DEPOSIT_CASH_INSTRUCTION ??
   "Visit our office during business hours, hand the cash to the desk, and note the receipt number they give you.";
 
-export const mt5Access = {
-  server: process.env.MT5_SERVER ?? "",
-  login: process.env.MT5_LOGIN ?? "",
-  // READ-ONLY investor password. The master/trading password must never
-  // appear anywhere in this codebase or its env.
-  investorPassword: process.env.MT5_INVESTOR_PASSWORD ?? "",
-  webTerminalUrl: process.env.MT5_WEBTERMINAL_URL ?? "https://metatraderweb.app/trade",
-};
 
 export const WITHDRAWAL_TIME_ZONE = "Asia/Kolkata";
 

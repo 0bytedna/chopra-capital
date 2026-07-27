@@ -8,7 +8,7 @@ import { Counter } from "@/components/ui/Counter";
 const trust = [
   { Icon: Scale, label: "Hedge ratio 1:1" },
   { Icon: ShieldCheck, label: "Market-neutral" },
-  { Icon: Activity, label: "Live MT5 feed" },
+  { Icon: Activity, label: "Audited performance" },
 ];
 
 const stats = [
@@ -23,7 +23,7 @@ const marquee = [
   "AI-powered execution",
   "Human oversight 24/7",
   "Weekly withdrawals",
-  "Live MT5 transparency",
+  "Audited account reporting",
   "Dubai based",
 ];
 
@@ -65,7 +65,7 @@ export function Hero() {
           <p className="mt-6 max-w-xl text-base leading-relaxed text-ink-dim sm:text-lg">
             We trade one market only: gold. Spot XAU positions hedged one-for-one with gold
             futures, executed by AI-powered bots and supervised by human specialists around the
-            clock — with every trade visible to you live on MT5.
+            clock — with account performance reported through audited balance and equity updates.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">

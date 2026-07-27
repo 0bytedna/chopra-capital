@@ -18,6 +18,7 @@ import {
   WalletCards,
 } from "lucide-react";
 import { DepositMethodsToggle } from "@/components/admin/DepositMethodsToggle";
+import { InvestorAdminControls } from "@/components/admin/InvestorAdminControls";
 import { PortfolioChart } from "@/components/app/PortfolioChart";
 import { cn } from "@/lib/cn";
 import { D, formatInr, formatUsdt, toNumber } from "@/lib/money";
@@ -271,6 +272,27 @@ export default async function AdminInvestorRecordPage({
         </div>
       </header>
 
+      <InvestorAdminControls
+        investor={{
+          id: investor.id,
+          fullName: investor.fullName,
+          email: investor.email,
+          mobile: investor.mobile,
+          country: investor.country,
+          address: investor.address,
+          city: investor.city,
+          state: investor.state,
+          kycStatus: investor.kycStatus,
+          kycNote: investor.kycNote,
+          bankTransferEnabled: investor.bankTransferEnabled,
+          cashEnabled: investor.cashEnabled,
+          bankingDetail: investor.bankingDetail,
+        }}
+        queued={metrics.queued.toFixed(2)}
+        invested={investedValue.toFixed(2)}
+        deposits={investor.deposits.map((deposit) => ({ id: deposit.id, method: methodLabels[deposit.method], amount: deposit.amount.toString(), status: deposit.status, reference: deposit.reference, txHash: deposit.txHash, adminNote: deposit.adminNote }))}
+        withdrawals={investor.withdrawals.map((withdrawal) => ({ id: withdrawal.id, method: methodLabels[withdrawal.method], amount: withdrawal.amount.toString(), status: withdrawal.status, reference: withdrawal.txHash, adminNote: withdrawal.adminNote }))}
+      />
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5" aria-label="Investor portfolio summary">
         <MetricCard
           label="Balance"
