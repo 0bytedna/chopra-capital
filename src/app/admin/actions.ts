@@ -52,7 +52,7 @@ export async function adminSetTradingSnapshot(_prev: AdminFormState, formData: F
 export async function adminRecordTradingAdjustment(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
   const admin = await requireAdmin();
   const type = String(formData.get("type") ?? "");
-  const allowed = ["USER_DEPOSIT", "TRADING_PROFIT", "TRADING_LOSS", "SERVER_FEE", "ADMIN_SHARE", "USER_WITHDRAWAL", "OTHER_INCREASE", "OTHER_DECREASE"] as const;
+  const allowed = ["TRADING_PROFIT", "TRADING_LOSS", "SERVER_FEE", "ADMIN_SHARE", "OTHER_INCREASE", "OTHER_DECREASE"] as const;
   if (!allowed.includes(type as (typeof allowed)[number])) return { error: "Choose a valid reason." };
   try {
     await recordTradingAdjustment({

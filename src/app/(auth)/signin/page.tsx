@@ -13,14 +13,7 @@ export default function SigninPage() {
       </h1>
       <SigninForm />
       <p className="mt-3 text-center text-xs text-ink-faint">
-        <a
-          href="https://wa.me/918123320128?text=Hello%20Chopra%20Capital%2C%20I%20need%20help%20resetting%20my%20account%20password."
-          target="_blank"
-          rel="noreferrer"
-          className="text-gold-400 transition-colors hover:text-gold-300"
-        >
-          Forgot password? Contact the administrator on WhatsApp
-        </a>
+        <Link href="/forgot-password" className="text-gold-400 transition-colors hover:text-gold-300">Forgot password?</Link>
       </p>
       <p className="mt-5 text-center text-sm text-ink-faint">
         New to Chopra Capital?{" "}

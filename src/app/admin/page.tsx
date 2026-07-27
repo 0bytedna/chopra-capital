@@ -11,15 +11,15 @@ import { adminRecordTradingAdjustment, adminSetTradingSnapshot } from "./actions
 export const metadata: Metadata = { title: "Admin · Overview" };
 
 const reasonLabels: Record<string, string> = {
-  USER_DEPOSIT: "Verified user deposit",
   TRADING_PROFIT: "Trading profit",
   TRADING_LOSS: "Trading loss",
   SERVER_FEE: "Server or operating fee",
-  ADMIN_SHARE: "Admin profit share",
-  USER_WITHDRAWAL: "User withdrawal",
+  ADMIN_SHARE: "Company's profit share",
   OTHER_INCREASE: "Other increase",
   OTHER_DECREASE: "Other decrease",
   MANUAL_SNAPSHOT: "Manual balance/equity snapshot",
+  USER_DEPOSIT: "Verified deposit batch",
+  USER_WITHDRAWAL: "Verified withdrawal batch",
 };
 
 export default async function AdminOverviewPage() {
@@ -64,7 +64,7 @@ export default async function AdminOverviewPage() {
 
       <AdminActionForm action={adminRecordTradingAdjustment} submitLabel="Record adjustment" pendingLabel="Recording…" className="glass-card rounded-2xl p-5 sm:p-6" confirmMessage="Apply this adjustment to both trading balance and equity?">
         <p className="eyebrow">Profit, loss & movements</p><h2 className="mt-2 font-serif text-xl text-ink">Record a balance change</h2>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2"><label className="space-y-1.5 text-xs text-ink-faint">Reason<select name="type" required className="h-10 w-full rounded-lg border border-gold-600/20 bg-vault-950/65 px-3 text-sm text-ink">{Object.entries(reasonLabels).filter(([key]) => key !== "MANUAL_SNAPSHOT").map(([key,label]) => <option key={key} value={key}>{label}</option>)}</select></label><label className="space-y-1.5 text-xs text-ink-faint">Amount (USD)<input name="amount" type="number" min="0.01" step="0.01" required placeholder="0.00" className="h-10 w-full rounded-lg border border-gold-600/20 bg-vault-950/65 px-3 text-sm text-ink" /></label></div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2"><label className="space-y-1.5 text-xs text-ink-faint">Reason<select name="type" required className="h-10 w-full rounded-lg border border-gold-600/20 bg-vault-950/65 px-3 text-sm text-ink">{Object.entries(reasonLabels).filter(([key]) => ["TRADING_PROFIT", "TRADING_LOSS", "SERVER_FEE", "ADMIN_SHARE", "OTHER_INCREASE", "OTHER_DECREASE"].includes(key)).map(([key,label]) => <option key={key} value={key}>{label}</option>)}</select></label><label className="space-y-1.5 text-xs text-ink-faint">Amount (USD)<input name="amount" type="number" min="0.01" step="0.01" required placeholder="0.00" className="h-10 w-full rounded-lg border border-gold-600/20 bg-vault-950/65 px-3 text-sm text-ink" /></label></div>
         <label className="mt-3 block space-y-1.5 text-xs text-ink-faint">Audit note<input name="note" maxLength={240} required placeholder="Trading session, invoice, withdrawal batch, etc." className="h-10 w-full rounded-lg border border-gold-600/20 bg-vault-950/65 px-3 text-sm text-ink" /></label>
       </AdminActionForm>
     </section>

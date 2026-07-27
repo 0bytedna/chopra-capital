@@ -2,18 +2,43 @@
 > chopra-capital@0.1.0 dev
 > next dev
 
-⚠ Port 3000 is in use by process 1616, using available port 3001 instead.
 ▲ Next.js 16.2.9 (Turbopack)
-- Local:         http://localhost:3001
-- Network:       http://192.168.1.20:3001
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.20:3000
 - Environments: .env.local, .env
-✓ Ready in 1008ms
-⨯ Another next dev server is already running.
+✓ Ready in 595ms
+- Experiments (use with caution):
+  · serverActions
 
-- Local:        http://localhost:3000
-- PID:          1616
-- Dir:          E:\WorkStation\chopra-capital
-- Log:          .next\dev\logs\next-development.log
-
-Run taskkill /PID 1616 /F to stop it.
-[?25h
+ GET /admin 200 in 2.7s (next.js: 257ms, proxy.ts: 412ms, application-code: 2.1s)
+ GET /admin/investors 200 in 618ms (next.js: 558ms, proxy.ts: 8ms, application-code: 52ms)
+ GET /app 200 in 1572ms (next.js: 1427ms, proxy.ts: 5ms, application-code: 140ms)
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+ GET /app/deposit 200 in 527ms (next.js: 415ms, proxy.ts: 4ms, application-code: 107ms)
+ GET /app/withdraw 200 in 417ms (next.js: 346ms, proxy.ts: 5ms, application-code: 66ms)
+ GET /app/withdraw 200 in 52ms (next.js: 5ms, proxy.ts: 5ms, application-code: 42ms)
+ GET /app/history 200 in 390ms (next.js: 345ms, proxy.ts: 4ms, application-code: 40ms)
+ GET /app/profile 200 in 498ms (next.js: 450ms, proxy.ts: 4ms, application-code: 44ms)
+ GET /app/deposit 200 in 55ms (next.js: 5ms, proxy.ts: 6ms, application-code: 45ms)
+ GET / 200 in 68ms (next.js: 30ms, application-code: 38ms)
+ POST /app/deposit 303 in 142ms (next.js: 4ms, proxy.ts: 5ms, application-code: 133ms)
+  └─ ƒ signout() in 3ms src/app/(auth)/actions.ts
+ GET /signin 200 in 141ms (next.js: 88ms, proxy.ts: 6ms, application-code: 47ms)
+ GET /forgot-password 200 in 991ms (next.js: 966ms, application-code: 26ms)
+ POST /forgot-password 303 in 24ms (next.js: 6ms, application-code: 18ms)
+  └─ ƒ beginPasswordRecovery({"stage":"email"}, {}) in 3ms src/app/(auth)/forgot-password/actions.ts

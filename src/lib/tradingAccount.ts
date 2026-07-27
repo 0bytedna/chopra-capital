@@ -8,7 +8,6 @@ const DECREASE_TYPES = new Set<TradingAdjustmentType>([
   "TRADING_LOSS",
   "SERVER_FEE",
   "ADMIN_SHARE",
-  "USER_WITHDRAWAL",
   "OTHER_DECREASE",
 ]);
 
@@ -49,7 +48,7 @@ export async function setTradingSnapshot(input: {
 }
 
 export async function recordTradingAdjustment(input: {
-  type: Exclude<TradingAdjustmentType, "MANUAL_SNAPSHOT">;
+  type: "TRADING_PROFIT" | "TRADING_LOSS" | "SERVER_FEE" | "ADMIN_SHARE" | "OTHER_INCREASE" | "OTHER_DECREASE";
   amount: Dec;
   note: string;
   adminId: string;

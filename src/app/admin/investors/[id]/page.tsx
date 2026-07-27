@@ -582,50 +582,6 @@ export default async function AdminInvestorRecordPage({
             )}
           </div>
         </article>
-
-        <article className="glass-card min-w-0 rounded-2xl p-5 sm:p-6">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <Percent className="size-4 text-gold-400" aria-hidden />
-              <h2 className="font-serif text-xl text-ink">Company profit share</h2>
-            </div>
-            <Link
-              href="/admin/profit-share"
-              className="text-xs text-gold-400 transition-colors hover:text-gold-300"
-            >
-              Open runs
-            </Link>
-          </div>
-          <div className="mt-4 max-h-[28rem] overflow-auto">
-            {investor.profitShareAllocations.length > 0 ? (
-              <div className="divide-y divide-gold-600/10">
-                {investor.profitShareAllocations.map((allocation) => (
-                  <div key={allocation.id} className="py-3 first:pt-0">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-sm text-ink">
-                          {allocation.run.frequency === "WEEKLY" ? "Weekly" : "Monthly"} ·{" "}
-                          {allocation.run.periodKey}
-                        </p>
-                        <p className="mt-1 text-xs text-ink-faint">
-                          Eligible {formatUsdt(allocation.eligibleProfit)} USD ·{" "}
-                          {formatDate(allocation.run.createdAt, true)}
-                        </p>
-                      </div>
-                      <p className="shrink-0 font-mono text-sm text-negative">
-                        −{formatUsdt(allocation.companyShare)} USD
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="py-8 text-center text-sm text-ink-faint">
-                No company profit-share deductions.
-              </p>
-            )}
-          </div>
-        </article>
         <article className="glass-card min-w-0 rounded-2xl p-5 sm:p-6">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">

@@ -13,9 +13,7 @@ import {
   LogOut,
   Menu,
   X,
-  ArrowLeft,
   ArrowLeftRight,
-  Percent,
 } from "lucide-react";
 import { signout } from "@/app/(auth)/actions";
 import { cn } from "@/lib/cn";
@@ -28,7 +26,6 @@ const items = [
   { href: "/admin/tickets", label: "Tickets", Icon: LifeBuoy },
   { href: "/admin/investors", label: "Investors", Icon: Users },
   { href: "/admin/internal-transfers", label: "Internal transfers", Icon: ArrowLeftRight },
-  { href: "/admin/profit-share", label: "Profit share", Icon: Percent },
 ];
 
 function Nav({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
@@ -56,17 +53,6 @@ function Nav({ pathname, onNavigate }: { pathname: string; onNavigate?: () => vo
           </Link>
         );
       })}
-      <div className="pt-5">
-        <p className="eyebrow px-3 pb-2">Switch</p>
-        <Link
-          href="/app"
-          onClick={onNavigate}
-          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-ink-dim transition-colors hover:bg-ink/5 hover:text-ink"
-        >
-          <ArrowLeft className="size-4" aria-hidden />
-          Investor app
-        </Link>
-      </div>
     </nav>
   );
 }
