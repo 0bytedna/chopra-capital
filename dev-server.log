@@ -8476,3 +8476,6 @@ Import trace:
   └─ ƒ signin({}, {}) in 790ms src/app/(auth)/actions.ts
  GET /admin/investors 200 in 267ms (next.js: 168ms, proxy.ts: 4ms, application-code: 96ms)
  GET /admin 200 in 52ms (next.js: 4ms, proxy.ts: 4ms, application-code: 44ms)
+✓ Compiled in 267ms
+ GET /admin 200 in 988ms (next.js: 204ms, proxy.ts: 102ms, application-code: 682ms)
+ GET /admin 200 in 470ms (next.js: 53ms, proxy.ts: 176ms, application-code: 241ms)
