@@ -20,7 +20,7 @@ export default function RiskPage() {
 
       <h2>Performance objectives are not promises</h2>
       <p>
-        Where we state a performance objective — such as a target of 1–4% per month — this
+        Where we state a performance objective — such as a target of 1–3% per month — this
         describes what the strategy is designed to pursue, not what it will achieve. Actual
         results will vary. Some periods will be flat and some may be negative. Past performance,
         where shown, is not a reliable indicator of future results.

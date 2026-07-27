@@ -2,388 +2,80 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import {
-  ArrowRight,
-  Wallet,
-  Layers,
-  LineChart,
-  Banknote,
-  Scale,
-  Bot,
-  Eye,
-  Landmark,
-  ChevronDown,
-  MonitorCheck,
-  ShieldAlert,
-} from "lucide-react";
+import { ArrowRight, BadgeCheck, Banknote, Bot, ChevronDown, CircleDollarSign, Clock3, Eye, FileCheck2, Landmark, Layers3, LineChart, LockKeyhole, Scale, ShieldAlert, ShieldCheck, UserCheck, WalletCards } from "lucide-react";
 import { Reveal } from "@/components/ui/Reveal";
 import { cn } from "@/lib/cn";
 
-function SectionHeading({
-  number,
-  eyebrow,
-  title,
-  italicWord,
-}: {
-  number: string;
-  eyebrow: string;
-  title: string;
-  italicWord: string;
-}) {
-  const parts = title.split(italicWord);
-  return (
-    <Reveal>
-      <div className="flex items-baseline gap-4">
-        <span className="font-serif text-sm text-gold-600/70">{number}</span>
-        <div>
-          <p className="eyebrow">{eyebrow}</p>
-          <h2 className="mt-3 font-serif text-3xl tracking-tight text-ink sm:text-4xl md:text-[2.75rem] md:leading-[1.1]">
-            {parts[0]}
-            <em className="gold-text italic">{italicWord}</em>
-            {parts[1] ?? ""}
-          </h2>
-        </div>
-      </div>
-    </Reveal>
-  );
+function Heading({ eyebrow, title, accent, copy }: { eyebrow: string; title: string; accent: string; copy?: string }) {
+  const [before, after] = title.split(accent);
+  return <Reveal><div className="max-w-3xl"><p className="eyebrow">{eyebrow}</p><h2 className="mt-3 font-serif text-3xl leading-tight tracking-tight text-ink sm:text-5xl">{before}<em className="gold-text italic">{accent}</em>{after}</h2>{copy && <p className="mt-5 max-w-2xl text-sm leading-7 text-ink-dim sm:text-base">{copy}</p>}</div></Reveal>;
 }
 
-/* --- 01 · How it works --------------------------------------------------- */
+function About() {
+  return <section id="about" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-20 sm:px-6 sm:py-28">
+    <div className="grid gap-12 lg:grid-cols-[.9fr_1.1fr] lg:items-start">
+      <Heading eyebrow="What Chopra Capital is" title="A trading operation, not a bot store." accent="not a bot store" />
+      <Reveal delay={.1}><div className="space-y-5 text-sm leading-7 text-ink-dim sm:text-base"><p>Investors do not buy software, configure a strategy or connect their own broker. They open an account with Chopra Capital, complete KYC and allocate capital to a professionally managed pool.</p><p>Our automation is internal infrastructure. It helps the trading desk monitor markets and execute predefined rules consistently. The company remains responsible for oversight, accounting, investor servicing and operational decisions.</p><div className="grid gap-3 pt-2 sm:grid-cols-2">{[[UserCheck,"Managed for investors"],[Bot,"Automation works internally"],[Scale,"Gold-focused hedging"],[FileCheck2,"Account-level records"]].map(([Icon,label]) => { const ItemIcon = Icon as typeof UserCheck; return <div key={String(label)} className="flex items-center gap-3 rounded-xl border border-gold-600/12 bg-gold-600/5 p-3.5"><ItemIcon className="size-4 text-gold-500" aria-hidden /><span className="text-sm text-ink">{String(label)}</span></div>; })}</div></div></Reveal>
+    </div>
+  </section>;
+}
 
 const steps = [
-  {
-    Icon: Wallet,
-    title: "Fund your wallet",
-    body: "Deposit USDT to the company address on TRC20, ERC20 or BEP20. Our team confirms it on-chain and credits your account balance.",
-  },
-  {
-    Icon: Layers,
-    title: "Allocate to the pool",
-    body: "On the weekly invest run your balance converts into pool units at the current NAV — the same fair price for every investor, new or old.",
-  },
-  {
-    Icon: LineChart,
-    title: "Watch it live",
-    body: "Your dashboard tracks your value in real time, and your account shows the balance, equity and performance figures recorded by the operations team.",
-  },
-  {
-    Icon: Banknote,
-    title: "Withdraw weekly",
-    body: "Request a withdrawal on Sunday from 12:00 AM to 12:00 PM IST. It is processed on Monday at the current NAV. No lock-in, ever.",
-  },
+  { Icon: UserCheck, title: "Create and verify", body: "Open your account, complete your profile and submit KYC. Deposits become available after verification." },
+  { Icon: WalletCards, title: "Deposit funds", body: "Choose crypto, bank transfer or cash where enabled. Every payment is manually checked before it moves forward." },
+  { Icon: Layers3, title: "Enter the pool", body: "Verified funds wait in queue, then receive pool units at the applicable NAV when they are moved into investment." },
+  { Icon: LineChart, title: "Track your account", body: "See your balance, queued funds and performance history from your private investor dashboard." },
+  { Icon: Banknote, title: "Withdraw weekly", body: "Submit on Sunday from 12:00 AM to 12:00 PM IST. Approved requests are processed on Monday." },
 ];
-
-function HowItWorks() {
-  return (
-    <section id="how-it-works" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-20 sm:px-6 sm:py-28">
-      <SectionHeading number="01" eyebrow="The process" title="Four steps, no ceremony." italicWord="ceremony" />
-      <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {steps.map((s, i) => (
-          <Reveal key={s.title} delay={i * 0.08}>
-            <div className="glass-card glass-card-hover h-full p-6">
-              <div className="flex items-center justify-between">
-                <s.Icon className="size-5 text-gold-500" aria-hidden />
-                <span className="font-serif text-sm text-gold-600/60">0{i + 1}</span>
-              </div>
-              <h3 className="mt-5 font-serif text-xl text-ink">{s.title}</h3>
-              <p className="mt-2.5 text-sm leading-relaxed text-ink-dim">{s.body}</p>
-            </div>
-          </Reveal>
-        ))}
-      </div>
-    </section>
-  );
+function Process() {
+  return <section id="how-it-works" className="scroll-mt-24 border-y border-gold-600/10 bg-vault-900/40"><div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28"><Heading eyebrow="How it works" title="From verification to withdrawal, every step is controlled." accent="every step is controlled" copy="Capital never jumps directly into the trading pool. Identity, payments, conversion and broker movements pass through separate operational checks."/><div className="mt-12 grid gap-4 md:grid-cols-5">{steps.map((step,index) => <Reveal key={step.title} delay={index*.06}><article className="glass-card h-full p-5"><div className="flex items-center justify-between"><step.Icon className="size-5 text-gold-500" aria-hidden/><span className="font-mono text-[10px] text-gold-600">0{index+1}</span></div><h3 className="mt-5 font-serif text-lg text-ink">{step.title}</h3><p className="mt-2 text-xs leading-6 text-ink-dim">{step.body}</p></article></Reveal>)}</div></div></section>;
 }
 
-/* --- 02 · The strategy ---------------------------------------------------- */
-
-const strategyCards = [
-  {
-    Icon: Landmark,
-    title: "One market: gold",
-    body: "No baskets, no rotation, no distraction. The desk trades XAU exclusively — a market it knows deeply and watches every hour it is open.",
-  },
-  {
-    Icon: Scale,
-    title: "Hedged 1:1",
-    body: "Every spot gold position is offset one-for-one with gold futures. The book targets market-neutrality, aiming to earn from structure and spread rather than direction.",
-  },
-  {
-    Icon: Bot,
-    title: "AI-powered execution",
-    body: "Proprietary bots place and manage orders with machine precision — sizing, timing and hedge maintenance run on rules, not emotion.",
-  },
-  {
-    Icon: Eye,
-    title: "Humans on watch 24/7",
-    body: "Specialists supervise the bots around the clock. Anything anomalous — spreads, liquidity, news shocks — and a human steps in immediately.",
-  },
+const capabilities = [
+  { Icon: Bot, title: "Automated execution", body: "Rules-based systems respond faster and more consistently than manual order entry." },
+  { Icon: Eye, title: "Human supervision", body: "The trading desk monitors execution, market conditions and exceptions throughout trading hours." },
+  { Icon: Scale, title: "Hedge discipline", body: "The operation is built around hedged gold exposure rather than unsupported directional bets." },
+  { Icon: LockKeyhole, title: "Protected accounts", body: "Password security, optional authenticator 2FA, KYC controls and role-based administration." },
+  { Icon: BadgeCheck, title: "Verified movements", body: "Deposits and withdrawals have dedicated approval, correction and settlement workflows." },
+  { Icon: FileCheck2, title: "Auditable accounting", body: "Balance changes, fees, profit/loss entries and administrative corrections are recorded." },
 ];
-
-function Strategy() {
-  return (
-    <section id="strategy" className="relative scroll-mt-24 border-y border-gold-600/10 bg-vault-900/40">
-      <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
-        <SectionHeading number="02" eyebrow="The strategy" title="Neutral by design." italicWord="design" />
-        <div className="mt-12 grid gap-5 sm:grid-cols-2">
-          {strategyCards.map((c, i) => (
-            <Reveal key={c.title} delay={i * 0.07}>
-              <div className="glass-card glass-card-hover h-full p-7">
-                <c.Icon className="size-5 text-gold-500" aria-hidden />
-                <h3 className="mt-4 font-serif text-xl text-ink">{c.title}</h3>
-                <p className="mt-2.5 text-sm leading-relaxed text-ink-dim">{c.body}</p>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-
-        <Reveal delay={0.15}>
-          <div className="mt-10 rounded-2xl border border-gold-500/25 bg-gold-600/6 p-6 sm:p-8">
-            <div className="flex items-start gap-3.5">
-              <ShieldAlert className="mt-0.5 size-5 shrink-0 text-gold-400" aria-hidden />
-              <div>
-                <h3 className="font-serif text-lg text-gold-300">An honest note on risk</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-dim">
-                  Hedging narrows risk — it does not remove it. Execution slippage, futures basis,
-                  liquidity gaps and counterparty events can all produce losses, including in
-                  hedged books. Our 1–4% monthly figure is an <strong className="text-ink">objective</strong> the
-                  strategy is built to pursue, not a promise it will always meet. Some weeks will
-                  be flat. Some may be negative. Anyone who tells you otherwise is selling
-                  something. Your capital is at risk — invest only what you can afford to lose.
-                </p>
-              </div>
-            </div>
-          </div>
-        </Reveal>
-      </div>
-    </section>
-  );
+function OperatingSystem() {
+  return <section id="operations" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-20 sm:px-6 sm:py-28"><Heading eyebrow="Built for disciplined operations" title="Technology handles repetition. People handle responsibility." accent="People handle responsibility" copy="Automation improves execution; it does not replace governance. Investor money, risk decisions and account records remain under administrative control."/><div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{capabilities.map((item,index) => <Reveal key={item.title} delay={index*.05}><article className="glass-card glass-card-hover h-full p-6"><span className="flex size-10 items-center justify-center rounded-xl border border-gold-600/20 bg-gold-600/8"><item.Icon className="size-5 text-gold-400" aria-hidden /></span><h3 className="mt-5 font-serif text-xl text-ink">{item.title}</h3><p className="mt-2 text-sm leading-6 text-ink-dim">{item.body}</p></article></Reveal>)}</div></section>;
 }
 
-/* --- 03 · Transparency ----------------------------------------------------- */
-
-function Transparency() {
-  return (
-    <section id="transparency" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-20 sm:px-6 sm:py-28">
-      <SectionHeading number="03" eyebrow="Transparency" title="Watch the account itself." italicWord="itself" />
-      <div className="mt-12 grid items-center gap-8 lg:grid-cols-2">
-        <Reveal>
-          <div className="space-y-5 text-sm leading-relaxed text-ink-dim sm:text-base">
-            <p>
-              Most funds send you a PDF once a quarter. We hand you the keys to the window:
-              administrator-maintained account reporting, so you can review
-              position, every hedge and the account equity move in real time.
-            </p>
-            <p>
-              The same feed powers your dashboard. Your balance is your units multiplied by the
-              live NAV — derived from broker equity, not from a number we type in.
-            </p>
-            <ul className="space-y-2.5 pt-1">
-              {[
-                "Administrator-maintained balance and equity history",
-                "Web terminal access from any browser — nothing to install",
-                "Daily NAV history recorded from the live feed, never back-filled",
-              ].map((item) => (
-                <li key={item} className="flex items-start gap-2.5">
-                  <MonitorCheck className="mt-0.5 size-4 shrink-0 text-gold-500" aria-hidden />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </Reveal>
-
-        <Reveal delay={0.12}>
-          {/* Stylized account panel mock — illustrative UI, not market data */}
-          <div className="glass-card overflow-hidden rounded-2xl">
-            <div className="flex items-center justify-between border-b border-gold-600/12 px-5 py-3.5">
-              <span className="font-mono text-xs text-ink-faint">Account · Audited performance</span>
-              <span className="inline-flex items-center gap-1.5 text-xs text-positive">
-                <span className="relative flex size-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-positive opacity-60" />
-                  <span className="relative inline-flex size-2 rounded-full bg-positive" />
-                </span>
-                Live
-              </span>
-            </div>
-            <div className="space-y-0 px-5 py-4 font-mono text-xs">
-              {[
-                { l: "XAUUSD · spot", r: "BUY", tone: "text-positive" },
-                { l: "GC · futures hedge", r: "SELL", tone: "text-negative" },
-                { l: "Net exposure", r: "≈ 0.0", tone: "text-gold-400" },
-              ].map((row) => (
-                <div key={row.l} className="flex items-center justify-between border-b border-ink/5 py-3 last:border-0">
-                  <span className="text-ink-dim">{row.l}</span>
-                  <span className={row.tone}>{row.r}</span>
-                </div>
-              ))}
-              <div className="mt-4 rounded-lg bg-vault-950/70 p-4">
-                <p className="text-[10px] uppercase tracking-[0.18em] text-ink-faint">Account equity</p>
-                <p className="mt-1 font-serif text-2xl tracking-tight text-ink">
-                  Visible to you, <em className="gold-text italic">live</em>
-                </p>
-              </div>
-            </div>
-          </div>
-        </Reveal>
-      </div>
-    </section>
-  );
+function Visibility() {
+  return <section id="visibility" className="scroll-mt-24 border-y border-gold-600/10 bg-vault-900/40"><div className="mx-auto grid max-w-6xl gap-12 px-4 py-20 sm:px-6 sm:py-28 lg:grid-cols-[1fr_1fr] lg:items-center"><div><Heading eyebrow="Investor visibility" title="Your share of the operation, clearly accounted for." accent="clearly accounted for" copy="Every investor has a different entry date and capital history. The platform uses pool units and NAV so deposits, withdrawals, profits and losses can be attributed consistently."/><Reveal delay={.1}><ul className="mt-7 space-y-3">{["Current balance and account performance", "Confirmed funds waiting in queue", "Profit-only and total-balance performance charts", "Deposit, withdrawal and ledger history", "Profile, bank, crypto and security controls"].map(item => <li key={item} className="flex items-start gap-3 text-sm text-ink-dim"><ShieldCheck className="mt-0.5 size-4 shrink-0 text-gold-500" aria-hidden />{item}</li>)}</ul></Reveal></div><Reveal delay={.12}><div className="glass-card overflow-hidden rounded-3xl"><div className="flex items-center justify-between border-b border-gold-600/15 px-5 py-4"><div><p className="eyebrow">Investor dashboard</p><p className="mt-1 text-sm text-ink">A clear view of your account</p></div><span className="text-xs text-ink-faint">Illustrative</span></div><div className="grid grid-cols-2 gap-3 p-5">{[[CircleDollarSign,"Balance","Your invested value"],[Landmark,"History","Balance changes over time"],[Clock3,"In queue","Verified, awaiting investment"],[LineChart,"Performance","Filtered by your own timeline"]].map(([Icon,title,copy]) => {const ItemIcon=Icon as typeof CircleDollarSign; return <div key={String(title)} className="rounded-2xl border border-gold-600/12 bg-black/15 p-4"><ItemIcon className="size-4 text-gold-500" aria-hidden/><p className="mt-4 font-serif text-lg text-ink">{String(title)}</p><p className="mt-1 text-[11px] leading-5 text-ink-faint">{String(copy)}</p></div>})}</div><div className="border-t border-gold-600/15 px-5 py-5"><div className="flex h-24 items-end gap-2" aria-hidden>{[34,42,38,55,49,66,61,74,70,83,79,92].map((height,index)=><span key={index} className="flex-1 rounded-t-sm bg-gradient-to-t from-gold-700/25 to-gold-400/75" style={{height:`${height}%`}} />)}</div><div className="mt-3 flex justify-between text-[9px] uppercase tracking-[.15em] text-ink-faint"><span>Account opened</span><span>Today</span></div></div></div></Reveal></div></section>;
 }
 
-/* --- 04 · Terms & schedule -------------------------------------------------- */
-
-const ledgerRows = [
-  { term: "Trading window", value: "Monday – Friday", note: "Gold market hours, bot-executed, human-supervised" },
-  { term: "Withdrawal requests", value: "Sunday morning", note: "Submit from 12:00 AM to 12:00 PM IST" },
-  { term: "Withdrawals processed", value: "Monday", note: "Settled at current NAV using your selected payout method" },
-  { term: "Lock-in", value: "None", note: "Your money is never trapped — withdraw any week" },
-  { term: "Minimum allocation", value: "$2,000 USDT", note: "One tier — every investor gets the same terms" },
-  { term: "Performance objective", value: "1–4% / month", note: "A target, not a promise. Capital at risk" },
+function Backtesting() {
+  const details = [
+    ["Broker Name", "NewEra Capital"],
+    ["Server", "NeweraCapitalMarkets-Live"],
+    ["MT5 ID", "250129"],
+    ["Investor Password", "Available to verified investors"],
+  ];
+  return <section id="backtesting" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-20 sm:px-6 sm:py-28"><div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center"><Heading eyebrow="Backtesting Data" title="Check our live account history." accent="live account history" copy="Use the read-only investor access to review the account directly in MetaTrader 5. Investor access allows account inspection without trading permissions."/><Reveal delay={.1}><div className="glass-card overflow-hidden rounded-3xl"><div className="border-b border-gold-600/15 px-6 py-5"><p className="eyebrow">MT5 read-only access</p><p className="mt-2 text-sm text-ink-dim">Live account details</p></div><dl className="divide-y divide-gold-600/10">{details.map(([label,value]) => <div key={label} className="grid gap-1 px-6 py-4 sm:grid-cols-[10rem_1fr] sm:items-center"><dt className="text-[10px] uppercase tracking-[.16em] text-ink-faint">{label}</dt><dd className="break-all font-mono text-sm text-ink">{value}</dd></div>)}</dl></div></Reveal></div></section>;
+}
+const terms = [
+  ["Minimum deposit", "$2,000", "Single investor tier"],
+  ["Trading focus", "Gold", "Specialist operation"],
+  ["Withdrawal request", "Sunday", "12:00 AM–12:00 PM IST"],
+  ["Processing day", "Monday", "After administrative approval"],
+  ["Lock-in period", "None", "Weekly request cycle applies"],
+  ["Monthly objective", "1–3%", "Objective only, never guaranteed"],
 ];
+function Terms() { return <section id="terms" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-20 sm:px-6 sm:py-28"><Heading eyebrow="Terms and schedule" title="Simple terms. A defined weekly rhythm." accent="defined weekly rhythm"/><Reveal delay={.1}><div className="glass-card mt-12 overflow-hidden rounded-2xl">{terms.map(([label,value,note],index)=><div key={label} className={cn("grid gap-2 px-5 py-5 sm:grid-cols-[1fr_auto] sm:items-center sm:px-8",index<terms.length-1&&"border-b border-gold-600/10")}><div><p className="text-[10px] uppercase tracking-[.17em] text-ink-faint">{label}</p><p className="mt-1 text-sm text-ink-dim">{note}</p></div><p className="font-serif text-xl text-gold-400 sm:text-2xl">{value}</p></div>)}</div></Reveal><Reveal delay={.15}><div className="mt-6 flex gap-3 rounded-2xl border border-gold-500/25 bg-gold-600/6 p-5 sm:p-6"><ShieldAlert className="mt-0.5 size-5 shrink-0 text-gold-400" aria-hidden/><div><p className="font-serif text-lg text-gold-300">Risk is reduced, not erased.</p><p className="mt-2 text-sm leading-6 text-ink-dim">Automation and hedging cannot guarantee profit. Slippage, liquidity, basis changes, counterparty issues, operational failures and market events can cause losses. Performance objectives are not promises. Capital is at risk.</p></div></div></Reveal></section>; }
 
-function TermsLedger() {
-  return (
-    <section id="terms" className="relative scroll-mt-24 border-y border-gold-600/10 bg-vault-900/40">
-      <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
-        <SectionHeading number="04" eyebrow="Terms & schedule" title="The weekly rhythm." italicWord="rhythm" />
-        <Reveal delay={0.1}>
-          <div className="glass-card mt-12 overflow-hidden rounded-2xl">
-            {ledgerRows.map((row, i) => (
-              <div
-                key={row.term}
-                className={cn(
-                  "grid gap-1 px-5 py-5 sm:grid-cols-[1fr_auto] sm:items-center sm:gap-6 sm:px-8",
-                  i !== ledgerRows.length - 1 && "border-b border-gold-600/10",
-                )}
-              >
-                <div>
-                  <p className="text-xs uppercase tracking-[0.16em] text-ink-faint">{row.term}</p>
-                  <p className="mt-1 text-sm text-ink-dim">{row.note}</p>
-                </div>
-                <p className="font-serif text-xl text-gold-400 sm:text-right sm:text-2xl">{row.value}</p>
-              </div>
-            ))}
-          </div>
-        </Reveal>
-      </div>
-    </section>
-  );
-}
-
-/* --- 05 · FAQ ---------------------------------------------------------------- */
-
-const faqs = [
-  {
-    q: "Is this really risk-free?",
-    a: "No — and you should walk away from anyone who says yes. Hedging sharply reduces directional exposure, but execution slippage, futures basis moves, liquidity gaps and counterparty events can still cause losses. The 1–4% monthly figure is an objective we manage toward, not a guarantee. Your capital is at risk, and you should only invest money you can afford to lose.",
-  },
-  {
-    q: "What exactly do you trade?",
-    a: "Gold, and only gold. The strategy holds spot XAU positions hedged one-for-one with gold futures, keeping the book close to market-neutral. We do not trade other metals, FX pairs, indices or crypto with pooled funds.",
-  },
-  {
-    q: "How do deposits and withdrawals work?",
-    a: "You deposit USDT (TRC20, ERC20 or BEP20) to the company address shown in your account. Once confirmed, it joins the pool on the weekly invest run. Withdrawals are requested on Sunday from 12:00 AM to 12:00 PM IST and processed on Monday at the current NAV — there is no lock-in period.",
-  },
-  {
-    q: "How can I verify the trading is real?",
-    a: "Your dashboard shows the balance, equity and NAV recorded by the operations team. Trading results, deposits, withdrawals, fees and profit-share settlements are reflected through audited account adjustments.",
-  },
-  {
-    q: "Who can invest, and what is the minimum?",
-    a: "The minimum allocation is $2,000 USDT and every investor is on the same single tier — same NAV, same terms. Identity verification (KYC) is required before your funds can be allocated to the pool.",
-  },
-  {
-    q: "What fees do you charge?",
-    a: "Fee terms are shown transparently inside the platform before you commit, and every fee applied to your account appears as its own line in your ledger. There are no hidden spreads added to your NAV.",
-  },
+const faqs=[
+  ["Are you selling a trading bot?","No. Chopra Capital is a managed trading operation. Automation is used internally for monitoring and execution; investors do not buy, install or configure software."],
+  ["Is the return guaranteed?","No. The 1–3% monthly figure is an objective, not a guarantee. Some periods may be flat or negative, and invested capital can be lost."],
+  ["How are my profits calculated?","Your invested balance is represented by pool units. Their value changes with NAV, while deposits, withdrawals and other cash movements are recorded separately."],
+  ["How do you protect deposits and withdrawals?","KYC is required. Payments pass through method-specific verification, correction and approval stages before balances change or payouts are completed."],
+  ["When can I withdraw?","Withdrawal requests are accepted on Sundays from 12:00 AM to 12:00 PM IST and are processed on Mondays after approval. There is no long-term lock-in."],
+  ["What can I see in my account?","Your dashboard includes balance, queued funds, performance charts, transaction history, support tickets and security settings."],
 ];
+function Faq(){const[open,setOpen]=useState<number|null>(0);return <section id="faq" className="border-t border-gold-600/10 bg-vault-900/40"><div className="mx-auto max-w-4xl px-4 py-20 sm:px-6 sm:py-28"><Heading eyebrow="Common questions" title="Clear answers before you allocate." accent="before you allocate"/><div className="mt-10 space-y-3">{faqs.map(([q,a],index)=>{const active=open===index;return <Reveal key={q} delay={index*.035}><article className="glass-card overflow-hidden rounded-xl"><button type="button" onClick={()=>setOpen(active?null:index)} aria-expanded={active} className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left sm:px-6"><span className="font-serif text-base text-ink sm:text-lg">{q}</span><ChevronDown className={cn("size-4 shrink-0 text-gold-500 transition-transform",active&&"rotate-180")} aria-hidden/></button><div className={cn("grid transition-all duration-300",active?"grid-rows-[1fr] opacity-100":"grid-rows-[0fr] opacity-0")}><div className="overflow-hidden"><p className="px-5 pb-5 text-sm leading-7 text-ink-dim sm:px-6">{a}</p></div></div></article></Reveal>})}</div></div></section>}
 
-function Faq() {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
+function FinalCta(){return <section className="relative overflow-hidden border-t border-gold-600/10"><div className="absolute inset-0 -z-10 gold-aura"/><div className="absolute inset-0 -z-10 grain"/><div className="mx-auto max-w-4xl px-4 py-20 text-center sm:px-6 sm:py-28"><Reveal><p className="eyebrow">Begin with clarity</p><h2 className="mt-4 font-serif text-4xl text-ink sm:text-6xl">A disciplined way to participate in <em className="gold-text italic">gold trading.</em></h2><p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-ink-dim sm:text-base">Open your account, complete verification and review the process before allocating capital. No software to install. No strategy to configure. Capital at risk.</p><div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row"><Link href="/signup" className="btn-gold px-8 py-3 text-base">Open an account<ArrowRight className="size-4" aria-hidden/></Link><Link href="/legal/risk" className="btn-ghost px-8 py-3 text-base">Read risk disclosure</Link></div></Reveal></div></section>}
 
-  return (
-    <section id="faq" className="mx-auto max-w-3xl scroll-mt-24 px-4 py-20 sm:px-6 sm:py-28">
-      <SectionHeading number="05" eyebrow="Questions" title="Asked, answered honestly." italicWord="honestly" />
-      <div className="mt-10 space-y-3">
-        {faqs.map((f, i) => {
-          const open = openIndex === i;
-          return (
-            <Reveal key={f.q} delay={i * 0.04}>
-              <div className="glass-card overflow-hidden rounded-xl">
-                <button
-                  type="button"
-                  onClick={() => setOpenIndex(open ? null : i)}
-                  aria-expanded={open}
-                  className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left sm:px-6"
-                >
-                  <span className="font-serif text-base text-ink sm:text-lg">{f.q}</span>
-                  <ChevronDown
-                    className={cn("size-4 shrink-0 text-gold-500 transition-transform duration-300", open && "rotate-180")}
-                    aria-hidden
-                  />
-                </button>
-                <div
-                  className={cn(
-                    "grid transition-all duration-300 ease-out",
-                    open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
-                  )}
-                >
-                  <div className="overflow-hidden">
-                    <p className="px-5 pb-5 text-sm leading-relaxed text-ink-dim sm:px-6">{f.a}</p>
-                  </div>
-                </div>
-              </div>
-            </Reveal>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
-/* --- Final CTA band ------------------------------------------------------------ */
-
-function CtaBand() {
-  return (
-    <section className="relative overflow-hidden border-t border-gold-600/10">
-      <div className="absolute inset-0 -z-10 gold-aura" aria-hidden />
-      <div className="absolute inset-0 -z-10 grain" aria-hidden />
-      <div className="mx-auto max-w-4xl px-4 py-20 text-center sm:px-6 sm:py-28">
-        <Reveal>
-          <p className="eyebrow">Open your account</p>
-          <h2 className="mt-4 font-serif text-3xl tracking-tight text-ink sm:text-5xl">
-            Gold in your corner, <em className="gold-text italic">watched</em> all night.
-          </h2>
-          <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-ink-dim sm:text-base">
-            Open an account in minutes, complete verification, and allocate from $2,000 USDT.
-            Withdraw any week. Watch every trade live. Capital at risk.
-          </p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link href="/signup" className="btn-gold px-8 py-3 text-base">
-              Open an account
-              <ArrowRight className="size-4" aria-hidden />
-            </Link>
-            <Link href="/legal/risk" className="btn-ghost px-8 py-3 text-base">
-              Read the risk disclosure
-            </Link>
-          </div>
-        </Reveal>
-      </div>
-    </section>
-  );
-}
-
-export function LandingSections() {
-  return (
-    <>
-      <HowItWorks />
-      <Strategy />
-      <Transparency />
-      <TermsLedger />
-      <Faq />
-      <CtaBand />
-    </>
-  );
-}
+export function LandingSections(){return <><About/><Process/><OperatingSystem/><Visibility/><Backtesting/><Terms/><Faq/><FinalCta/></>}

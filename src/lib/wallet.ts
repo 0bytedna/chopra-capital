@@ -338,7 +338,7 @@ export async function investQueuedDepositBatch(
   if (navState.live && navState.totalUnits.gt(0)) {
     const equityBeforeTransfer = navState.equity.sub(totalReceivedUsdt);
     if (equityBeforeTransfer.lte(0)) {
-      throw new Error("Trading equity is too low to price this transfer. Update the manual balance and equity first");
+      throw new Error("Trading balance is too low to price this transfer. Update the manual balance first");
     }
     investmentNav = equityBeforeTransfer.div(navState.totalUnits);
   }
@@ -470,12 +470,12 @@ export async function investQueuedDepositBatch(
 
     const poolBefore = await tx.poolState.upsert({ where: { id: "pool" }, update: {}, create: { id: "pool" } });
     const balanceAfter = D(poolBefore.tradingBalance).add(totalReceivedUsdt);
-    const equity = D(poolBefore.tradingEquity).add(totalReceivedUsdt);
+    const equity = balanceAfter;
     const pool = await tx.poolState.update({
       where: { id: "pool" },
       data: { totalUnits: { increment: unitsIssued }, lastNav: investmentNav, tradingBalance: balanceAfter, tradingEquity: equity },
     });
-    await tx.tradingAccountEntry.create({ data: { type: "USER_DEPOSIT", amount: totalReceivedUsdt, balanceBefore: poolBefore.tradingBalance, balanceAfter, equityBefore: poolBefore.tradingEquity, equityAfter: equity, note: `Broker deposit batch ${batch.id}`, adminId } });
+    await tx.tradingAccountEntry.create({ data: { type: "USER_DEPOSIT", amount: totalReceivedUsdt, balanceBefore: poolBefore.tradingBalance, balanceAfter, equityBefore: poolBefore.tradingBalance, equityAfter: equity, note: `Broker deposit batch ${batch.id}`, adminId } });
     const day = new Date().toISOString().slice(0, 10);
     await tx.navSnapshot.upsert({
       where: { day },
@@ -756,13 +756,13 @@ export async function recordBrokerWithdrawalBatch(withdrawalIds: string[], admin
 
     const poolBefore = await tx.poolState.findUniqueOrThrow({ where: { id: "pool" } });
     const balanceAfter = D(poolBefore.tradingBalance).sub(totalUsd);
-    const equityAfter = D(poolBefore.tradingEquity).sub(totalUsd);
+    const equityAfter = balanceAfter;
     if (balanceAfter.lt(0) || equityAfter.lt(0)) throw new Error("The central trading account is too low for this withdrawal batch.");
     const pool = await tx.poolState.update({
       where: { id: "pool" },
       data: { totalUnits: { decrement: totalUnitsRedeemed }, lastNav: redemptionNav, tradingBalance: balanceAfter, tradingEquity: equityAfter },
     });
-    await tx.tradingAccountEntry.create({ data: { type: "USER_WITHDRAWAL", amount: totalUsd.neg(), balanceBefore: poolBefore.tradingBalance, balanceAfter, equityBefore: poolBefore.tradingEquity, equityAfter, note: `Bulk user withdrawal (${uniqueIds.length} requests)`, adminId } });
+    await tx.tradingAccountEntry.create({ data: { type: "USER_WITHDRAWAL", amount: totalUsd.neg(), balanceBefore: poolBefore.tradingBalance, balanceAfter, equityBefore: poolBefore.tradingBalance, equityAfter, note: `Bulk user withdrawal (${uniqueIds.length} requests)`, adminId } });
 
     return {
       count: uniqueIds.length,

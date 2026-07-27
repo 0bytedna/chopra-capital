@@ -22,8 +22,8 @@ export async function getCurrentNav(): Promise<PoolNav> {
   const pool = await getPoolState();
   const totalUnits = D(pool.totalUnits);
   const balance = D(pool.tradingBalance);
-  const equity = D(pool.tradingEquity);
-  const nav = totalUnits.gt(0) && equity.gt(0) ? equity.div(totalUnits) : D(pool.lastNav);
+  const equity = balance;
+  const nav = totalUnits.gt(0) && balance.gt(0) ? balance.div(totalUnits) : D(pool.lastNav);
   return { nav, balance, equity, totalUnits, live: false };
 }
 

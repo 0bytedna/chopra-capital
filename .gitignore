@@ -45,3 +45,4 @@ prisma/dev.db-journal
 
 # private user uploads, including KYC and ticket attachments (never commit)
 /uploads/
+.env

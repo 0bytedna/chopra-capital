@@ -5,8 +5,9 @@ const columns = [
     title: "Platform",
     links: [
       { href: "/#how-it-works", label: "How it works" },
-      { href: "/#strategy", label: "The strategy" },
-      { href: "/#transparency", label: "Transparency" },
+      { href: "/#about", label: "About Chopra Capital" },
+      { href: "/#visibility", label: "Investor visibility" },
+      { href: "/#backtesting", label: "Backtesting data" },
       { href: "/#terms", label: "Terms & schedule" },
       { href: "/#faq", label: "FAQ" },
     ],
@@ -74,7 +75,7 @@ export function Footer() {
           <p>
             <strong className="text-ink-dim">Risk warning.</strong> Trading gold and gold
             derivatives involves significant risk. The value of your investment can go down as
-            well as up, and you may get back less than you put in. The 1–4% monthly figure is a
+            well as up, and you may get back less than you put in. The 1–3% monthly figure is a
             performance objective, not a promise — past performance does not guarantee future
             results, and no return is guaranteed. Hedging reduces directional exposure but does
             not eliminate risk, including execution, counterparty and liquidity risk. Only invest

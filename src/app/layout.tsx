@@ -20,12 +20,24 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
   title: {
-    default: "Chopra Capital — Specialist Gold Strategy · Dubai",
+    default: "Chopra Capital — Managed Gold Trading · Dubai",
     template: "%s · Chopra Capital",
   },
   description:
-    "A Dubai-based specialist gold fund. Hedged XAU positions executed by AI-powered bots under 24/7 human supervision, with administrator-maintained account reporting. Capital at risk.",
+    "A Dubai-based managed gold trading operation using automated execution, human oversight and investor-level accounting. Capital at risk.",
+  openGraph: {
+    title: "Chopra Capital — Intelligent execution. Human accountability.",
+    description: "Managed gold trading · Dubai",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Chopra Capital — Intelligent execution. Human accountability." }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Chopra Capital — Intelligent execution. Human accountability.",
+    description: "Managed gold trading · Dubai",
+    images: ["/og.png"],
+  },
 };
 
 export default function RootLayout({

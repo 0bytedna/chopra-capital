@@ -38,12 +38,11 @@ export async function adminSetTradingSnapshot(_prev: AdminFormState, formData: F
   const admin = await requireAdmin();
   try {
     const balance = D(String(formData.get("balance") ?? ""));
-    const equity = D(String(formData.get("equity") ?? ""));
     const note = String(formData.get("note") ?? "");
-    await setTradingSnapshot({ balance, equity, note, adminId: admin.id });
+    await setTradingSnapshot({ balance, note, adminId: admin.id });
     revalidatePath("/admin");
     revalidatePath("/app");
-    return { success: "Trading balance and equity updated." };
+    return { success: "Trading balance updated." };
   } catch (error) {
     return fail(error);
   }
@@ -148,12 +147,12 @@ export async function adminSetInvestorBalances(_prev: AdminFormState, formData: 
       const unitDelta = targetUnits.sub(D(wallet.units));
       const pool = await tx.poolState.findUniqueOrThrow({ where: { id: "pool" } });
       const newBalance = D(pool.tradingBalance).add(delta);
-      const newEquity = D(pool.tradingEquity).add(delta);
+      const newEquity = newBalance;
       if (newBalance.lt(0) || newEquity.lt(0)) throw new Error("This correction would make the trading account negative.");
       await tx.wallet.update({ where: { id: wallet.id }, data: { queued: targetQueued, units: targetUnits } });
       await tx.poolState.update({ where: { id: "pool" }, data: { totalUnits: { increment: unitDelta }, tradingBalance: newBalance, tradingEquity: newEquity } });
       await tx.ledgerEntry.create({ data: { userId, type: "ADJUSTMENT", amount: delta.add(targetQueued.sub(D(wallet.queued))), units: unitDelta, navPrice: navState.nav, note } });
-      if (!delta.eq(0)) await tx.tradingAccountEntry.create({ data: { type: delta.gt(0) ? "OTHER_INCREASE" : "OTHER_DECREASE", amount: delta, balanceBefore: pool.tradingBalance, balanceAfter: newBalance, equityBefore: pool.tradingEquity, equityAfter: newEquity, note: `Investor correction: ${note}`, adminId: admin.id } });
+      if (!delta.eq(0)) await tx.tradingAccountEntry.create({ data: { type: delta.gt(0) ? "OTHER_INCREASE" : "OTHER_DECREASE", amount: delta, balanceBefore: pool.tradingBalance, balanceAfter: newBalance, equityBefore: pool.tradingBalance, equityAfter: newEquity, note: `Investor correction: ${note}`, adminId: admin.id } });
     });
     revalidatePath(`/admin/investors/${userId}`); revalidatePath("/admin/investors"); revalidatePath("/admin"); revalidatePath("/app");
     return { success: "Investor balances corrected and audited." };
