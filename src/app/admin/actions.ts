@@ -514,29 +514,6 @@ export async function adminCompleteWithdrawalPayout(
   return { success: "Payout completed." };
 }
 
-export async function adminUpdateWithdrawalRate(
-  _prev: AdminFormState,
-  formData: FormData,
-): Promise<AdminFormState> {
-  await requireAdmin();
-  const rate = Number(formData.get("rate") ?? 0);
-  if (!Number.isFinite(rate) || rate <= 0 || rate > 1000) {
-    return { error: "Enter a valid INR per USD reference rate." };
-  }
-  await prisma.setting.upsert({
-    where: { key: "WITHDRAWAL_INR_PER_USD" },
-    update: { value: String(rate) },
-    create: { key: "WITHDRAWAL_INR_PER_USD", value: String(rate) },
-  });
-  revalidatePath("/admin/withdrawals");
-  revalidatePath("/app/withdraw");
-  revalidatePath("/app/history");
-  return {
-    success:
-      "Reference rate updated. New bank and cash withdrawal estimates will use it.",
-  };
-}
-
 export async function adminRejectWithdrawal(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
   await requireAdmin();
   const id = String(formData.get("id") ?? "");

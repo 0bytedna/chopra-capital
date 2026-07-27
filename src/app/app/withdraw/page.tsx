@@ -4,7 +4,7 @@ import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { withdrawalsOpenNow } from "@/lib/config";
 import { getPortfolioMetrics } from "@/lib/portfolio";
-import { getSettingDecimal } from "@/lib/nav";
+import { getWithdrawalReferenceRate } from "@/lib/withdrawal-rate";
 import { toNumber, formatUsdt } from "@/lib/money";
 import { getWithdrawalEligibility } from "@/lib/financialEligibility";
 import { WithdrawForm, type PayoutDetails } from "./WithdrawForm";
@@ -19,7 +19,7 @@ export default async function WithdrawPage() {
       where: { userId: user.id },
       select: { accountNumber: true, ifsc: true, upiId: true, accountType: true, usdtAddress: true, usdtNetwork: true },
     }),
-    getSettingDecimal("WITHDRAWAL_INR_PER_USD", "85"),
+    getWithdrawalReferenceRate(),
   ]);
 
   const payout: PayoutDetails = {

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
-import { getSettingDecimal } from "@/lib/nav";
 import { formatInr, formatUsdt, type Dec } from "@/lib/money";
 import { cn } from "@/lib/cn";
 import { AdminActionForm } from "@/components/admin/AdminActionForm";
@@ -10,7 +9,6 @@ import {
   adminApproveWithdrawal,
   adminCompleteWithdrawalPayout,
   adminRejectWithdrawal,
-  adminUpdateWithdrawalRate,
 } from "../actions";
 
 export const metadata: Metadata = { title: "Admin · Withdrawals" };
@@ -165,9 +163,8 @@ function EmptyState({ children }: { children: React.ReactNode }) {
 }
 
 export default async function AdminWithdrawalsPage() {
-  const [referenceRate, requested, approved, brokerReceived, inrReady, recent] =
+  const [requested, approved, brokerReceived, inrReady, recent] =
     await Promise.all([
-      getSettingDecimal("WITHDRAWAL_INR_PER_USD", "85"),
       prisma.withdrawal.findMany({
         where: { status: "REQUESTED" },
         orderBy: { createdAt: "asc" },
@@ -242,39 +239,6 @@ export default async function AdminWithdrawalsPage() {
         ))}
       </section>
 
-      <section className="glass-card rounded-2xl p-5 sm:p-6">
-        <p className="eyebrow">INR payout estimate</p>
-        <h2 className="mt-2 font-serif text-xl text-ink">Reference INR/USD rate</h2>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-dim">
-          This rate estimates the INR payout shown when an investor enters a USD amount.
-          The actual INR received is recorded later, after conversion.
-        </p>
-        <AdminActionForm
-          action={adminUpdateWithdrawalRate}
-          submitLabel="Update reference rate"
-          pendingLabel="Updating..."
-          className="mt-4 max-w-sm"
-        >
-          <label
-            className="block text-xs uppercase tracking-[0.14em] text-ink-dim"
-            htmlFor="withdrawal-reference-rate"
-          >
-            INR per USD
-          </label>
-          <input
-            id="withdrawal-reference-rate"
-            name="rate"
-            type="number"
-            min="0.01"
-            max="1000"
-            step="0.01"
-            defaultValue={referenceRate.toString()}
-            required
-            className={inputCls}
-          />
-        </AdminActionForm>
-      </section>
-
       <section className="space-y-4">
         <div>
           <p className="eyebrow">Step 1</p>
@@ -295,13 +259,6 @@ export default async function AdminWithdrawalsPage() {
                 {withdrawal.user.fullName ?? "-"} · {withdrawal.user.email} · week{" "}
                 {withdrawal.weekKey}
               </p>
-              {withdrawal.method !== "CRYPTO" && (
-                <p className="mt-2 text-sm text-ink-dim">
-                  Estimated INR payout: {formatInr(withdrawal.requestedInrAmount)} INR at{" "}
-                  {formatInr(withdrawal.requestExchangeRate ?? referenceRate)} INR/USD.
-                  The final INR is recorded after conversion.
-                </p>
-              )}
               <InvestorFinancialDetails
                 method={withdrawal.method}
                 user={withdrawal.user}
@@ -418,8 +375,6 @@ export default async function AdminWithdrawalsPage() {
             amount: withdrawal.amount.toString(),
             brokerReceivedUsdt:
               withdrawal.brokerReceivedUsdt?.toString() ?? "0",
-            requestedInrAmount:
-              withdrawal.requestedInrAmount?.toString() ?? null,
             network:
               withdrawal.user.bankingDetail?.usdtNetwork ??
               withdrawal.network,

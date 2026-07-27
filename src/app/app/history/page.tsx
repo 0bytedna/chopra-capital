@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getSettingDecimal } from "@/lib/nav";
+import { getWithdrawalReferenceRate } from "@/lib/withdrawal-rate";
 import { formatInr, formatUsdt } from "@/lib/money";
 import { HistoryTabs } from "./HistoryTabs";
 
@@ -20,7 +20,7 @@ export default async function HistoryPage() {
       orderBy: { createdAt: "desc" },
       take: 50,
     }),
-    getSettingDecimal("WITHDRAWAL_INR_PER_USD", "85"),
+    getWithdrawalReferenceRate(),
   ]);
 
   return (
@@ -68,13 +68,7 @@ export default async function HistoryPage() {
             status: withdrawal.status,
             amount: formatUsdt(withdrawal.amount),
             editAmount: withdrawal.amount.toString(),
-            requestedInrAmount:
-              withdrawal.requestedInrAmount === null
-                ? null
-                : formatInr(withdrawal.requestedInrAmount),
-            requestExchangeRate: formatInr(
-              withdrawal.requestExchangeRate ?? currentInrRate,
-            ),
+            referenceRate: formatInr(currentInrRate),
             network: withdrawal.network,
             address: withdrawal.address,
             paidAmount:

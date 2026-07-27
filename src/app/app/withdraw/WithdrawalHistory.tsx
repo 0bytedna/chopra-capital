@@ -22,8 +22,7 @@ type Withdrawal = {
     | "CANCELLED";
   amount: string;
   editAmount: string;
-  requestedInrAmount: string | null;
-  requestExchangeRate: string | null;
+  referenceRate: string;
   network: string;
   address: string;
   paidAmount: string | null;
@@ -75,7 +74,7 @@ function WithdrawalEditForm({
   const [selectedMethod, setSelectedMethod] = useState(withdrawal.method);
   const [amountInput, setAmountInput] = useState(withdrawal.editAmount);
   const crypto = selectedMethod === "CRYPTO";
-  const referenceRate = Number(withdrawal.requestExchangeRate ?? 0);
+  const referenceRate = Number(withdrawal.referenceRate);
   const amountNumber = Number(amountInput);
   const estimatedInr =
     !crypto && Number.isFinite(amountNumber) && amountNumber > 0 && referenceRate > 0
@@ -215,6 +214,12 @@ export function WithdrawalHistory({ withdrawals, twoFactorEnabled = false }: { w
         const editing = canEdit && editingId === withdrawal.id;
         const cancelling = canEdit && cancellingId === withdrawal.id;
         const crypto = withdrawal.method === "CRYPTO";
+        const currentReferenceRate = Number(withdrawal.referenceRate);
+        const requestedUsd = Number(withdrawal.editAmount);
+        const currentReferenceEstimate =
+          !crypto && Number.isFinite(requestedUsd) && Number.isFinite(currentReferenceRate)
+            ? requestedUsd * currentReferenceRate
+            : 0;
 
         return (
           <li key={withdrawal.id} className="glass-card rounded-xl px-4 py-3.5">
@@ -225,10 +230,12 @@ export function WithdrawalHistory({ withdrawals, twoFactorEnabled = false }: { w
                 </p>
                 {!crypto && (
                   <p className="mt-0.5 text-xs text-ink-faint">
-                    Estimated INR payout at request: {withdrawal.requestedInrAmount ?? "—"} INR
-                    {withdrawal.requestExchangeRate
-                      ? " · reference rate " + withdrawal.requestExchangeRate + " INR/USD"
-                      : ""}
+                    Current reference estimate: {currentReferenceEstimate > 0
+                      ? currentReferenceEstimate.toLocaleString("en-IN", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })
+                      : "—"} INR · {withdrawal.referenceRate} INR/USD. Not saved with the request.
                   </p>
                 )}
                 {withdrawal.brokerReceivedUsdt && (

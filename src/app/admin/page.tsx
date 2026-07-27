@@ -6,7 +6,7 @@ import { getCurrentNav } from "@/lib/nav";
 import { D, toNumber, formatUsdt } from "@/lib/money";
 import { cn } from "@/lib/cn";
 import { AdminActionForm } from "@/components/admin/AdminActionForm";
-import { adminRecordTradingAdjustment, adminSetTradingSnapshot } from "./actions";
+import { adminRecordTradingAdjustment } from "./actions";
 
 export const metadata: Metadata = { title: "Admin · Overview" };
 
@@ -55,21 +55,70 @@ export default async function AdminOverviewPage() {
       ].map((item) => <div key={item.label} className="glass-card rounded-xl p-4 sm:p-5"><p className="text-xs uppercase tracking-[0.14em] text-ink-faint">{item.label}</p><p className="mt-1.5 font-mono text-lg text-ink">{item.value}</p><p className="mt-0.5 text-xs text-ink-faint">{item.hint}</p></div>)}
     </section>
 
-    <section className="grid gap-5 xl:grid-cols-2">
-      <AdminActionForm action={adminSetTradingSnapshot} submitLabel="Save balance" pendingLabel="Saving…" variant="gold" className="glass-card rounded-2xl p-5 sm:p-6" confirmMessage="Replace the current trading balance with this value?">
-        <p className="eyebrow">Manual snapshot</p><h2 className="mt-2 font-serif text-xl text-ink">Set current balance</h2>
-        <div className="mt-4"><label className="block space-y-1.5 text-xs text-ink-faint">Balance (USD)<input name="balance" type="number" min="0" step="0.01" defaultValue={poolNav.balance.toFixed(2)} required className="h-10 w-full rounded-lg border border-gold-600/20 bg-vault-950/65 px-3 text-sm text-ink" /></label></div>
-        <label className="mt-3 block space-y-1.5 text-xs text-ink-faint">Audit note<input name="note" maxLength={240} required placeholder="Why are these figures being replaced?" className="h-10 w-full rounded-lg border border-gold-600/20 bg-vault-950/65 px-3 text-sm text-ink" /></label>
-      </AdminActionForm>
-
-      <AdminActionForm action={adminRecordTradingAdjustment} submitLabel="Record adjustment" pendingLabel="Recording…" className="glass-card rounded-2xl p-5 sm:p-6" confirmMessage="Apply this adjustment to the trading balance?">
-        <p className="eyebrow">Profit, loss & movements</p><h2 className="mt-2 font-serif text-xl text-ink">Record a balance change</h2>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2"><label className="space-y-1.5 text-xs text-ink-faint">Reason<select name="type" required className="h-10 w-full rounded-lg border border-gold-600/20 bg-vault-950/65 px-3 text-sm text-ink">{Object.entries(reasonLabels).filter(([key]) => ["TRADING_PROFIT", "TRADING_LOSS", "SERVER_FEE", "ADMIN_SHARE", "OTHER_INCREASE", "OTHER_DECREASE"].includes(key)).map(([key,label]) => <option key={key} value={key}>{label}</option>)}</select></label><label className="space-y-1.5 text-xs text-ink-faint">Amount (USD)<input name="amount" type="number" min="0.01" step="0.01" required placeholder="0.00" className="h-10 w-full rounded-lg border border-gold-600/20 bg-vault-950/65 px-3 text-sm text-ink" /></label></div>
-        <label className="mt-3 block space-y-1.5 text-xs text-ink-faint">Audit note<input name="note" maxLength={240} required placeholder="Trading session, invoice, withdrawal batch, etc." className="h-10 w-full rounded-lg border border-gold-600/20 bg-vault-950/65 px-3 text-sm text-ink" /></label>
+    <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Pending administration tasks">{queues.map((q) => <Link key={q.href} href={q.href} className="glass-card glass-card-hover flex min-h-44 items-center justify-between gap-4 rounded-2xl p-5 sm:p-6"><div className="min-w-0 self-stretch py-1"><span className="flex size-10 items-center justify-center rounded-xl border border-gold-500/20 bg-gold-500/8"><q.Icon className="size-5 text-gold-500" aria-hidden/></span><p className="mt-5 text-base font-medium leading-snug text-ink">{q.label}</p><p className="mt-1 text-xs text-ink-faint">{q.count > 0 ? "Requires attention" : "Nothing pending"}</p></div><span className={cn("flex size-20 shrink-0 items-center justify-center rounded-full border font-mono text-3xl font-semibold shadow-lg sm:size-24 sm:text-4xl", q.count > 0 ? "border-gold-600 bg-gold-600 text-white shadow-gold-600/20" : "border-slate-200 bg-slate-100 text-ink-faint shadow-slate-200/40")} aria-label={`${q.count} pending`}>{q.count}</span></Link>)}</section>
+    <section aria-labelledby="balance-change-heading">
+      <AdminActionForm
+        action={adminRecordTradingAdjustment}
+        submitLabel="Record adjustment"
+        pendingLabel="Recording…"
+        className="glass-card rounded-2xl p-5 sm:p-6"
+        confirmMessage="Apply this adjustment to the trading balance?"
+      >
+        <p className="eyebrow">Profit, loss & movements</p>
+        <h2 id="balance-change-heading" className="mt-2 font-serif text-xl text-ink">
+          Record a balance change
+        </h2>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <label className="space-y-1.5 text-xs text-ink-faint">
+            Reason
+            <select
+              name="type"
+              required
+              className="h-10 w-full rounded-lg border border-gold-600/20 bg-vault-950/65 px-3 text-sm text-ink"
+            >
+              {Object.entries(reasonLabels)
+                .filter(([key]) =>
+                  [
+                    "TRADING_PROFIT",
+                    "TRADING_LOSS",
+                    "SERVER_FEE",
+                    "ADMIN_SHARE",
+                    "OTHER_INCREASE",
+                    "OTHER_DECREASE",
+                  ].includes(key),
+                )
+                .map(([key, label]) => (
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
+                ))}
+            </select>
+          </label>
+          <label className="space-y-1.5 text-xs text-ink-faint">
+            Amount (USD)
+            <input
+              name="amount"
+              type="number"
+              min="0.01"
+              step="0.01"
+              required
+              placeholder="0.00"
+              className="h-10 w-full rounded-lg border border-gold-600/20 bg-vault-950/65 px-3 text-sm text-ink"
+            />
+          </label>
+        </div>
+        <label className="mt-3 block space-y-1.5 text-xs text-ink-faint">
+          Audit note
+          <input
+            name="note"
+            maxLength={240}
+            required
+            placeholder="Trading session, invoice, or another supporting reference"
+            className="h-10 w-full rounded-lg border border-gold-600/20 bg-vault-950/65 px-3 text-sm text-ink"
+          />
+        </label>
       </AdminActionForm>
     </section>
-
-    <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Pending administration tasks">{queues.map((q) => <Link key={q.href} href={q.href} className="glass-card glass-card-hover flex min-h-44 items-center justify-between gap-4 rounded-2xl p-5 sm:p-6"><div className="min-w-0 self-stretch py-1"><span className="flex size-10 items-center justify-center rounded-xl border border-gold-500/20 bg-gold-500/8"><q.Icon className="size-5 text-gold-500" aria-hidden/></span><p className="mt-5 text-base font-medium leading-snug text-ink">{q.label}</p><p className="mt-1 text-xs text-ink-faint">{q.count > 0 ? "Requires attention" : "Nothing pending"}</p></div><span className={cn("flex size-20 shrink-0 items-center justify-center rounded-full border font-mono text-3xl font-semibold shadow-lg sm:size-24 sm:text-4xl", q.count > 0 ? "border-gold-600 bg-gold-600 text-white shadow-gold-600/20" : "border-slate-200 bg-slate-100 text-ink-faint shadow-slate-200/40")} aria-label={`${q.count} pending`}>{q.count}</span></Link>)}</section>
 
     <section className="glass-card overflow-hidden rounded-2xl"><div className="flex items-center justify-between px-5 py-4"><div><p className="eyebrow">Audit trail</p><h2 className="mt-1 font-serif text-xl text-ink">Recent account changes</h2></div><span className={cn("font-mono text-xs", Math.abs(unitsDrift) < 0.0001 ? "text-positive" : "text-negative")}>unit drift {unitsDrift.toFixed(6)}</span></div><div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left text-xs"><thead className="border-y border-gold-600/15 bg-slate-50 text-ink-faint"><tr><th className="px-5 py-3">Time</th><th className="px-5 py-3">Reason</th><th className="px-5 py-3">Change</th><th className="px-5 py-3">Balance after</th><th className="px-5 py-3">Note</th></tr></thead><tbody className="divide-y divide-gold-600/10">{entries.map((entry) => <tr key={entry.id}><td className="px-5 py-3 text-ink-faint">{entry.createdAt.toLocaleString("en-IN")}</td><td className="px-5 py-3 text-ink">{reasonLabels[entry.type]}</td><td className={cn("px-5 py-3 font-mono", D(entry.amount).gte(0) ? "text-positive" : "text-negative")}>{D(entry.amount).gte(0) ? "+" : ""}{formatUsdt(entry.amount)} USD</td><td className="px-5 py-3 font-mono text-ink">{formatUsdt(entry.balanceAfter)}</td><td className="max-w-xs px-5 py-3 text-ink-dim">{entry.note}</td></tr>)}{entries.length === 0 && <tr><td colSpan={5} className="px-5 py-10 text-center text-ink-faint">No manual account changes yet.</td></tr>}</tbody></table></div></section>
   </div>;

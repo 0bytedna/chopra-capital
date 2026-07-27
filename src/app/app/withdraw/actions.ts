@@ -6,7 +6,6 @@ import { prisma } from "@/lib/prisma";
 import { totpCodeSchema, withdrawSchema } from "@/lib/validation";
 import { currentWeekKey, withdrawalRequestWindowMessage, withdrawalsOpenNow, NETWORKS } from "@/lib/config";
 import { getPortfolioMetrics } from "@/lib/portfolio";
-import { getSettingDecimal } from "@/lib/nav";
 import { D, toNumber } from "@/lib/money";
 import { verifyTotp } from "@/lib/totp";
 import {
@@ -111,10 +110,6 @@ function parsedRequest(formData: FormData) {
   return withdrawSchema.safeParse({ amount: formData.get("amount"), method: formData.get("method") });
 }
 
-async function getWithdrawalReferenceRate() {
-  const rate = await getSettingDecimal("WITHDRAWAL_INR_PER_USD", "85");
-  return rate.gt(0) ? rate : D(85);
-}
 
 function requestedUsdAmount(amount: number) {
   return D(amount).toDecimalPlaces(8);
@@ -134,10 +129,7 @@ export async function requestWithdrawal(_prev: WithdrawFormState, formData: Form
   if (eligibility.restriction) return { restriction: eligibility.restriction };
   if (!withdrawalsOpenNow()) return { windowError: withdrawalRequestWindowMessage() };
 
-  const referenceRate = method === "CRYPTO" ? null : await getWithdrawalReferenceRate();
   const usdAmount = requestedUsdAmount(amount);
-  const estimatedInrAmount =
-    method === "CRYPTO" ? null : usdAmount.mul(referenceRate ?? D(1)).toDecimalPlaces(2);
   const amountError = await validateWithdrawalAmount(user.id, toNumber(usdAmount));
   const destination = profileDestination(method, banking);
   if (!destination) return { error: missingPayoutDetailsMessage(method) };
@@ -151,8 +143,8 @@ export async function requestWithdrawal(_prev: WithdrawFormState, formData: Form
       userId: user.id,
       method,
       amount: usdAmount,
-      requestedInrAmount: estimatedInrAmount,
-      requestExchangeRate: referenceRate,
+      requestedInrAmount: null,
+      requestExchangeRate: null,
       network: destination.network,
       address: destination.address,
       weekKey: currentWeekKey(),
@@ -195,10 +187,7 @@ export async function editWithdrawal(_prev: WithdrawFormState, formData: FormDat
   const eligibility = getWithdrawalEligibility(user, banking, method);
   if (eligibility.restriction) return { error: eligibility.restriction.message };
 
-  const referenceRate = method === "CRYPTO" ? null : await getWithdrawalReferenceRate();
   const usdAmount = requestedUsdAmount(amount);
-  const estimatedInrAmount =
-    method === "CRYPTO" ? null : usdAmount.mul(referenceRate ?? D(1)).toDecimalPlaces(2);
   const amountError = await validateWithdrawalAmount(user.id, toNumber(usdAmount), id);
   const destination = profileDestination(method, banking);
   if (!destination) return { error: missingPayoutDetailsMessage(method) };
@@ -212,8 +201,8 @@ export async function editWithdrawal(_prev: WithdrawFormState, formData: FormDat
     data: {
       method,
       amount: usdAmount,
-      requestedInrAmount: estimatedInrAmount,
-      requestExchangeRate: referenceRate,
+      requestedInrAmount: null,
+      requestExchangeRate: null,
       network: destination.network,
       address: destination.address,
     },

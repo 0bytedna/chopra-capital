@@ -21,7 +21,6 @@ export type SettlementWithdrawal = {
   email: string;
   amount: string;
   brokerReceivedUsdt: string;
-  requestedInrAmount: string | null;
   network: string;
   address: string;
 };
@@ -253,9 +252,7 @@ function BulkConversionForm({
                   </span>
                   <span className="mt-0.5 block truncate text-xs text-ink-faint">
                     {withdrawal.email}
-                    {withdrawal.requestedInrAmount
-                      ? " · estimated " + formatInr(Number(withdrawal.requestedInrAmount))
-                      : ""}
+
                   </span>
                 </span>
                 <span className="pl-7 text-left sm:pl-0 sm:text-right">

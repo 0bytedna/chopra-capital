@@ -386,8 +386,8 @@ model Withdrawal {
   // USD amount requested by the investor and removed from holdings after
   // approval and inclusion in the bulk broker withdrawal.
   amount              Decimal
-  requestedInrAmount  Decimal? // estimated INR shown when the USD request was submitted
-  requestExchangeRate Decimal? // INR per USD reference rate shown at request time
+  requestedInrAmount  Decimal? // legacy only; new requests leave this null
+  requestExchangeRate Decimal? // legacy only; Giottus reference rates are not persisted
   fee                 Decimal? // gross USD minus net USDT received from broker
   brokerReceivedUsdt  Decimal?
   convertedInrAmount  Decimal?

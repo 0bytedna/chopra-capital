@@ -56,9 +56,10 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-::placeholder {
-  color: #475569;
-  opacity: 1;
+input::placeholder,
+textarea::placeholder {
+  color: #94a3b8 !important;
+  opacity: 0.8;
 }
 
 ::selection {
