@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { getSettingDecimal } from "@/lib/nav";
 import { formatInr, formatUsdt, type Dec } from "@/lib/money";
+import { cn } from "@/lib/cn";
 import { AdminActionForm } from "@/components/admin/AdminActionForm";
 import { BulkBrokerWithdrawalForm } from "@/components/admin/BulkBrokerWithdrawalForm";
 import { WithdrawalSettlementTabs } from "@/components/admin/WithdrawalSettlementTabs";
@@ -216,11 +217,27 @@ export default async function AdminWithdrawalsPage() {
           { label: "Conversion / crypto payout", count: brokerReceived.length },
           { label: "INR ready to pay", count: inrReady.length },
         ].map((item) => (
-          <div key={item.label} className="glass-card rounded-xl p-4">
-            <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">
-              {item.label}
-            </p>
-            <p className="mt-1.5 font-serif text-3xl text-ink">{item.count}</p>
+          <div
+            key={item.label}
+            className="glass-card flex min-h-44 items-center justify-between gap-4 rounded-2xl p-5"
+          >
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-ink">{item.label}</p>
+              <p className="mt-2 text-xs font-medium text-ink-dim">
+                {item.count > 0 ? "Requires attention" : "Nothing pending"}
+              </p>
+            </div>
+            <span
+              className={cn(
+                "flex size-20 shrink-0 items-center justify-center rounded-full border font-mono text-3xl font-semibold shadow-lg sm:size-24 sm:text-4xl",
+                item.count > 0
+                  ? "border-gold-600 bg-gold-600 text-white shadow-gold-600/20"
+                  : "border-slate-200 bg-slate-100 text-ink-faint shadow-slate-200/40",
+              )}
+              aria-label={`${item.count} pending tasks`}
+            >
+              {item.count}
+            </span>
           </div>
         ))}
       </section>

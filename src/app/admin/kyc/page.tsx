@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { FileText } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { cn } from "@/lib/cn";
 import { AdminActionForm } from "@/components/admin/AdminActionForm";
 import { adminKycDecision } from "../actions";
 
@@ -32,6 +33,29 @@ export default async function AdminKycPage() {
           Verify each identity before approving — investors cannot deposit until KYC is approved.
         </p>
       </header>
+
+      <section
+        className="glass-card flex min-h-44 max-w-xl items-center justify-between gap-5 rounded-2xl p-5 sm:p-6"
+        aria-label="KYC work queue"
+      >
+        <div className="min-w-0">
+          <p className="font-serif text-xl text-ink">Pending identity reviews</p>
+          <p className="mt-2 text-sm font-medium text-ink-dim">
+            {pending.length > 0 ? "Requires attention" : "Nothing pending"}
+          </p>
+        </div>
+        <span
+          className={cn(
+            "flex size-20 shrink-0 items-center justify-center rounded-full border font-mono text-3xl font-semibold shadow-lg sm:size-24 sm:text-4xl",
+            pending.length > 0
+              ? "border-gold-600 bg-gold-600 text-white shadow-gold-600/20"
+              : "border-slate-200 bg-slate-100 text-ink-faint shadow-slate-200/40",
+          )}
+          aria-label={`${pending.length} pending KYC reviews`}
+        >
+          {pending.length}
+        </span>
+      </section>
 
       {pending.length === 0 ? (
         <p className="rounded-xl border border-dashed border-gold-600/20 px-4 py-10 text-center text-sm text-ink-faint">

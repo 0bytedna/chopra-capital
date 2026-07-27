@@ -8479,3 +8479,7 @@ Import trace:
 ✓ Compiled in 267ms
  GET /admin 200 in 988ms (next.js: 204ms, proxy.ts: 102ms, application-code: 682ms)
  GET /admin 200 in 470ms (next.js: 53ms, proxy.ts: 176ms, application-code: 241ms)
+✓ Compiled in 160ms
+✓ Compiled in 142ms
+✓ Compiled in 77ms
+✓ Compiled in 50ms

@@ -163,20 +163,21 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
               key={method.value}
               href={`/admin/deposits?method=${method.value}`}
               className={cn(
-                "rounded-xl border px-4 py-4 transition-colors",
+                "flex min-h-40 items-center justify-between gap-4 rounded-2xl border px-5 py-5 transition-colors",
                 selectedMethod === method.value
                   ? "border-gold-500/55 bg-gold-600/12"
                   : "border-gold-600/15 bg-vault-900/45 hover:border-gold-600/35",
               )}
               aria-current={selectedMethod === method.value ? "page" : undefined}
             >
-              <span className="flex items-center justify-between gap-3">
-                <span className="font-serif text-lg text-ink">{method.label}</span>
-                <span className="rounded-full border border-gold-600/25 px-2.5 py-0.5 font-mono text-xs text-gold-300">
-                  {count}
-                </span>
+              <span className="min-w-0">
+                <span className="block font-serif text-xl text-ink">{method.label}</span>
+                <span className="mt-2 block text-xs text-ink-faint">{method.source} · active work</span>
+                <span className="mt-2 block text-xs font-medium text-ink-dim">{count > 0 ? "Requires attention" : "Nothing pending"}</span>
               </span>
-              <span className="mt-1 block text-xs text-ink-faint">{method.source} · active work</span>
+              <span className={cn("flex size-20 shrink-0 items-center justify-center rounded-full border font-mono text-3xl font-semibold shadow-lg", count > 0 ? "border-gold-600 bg-gold-600 text-white shadow-gold-600/20" : "border-slate-200 bg-slate-100 text-ink-faint shadow-slate-200/40")} aria-label={`${count} active requests`}>
+                {count}
+              </span>
             </Link>
           );
         })}
@@ -196,9 +197,7 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
                 : "Confirm only that the INR was received. It still needs to be converted before entering the USDT queue."}
             </p>
           </div>
-          <span className="rounded-full border border-gold-600/20 px-3 py-1 font-mono text-xs text-ink-dim">
-            {pending.length} pending
-          </span>
+          <div className="text-center"><span className={cn("flex size-16 items-center justify-center rounded-full border font-mono text-2xl font-semibold", pending.length > 0 ? "border-gold-600 bg-gold-600 text-white" : "border-slate-200 bg-slate-100 text-ink-faint")}>{pending.length}</span><span className="mt-1 block text-xs text-ink-faint">pending</span></div>
         </div>
 
         {pending.length === 0 ? (
