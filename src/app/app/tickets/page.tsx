@@ -65,7 +65,7 @@ export default async function TicketsPage() {
                       {t.updatedAt.toLocaleDateString("en-US", { day: "numeric", month: "short" })}
                     </span>
                   </span>
-                  <span className={cn("shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-medium", statusCls[t.status])}>
+                  <span className={cn("shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium", statusCls[t.status])}>
                     {t.status.toLowerCase()}
                   </span>
                 </Link>

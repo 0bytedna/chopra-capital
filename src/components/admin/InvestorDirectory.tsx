@@ -71,7 +71,7 @@ function KycBadge({ state }: { state: KycState }) {
   return (
     <span
       className={cn(
-        "inline-flex w-fit items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium",
+        "inline-flex w-fit items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium",
         details.className,
       )}
     >
@@ -123,7 +123,7 @@ export function InvestorDirectory({ rows }: { rows: InvestorDirectoryRow[] }) {
       <div className="glass-card rounded-xl p-3 sm:p-4">
         <div className="grid gap-3 md:grid-cols-[minmax(16rem,1fr)_11rem_11rem_auto] md:items-end">
           <label className="space-y-1.5">
-            <span className="block text-[10px] uppercase tracking-[0.14em] text-ink-faint">
+            <span className="block text-xs uppercase tracking-[0.14em] text-ink-faint">
               Search investors
             </span>
             <span className="relative block">
@@ -143,7 +143,7 @@ export function InvestorDirectory({ rows }: { rows: InvestorDirectoryRow[] }) {
           </label>
 
           <label className="space-y-1.5">
-            <span className="block text-[10px] uppercase tracking-[0.14em] text-ink-faint">
+            <span className="block text-xs uppercase tracking-[0.14em] text-ink-faint">
               KYC status
             </span>
             <select
@@ -160,7 +160,7 @@ export function InvestorDirectory({ rows }: { rows: InvestorDirectoryRow[] }) {
           </label>
 
           <label className="space-y-1.5">
-            <span className="block text-[10px] uppercase tracking-[0.14em] text-ink-faint">
+            <span className="block text-xs uppercase tracking-[0.14em] text-ink-faint">
               Balance
             </span>
             <select
@@ -207,8 +207,8 @@ export function InvestorDirectory({ rows }: { rows: InvestorDirectoryRow[] }) {
               <col className="w-[12%]" />
               <col className="w-[4%]" />
             </colgroup>
-            <thead className="border-b border-gold-600/15 bg-black/10">
-              <tr className="text-[10px] uppercase tracking-[0.14em] text-ink-faint">
+            <thead className="border-b border-gold-600/15 bg-slate-50">
+              <tr className="text-xs uppercase tracking-[0.14em] text-ink-faint">
                 <th scope="col" className="px-5 py-3 font-medium">Name</th>
                 <th scope="col" className="px-5 py-3 font-medium">Email</th>
                 <th scope="col" className="px-5 py-3 font-medium">Phone</th>
@@ -240,7 +240,7 @@ export function InvestorDirectory({ rows }: { rows: InvestorDirectoryRow[] }) {
                     <div className="flex min-w-0 items-center gap-2">
                       <span className="truncate font-medium text-ink">{row.name}</span>
                       {row.isCompanyAccount && (
-                        <span className="shrink-0 rounded-full border border-gold-500/30 bg-gold-600/10 px-2 py-0.5 text-[9px] uppercase tracking-[0.12em] text-gold-300">
+                        <span className="shrink-0 rounded-full border border-gold-500/30 bg-gold-600/10 px-2 py-0.5 text-xs uppercase tracking-[0.12em] text-gold-300">
                           Company
                         </span>
                       )}

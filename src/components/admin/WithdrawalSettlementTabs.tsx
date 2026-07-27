@@ -93,7 +93,7 @@ function CryptoPayouts({
           </p>
 
           <div className="mt-4 rounded-xl border border-gold-600/15 bg-vault-950/50 p-4">
-            <p className="text-[10px] uppercase tracking-[0.16em] text-ink-faint">
+            <p className="text-xs uppercase tracking-[0.16em] text-ink-faint">
               Wallet payout details
             </p>
             <dl className="mt-3 grid gap-3 text-xs sm:grid-cols-2">

@@ -30,7 +30,7 @@ export function CompositionDonut({ principal, profit }: Props) {
       ];
 
   const empty = data.every((d) => d.amount <= 0);
-  const colors = inLoss ? ["#a07f2e", "#fb7185"] : ["#a07f2e", "#34d399"];
+  const colors = inLoss ? ["#2563eb", "#fb7185"] : ["#2563eb", "#34d399"];
 
   return (
     <div className="glass-card flex h-full flex-col rounded-2xl p-5 sm:p-6">
@@ -63,7 +63,7 @@ export function CompositionDonut({ principal, profit }: Props) {
               </PieChart>
             </ResponsiveContainer>
             <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-              <p className="text-[10px] uppercase tracking-[0.14em] text-ink-faint">Value</p>
+              <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">Value</p>
               <p className="font-mono text-sm text-ink">{fmtMoney(currentValue)}</p>
             </div>
           </>

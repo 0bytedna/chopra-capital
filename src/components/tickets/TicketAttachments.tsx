@@ -40,7 +40,7 @@ export function TicketAttachments({ attachments }: { attachments: Attachment[] }
                 unoptimized
                 className="max-h-72 w-full object-contain"
               />
-              <span className="flex items-center justify-between gap-3 border-t border-gold-600/15 px-3 py-2 text-[11px]">
+              <span className="flex items-center justify-between gap-3 border-t border-gold-600/15 px-3 py-2 text-xs">
                 <span className="min-w-0 truncate text-ink-dim">{attachment.fileName}</span>
                 <span className="shrink-0 text-ink-faint">{formatFileSize(attachment.size)}</span>
               </span>
@@ -58,7 +58,7 @@ export function TicketAttachments({ attachments }: { attachments: Attachment[] }
                 <source src={url} type={attachment.mimeType} />
                 Your browser cannot play this video.
               </video>
-              <div className="flex items-center justify-between gap-3 border-t border-gold-600/15 px-3 py-2 text-[11px]">
+              <div className="flex items-center justify-between gap-3 border-t border-gold-600/15 px-3 py-2 text-xs">
                 <span className="min-w-0 truncate text-ink-dim">{attachment.fileName}</span>
                 <span className="shrink-0 text-ink-faint">{formatFileSize(attachment.size)}</span>
               </div>
@@ -79,7 +79,7 @@ export function TicketAttachments({ attachments }: { attachments: Attachment[] }
             </span>
             <span className="min-w-0 flex-1">
               <span className="block truncate text-xs text-ink">{attachment.fileName}</span>
-              <span className="block text-[11px] text-ink-faint">{formatFileSize(attachment.size)}</span>
+              <span className="block text-xs text-ink-faint">{formatFileSize(attachment.size)}</span>
             </span>
             <Download className="size-4 shrink-0 text-ink-faint" aria-hidden />
           </a>

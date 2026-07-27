@@ -74,7 +74,7 @@ export function InternalTransferForm({
 
       <div className="grid gap-4 lg:grid-cols-[1fr_auto_1fr] lg:items-end">
         <label className="space-y-2">
-          <span className="block text-[10px] uppercase tracking-[0.14em] text-ink-faint">
+          <span className="block text-xs uppercase tracking-[0.14em] text-ink-faint">
             From investor
           </span>
           <select
@@ -102,7 +102,7 @@ export function InternalTransferForm({
         </span>
 
         <label className="space-y-2">
-          <span className="block text-[10px] uppercase tracking-[0.14em] text-ink-faint">
+          <span className="block text-xs uppercase tracking-[0.14em] text-ink-faint">
             To investor
           </span>
           <select
@@ -125,21 +125,21 @@ export function InternalTransferForm({
       </div>
 
       {source && (
-        <dl className="grid gap-2 rounded-xl border border-gold-600/15 bg-black/10 p-3 sm:grid-cols-3">
+        <dl className="grid gap-2 rounded-xl border border-gold-600/15 bg-slate-50 p-3 sm:grid-cols-3">
           <div>
-            <dt className="text-[10px] uppercase tracking-[0.14em] text-ink-faint">
+            <dt className="text-xs uppercase tracking-[0.14em] text-ink-faint">
               Available balance
             </dt>
             <dd className="mt-1 font-mono text-sm text-ink">{formatUsd(source.balance)}</dd>
           </div>
           <div>
-            <dt className="text-[10px] uppercase tracking-[0.14em] text-ink-faint">
+            <dt className="text-xs uppercase tracking-[0.14em] text-ink-faint">
               Queued funds
             </dt>
             <dd className="mt-1 font-mono text-sm text-ink">{formatUsd(source.queued)}</dd>
           </div>
           <div>
-            <dt className="text-[10px] uppercase tracking-[0.14em] text-ink-faint">
+            <dt className="text-xs uppercase tracking-[0.14em] text-ink-faint">
               Invested value
             </dt>
             <dd className="mt-1 font-mono text-sm text-ink">{formatUsd(source.invested)}</dd>
@@ -149,7 +149,7 @@ export function InternalTransferForm({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="space-y-2">
-          <span className="block text-[10px] uppercase tracking-[0.14em] text-ink-faint">
+          <span className="block text-xs uppercase tracking-[0.14em] text-ink-faint">
             Amount (USD)
           </span>
           <input
@@ -165,7 +165,7 @@ export function InternalTransferForm({
           />
         </label>
         <label className="space-y-2">
-          <span className="block text-[10px] uppercase tracking-[0.14em] text-ink-faint">
+          <span className="block text-xs uppercase tracking-[0.14em] text-ink-faint">
             Audit note (optional)
           </span>
           <input

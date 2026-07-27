@@ -80,7 +80,7 @@ function InvestorFinancialDetails({
 
   return (
     <div className="mt-4 rounded-xl border border-gold-600/15 bg-vault-950/50 p-4">
-      <p className="text-[10px] uppercase tracking-[0.16em] text-ink-faint">
+      <p className="text-xs uppercase tracking-[0.16em] text-ink-faint">
         {method === "CRYPTO"
           ? "Wallet payout details"
           : method === "BANK"
@@ -217,7 +217,7 @@ export default async function AdminWithdrawalsPage() {
           { label: "INR ready to pay", count: inrReady.length },
         ].map((item) => (
           <div key={item.label} className="glass-card rounded-xl p-4">
-            <p className="text-[10px] uppercase tracking-[0.14em] text-ink-faint">
+            <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">
               {item.label}
             </p>
             <p className="mt-1.5 font-serif text-3xl text-ink">{item.count}</p>

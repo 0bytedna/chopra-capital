@@ -111,7 +111,7 @@ function MetricCard({
     <article className="glass-card rounded-xl p-4 sm:p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[10px] uppercase tracking-[0.14em] text-ink-faint">{label}</p>
+          <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">{label}</p>
           <p
             className={cn(
               "mt-2 truncate font-mono text-xl",
@@ -145,7 +145,7 @@ function Detail({
 }) {
   return (
     <div className="min-w-0 border-b border-gold-600/10 pb-3 last:border-0 last:pb-0">
-      <dt className="text-[10px] uppercase tracking-[0.14em] text-ink-faint">{label}</dt>
+      <dt className="text-xs uppercase tracking-[0.14em] text-ink-faint">{label}</dt>
       <dd className={cn("mt-1 break-words text-sm text-ink", mono && "font-mono")}>{value}</dd>
     </div>
   );
@@ -347,7 +347,7 @@ export default async function AdminInvestorRecordPage({
           </dl>
 
           <div className="mt-5 border-t border-gold-600/15 pt-4">
-            <p className="text-[10px] uppercase tracking-[0.14em] text-ink-faint">KYC documents</p>
+            <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">KYC documents</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {investor.kycDocuments.length > 0 ? (
                 investor.kycDocuments.map((document) => (
@@ -398,7 +398,7 @@ export default async function AdminInvestorRecordPage({
             <Detail label="Cash deposits" value={investor.cashEnabled ? "Enabled" : "Disabled"} />
           </dl>
           <div className="mt-5 border-t border-gold-600/15 pt-4">
-            <p className="mb-3 text-[10px] uppercase tracking-[0.14em] text-ink-faint">
+            <p className="mb-3 text-xs uppercase tracking-[0.14em] text-ink-faint">
               Deposit method access
             </p>
             <DepositMethodsToggle
@@ -439,7 +439,7 @@ export default async function AdminInvestorRecordPage({
           <div className="mt-4 max-h-[32rem] overflow-auto">
             {investor.deposits.length > 0 ? (
               <table className="w-full min-w-[38rem] text-left text-xs">
-                <thead className="sticky top-0 bg-vault-900 text-[10px] uppercase tracking-[0.14em] text-ink-faint">
+                <thead className="sticky top-0 bg-vault-900 text-xs uppercase tracking-[0.14em] text-ink-faint">
                   <tr>
                     <th className="px-2 py-3 font-medium">Date</th>
                     <th className="px-2 py-3 font-medium">Method</th>
@@ -489,7 +489,7 @@ export default async function AdminInvestorRecordPage({
           <div className="mt-4 max-h-[32rem] overflow-auto">
             {investor.withdrawals.length > 0 ? (
               <table className="w-full min-w-[38rem] text-left text-xs">
-                <thead className="sticky top-0 bg-vault-900 text-[10px] uppercase tracking-[0.14em] text-ink-faint">
+                <thead className="sticky top-0 bg-vault-900 text-xs uppercase tracking-[0.14em] text-ink-faint">
                   <tr>
                     <th className="px-2 py-3 font-medium">Date</th>
                     <th className="px-2 py-3 font-medium">Method</th>
@@ -554,7 +554,7 @@ export default async function AdminInvestorRecordPage({
                           {transfer.direction === "SENT" ? "Sent to" : "Received from"}{" "}
                           <Link
                             href={`/admin/investors/${transfer.counterparty.id}`}
-                            className="text-gold-300 hover:text-gold-200"
+                            className="text-gold-300 hover:text-gold-400"
                           >
                             {transfer.counterparty.fullName ?? transfer.counterparty.email}
                           </Link>
@@ -607,7 +607,7 @@ export default async function AdminInvestorRecordPage({
                         {signedUsd(entry.amount)}
                       </p>
                       {entry.units !== null && (
-                        <p className="mt-1 font-mono text-[10px] text-ink-faint">
+                        <p className="mt-1 font-mono text-xs text-ink-faint">
                           {signedUsd(entry.units).replace(" USD", " units")}
                         </p>
                       )}

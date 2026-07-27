@@ -192,6 +192,7 @@ export async function enableTotp(_prev: ProfileFormState, formData: FormData): P
 
   await prisma.user.update({ where: { id: user.id }, data: { twoFactorEnabled: true } });
   revalidatePath("/app/profile");
+  revalidatePath("/admin/security");
   return { success: "Two-factor authentication is now enabled." };
 }
 
@@ -211,6 +212,7 @@ export async function disableTotp(_prev: ProfileFormState, formData: FormData): 
     data: { twoFactorEnabled: false, twoFactorSecret: null },
   });
   revalidatePath("/app/profile");
+  revalidatePath("/admin/security");
   return { success: "Two-factor authentication disabled." };
 }
 

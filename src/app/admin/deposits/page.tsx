@@ -461,7 +461,7 @@ function DepositReviewCard({
             <p className="mt-2 break-all font-mono text-xs text-ink-dim">UTR: {deposit.reference}</p>
           )}
         </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-gold-500/35 bg-gold-600/8 px-2.5 py-1 text-[11px] text-gold-300">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-gold-500/35 bg-gold-600/8 px-2.5 py-1 text-xs text-gold-300">
           <Clock3 className="size-3" aria-hidden /> Pending
         </span>
       </div>

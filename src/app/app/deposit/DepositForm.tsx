@@ -128,7 +128,7 @@ export function DepositForm({
             ))}
           </div>
           <div className="mt-4 rounded-xl border border-gold-600/20 bg-vault-950/60 p-4">
-            <p className="text-[10px] uppercase tracking-[0.16em] text-ink-faint">{network} deposit address</p>
+            <p className="text-xs uppercase tracking-[0.16em] text-ink-faint">{network} deposit address</p>
             <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 items-center gap-3">
                 {address && qrCodes[network] && (

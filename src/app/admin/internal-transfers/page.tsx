@@ -96,7 +96,7 @@ export default async function AdminInternalTransfersPage() {
               Transfer history
             </h2>
           </div>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-positive/25 bg-positive/8 px-2.5 py-1 text-[11px] text-positive">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-positive/25 bg-positive/8 px-2.5 py-1 text-xs text-positive">
             <ShieldCheck className="size-3" aria-hidden />
             Permanent
           </span>
@@ -105,7 +105,7 @@ export default async function AdminInternalTransfersPage() {
         <div className="mt-5 overflow-x-auto">
           {transfers.length > 0 ? (
             <table className="w-full min-w-[60rem] text-left text-xs">
-              <thead className="border-b border-gold-600/15 text-[10px] uppercase tracking-[0.14em] text-ink-faint">
+              <thead className="border-b border-gold-600/15 text-xs uppercase tracking-[0.14em] text-ink-faint">
                 <tr>
                   <th className="px-3 py-3 font-medium">Date</th>
                   <th className="px-3 py-3 font-medium">From</th>
@@ -129,7 +129,7 @@ export default async function AdminInternalTransfersPage() {
                       >
                         {transfer.fromUser.fullName ?? transfer.fromUser.email}
                       </Link>
-                      <p className="mt-1 text-[10px] text-ink-faint">{transfer.fromUser.email}</p>
+                      <p className="mt-1 text-xs text-ink-faint">{transfer.fromUser.email}</p>
                     </td>
                     <td className="px-3 py-4">
                       <Link
@@ -138,7 +138,7 @@ export default async function AdminInternalTransfersPage() {
                       >
                         {transfer.toUser.fullName ?? transfer.toUser.email}
                       </Link>
-                      <p className="mt-1 text-[10px] text-ink-faint">{transfer.toUser.email}</p>
+                      <p className="mt-1 text-xs text-ink-faint">{transfer.toUser.email}</p>
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 font-mono text-sm text-ink">
                       {formatUsdt(transfer.amount)} USD
@@ -147,7 +147,7 @@ export default async function AdminInternalTransfersPage() {
                       <p>{formatUsdt(transfer.queuedAmount)} USD queued</p>
                       <p className="mt-1">{formatUsdt(transfer.investedAmount)} USD invested</p>
                       {D(transfer.units).gt(0) && (
-                        <p className="mt-1 font-mono text-[10px] text-ink-faint">
+                        <p className="mt-1 font-mono text-xs text-ink-faint">
                           {formatUsdt(transfer.units, 6)} units
                         </p>
                       )}
@@ -157,7 +157,7 @@ export default async function AdminInternalTransfersPage() {
                     </td>
                     <td className="max-w-64 px-3 py-4 text-ink-dim">
                       <p>{transfer.admin.fullName ?? transfer.admin.email}</p>
-                      <p className="mt-1 break-words text-[10px] text-ink-faint">
+                      <p className="mt-1 break-words text-xs text-ink-faint">
                         {transfer.note ?? "No note"}
                       </p>
                     </td>

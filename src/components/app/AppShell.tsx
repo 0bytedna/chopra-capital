@@ -156,9 +156,9 @@ export function AppShell({ name, email, isAdmin, kycStatus, investedDisplay, que
   );
 
   return (
-    <div className="flex min-h-svh">
+    <div className="flex min-h-svh gap-3 bg-transparent lg:p-3">
       {/* Desktop sidebar */}
-      <aside className="sticky top-0 hidden h-svh w-64 shrink-0 flex-col border-r border-gold-600/10 bg-vault-900/60 lg:flex">
+      <aside className="product-window sticky top-3 hidden h-[calc(100svh-1.5rem)] w-64 shrink-0 flex-col overflow-hidden rounded-2xl lg:flex">
         {brand}
         <hr className="hairline" />
         <NavLinks pathname={pathname} isAdmin={isAdmin} />
@@ -174,7 +174,7 @@ export function AppShell({ name, email, isAdmin, kycStatus, investedDisplay, que
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setOpen(false)}
           />
-          <aside className="absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col border-r border-gold-600/15 bg-vault-900">
+          <aside className="product-window absolute inset-y-2 left-2 flex w-72 max-w-[85vw] flex-col overflow-hidden rounded-2xl">
             <div className="flex items-center justify-between pr-3">
               {brand}
               <button
@@ -193,9 +193,9 @@ export function AppShell({ name, email, isAdmin, kycStatus, investedDisplay, que
         </div>
       )}
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col lg:gap-3">
         {/* Glass topbar */}
-        <header className="sticky top-0 z-40 border-b border-gold-600/10 bg-vault-950/80 backdrop-blur-xl">
+        <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-vault-950/88 backdrop-blur-xl lg:top-3 lg:rounded-2xl lg:border lg:border-slate-200/80 lg:shadow-lg lg:shadow-black/20">
           <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
             <button
               type="button"
@@ -208,11 +208,11 @@ export function AppShell({ name, email, isAdmin, kycStatus, investedDisplay, que
 
             <div className="flex min-w-0 items-center gap-4 sm:gap-6">
               <div className="min-w-0">
-                <p className="text-[10px] uppercase tracking-[0.16em] text-ink-faint">In the pool</p>
+                <p className="text-xs uppercase tracking-[0.16em] text-ink-faint">In the pool</p>
                 <p className="truncate font-mono text-sm text-ink">{investedDisplay}</p>
               </div>
               <div className="hidden min-w-0 sm:block">
-                <p className="text-[10px] uppercase tracking-[0.16em] text-ink-faint">Queued</p>
+                <p className="text-xs uppercase tracking-[0.16em] text-ink-faint">Queued</p>
                 <p className="truncate font-mono text-sm text-ink">{queuedDisplay}</p>
               </div>
             </div>
@@ -220,7 +220,7 @@ export function AppShell({ name, email, isAdmin, kycStatus, investedDisplay, que
             <div className="ml-auto flex items-center gap-3">
               <Link
                 href="/app/profile"
-                className={cn("rounded-full border px-3 py-1 text-[11px] font-medium", badge.cls)}
+                className={cn("rounded-full border px-3 py-1 text-xs font-medium", badge.cls)}
               >
                 {badge.label}
               </Link>
@@ -228,7 +228,7 @@ export function AppShell({ name, email, isAdmin, kycStatus, investedDisplay, que
           </div>
         </header>
 
-        <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8">{children}</main>
+        <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:rounded-2xl lg:border lg:border-slate-200/80 lg:bg-vault-900/20">{children}</main>
       </div>
     </div>
   );

@@ -37,7 +37,7 @@ export function AttachmentInput() {
         className="sr-only"
         onChange={(event) => setFiles(Array.from(event.target.files ?? []))}
       />
-      <p className="text-[11px] leading-relaxed text-ink-faint">
+      <p className="text-xs leading-relaxed text-ink-faint">
         Up to 5 files, 25 MB each and 40 MB total.
       </p>
       {files.length > 0 && (

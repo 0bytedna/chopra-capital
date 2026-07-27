@@ -19,9 +19,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </span>
       </Link>
 
-      <div className="glass-card w-full max-w-md rounded-2xl p-6 sm:p-8">{children}</div>
+      <div className="product-window w-full max-w-md rounded-2xl p-6 sm:p-8">{children}</div>
 
-      <p className="mt-6 max-w-md text-center text-[11px] leading-relaxed text-ink-faint">
+      <p className="mt-6 max-w-md text-center text-xs leading-relaxed text-ink-faint">
         Investing involves risk. The value of your investment can fall as well as rise and
         returns are not guaranteed. Capital at risk —{" "}
         <Link href="/legal/risk" className="underline decoration-gold-600/40 underline-offset-2 hover:text-ink-dim">

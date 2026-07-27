@@ -64,9 +64,11 @@ function statusLabel(withdrawal: Withdrawal): string {
 
 function WithdrawalEditForm({
   withdrawal,
+  twoFactorEnabled,
   onCancel,
 }: {
   withdrawal: Withdrawal;
+  twoFactorEnabled: boolean;
   onCancel: () => void;
 }) {
   const [state, action] = useActionState<WithdrawFormState, FormData>(editWithdrawal, {});
@@ -101,7 +103,7 @@ function WithdrawalEditForm({
       />
       {!crypto && (
         <div className="rounded-lg border border-gold-600/20 bg-gold-600/8 px-3.5 py-3">
-          <p className="text-[10px] uppercase tracking-[0.14em] text-ink-faint">
+          <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">
             Estimated INR payout
           </p>
           <p className="mt-1 font-mono text-sm text-gold-300">
@@ -137,6 +139,20 @@ function WithdrawalEditForm({
       <p className="text-xs leading-relaxed text-ink-faint">
         Changing the method uses the current payout details saved in Profile &amp; Security.
       </p>
+      {twoFactorEnabled && (
+        <Field
+          id={"edit-withdraw-" + withdrawal.id + "-code"}
+          label="Authenticator code"
+          name="code"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          pattern="\d{6}"
+          maxLength={6}
+          required
+          placeholder="000000"
+          hint="Required to authorize changes to this withdrawal request."
+        />
+      )}
       <div className="flex flex-wrap gap-2">
         <SubmitButton pendingLabel="Saving..." size="sm">Save changes</SubmitButton>
         <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
@@ -180,7 +196,7 @@ function CancelWithdrawalForm({
   );
 }
 
-export function WithdrawalHistory({ withdrawals }: { withdrawals: Withdrawal[] }) {
+export function WithdrawalHistory({ withdrawals, twoFactorEnabled = false }: { withdrawals: Withdrawal[]; twoFactorEnabled?: boolean }) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
 
@@ -243,14 +259,14 @@ export function WithdrawalHistory({ withdrawals }: { withdrawals: Withdrawal[] }
                   })} · week {withdrawal.weekKey}
                   {withdrawal.adminNote ? " · " + withdrawal.adminNote : ""}
                 </p>
-                <p className="mt-0.5 break-all font-mono text-[11px] text-ink-faint">
+                <p className="mt-0.5 break-all font-mono text-xs text-ink-faint">
                   to: {withdrawal.address}
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2 sm:shrink-0 sm:justify-end">
                 <span
                   className={cn(
-                    "rounded-full border px-2.5 py-1 text-[11px] font-medium",
+                    "rounded-full border px-2.5 py-1 text-xs font-medium",
                     statusClass[withdrawal.status],
                   )}
                 >
@@ -290,6 +306,7 @@ export function WithdrawalHistory({ withdrawals }: { withdrawals: Withdrawal[] }
               <WithdrawalEditForm
                 key={withdrawal.id}
                 withdrawal={withdrawal}
+                twoFactorEnabled={twoFactorEnabled}
                 onCancel={() => setEditingId(null)}
               />
             )}

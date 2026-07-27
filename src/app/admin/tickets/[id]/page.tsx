@@ -47,7 +47,7 @@ export default async function AdminTicketDetailPage({ params }: { params: Promis
               m.isStaff ? "ml-auto border border-gold-500/25 bg-gold-600/8" : "glass-card",
             )}
           >
-            <p className="text-[10px] uppercase tracking-[0.16em] text-ink-faint">
+            <p className="text-xs uppercase tracking-[0.16em] text-ink-faint">
               {m.isStaff ? "Staff" : "Investor"} ·{" "}
               {m.createdAt.toLocaleString("en-US", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
             </p>

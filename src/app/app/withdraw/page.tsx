@@ -52,7 +52,7 @@ export default async function WithdrawPage() {
 
       <section className="grid gap-4 sm:grid-cols-2">
         <div className="glass-card rounded-xl p-5">
-          <p className="text-[11px] uppercase tracking-[0.14em] text-ink-faint">Available balance</p>
+          <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">Available balance</p>
           <p className="mt-1.5 font-serif text-3xl text-ink">
             {formatUsdt(available)} <span className="text-base text-ink-faint">USD</span>
           </p>
@@ -61,7 +61,7 @@ export default async function WithdrawPage() {
         <div className="glass-card rounded-xl p-5">
           <div className="flex items-center gap-2">
             <CalendarClock className="size-4 text-gold-500" aria-hidden />
-            <p className="text-[11px] uppercase tracking-[0.14em] text-ink-faint">Schedule</p>
+            <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">Schedule</p>
           </div>
           <p className="mt-1.5 text-sm leading-relaxed text-ink-dim">
             Requests: <strong className="text-ink">Sunday, 12:00 AM–12:00 PM IST</strong>
@@ -79,6 +79,7 @@ export default async function WithdrawPage() {
           referenceRate={toNumber(inrRate)}
           payout={payout}
           restrictions={restrictions}
+          twoFactorEnabled={user.twoFactorEnabled}
         />
       </section>
 

@@ -28,7 +28,7 @@ function SummaryCard({
     <article className="glass-card rounded-xl p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[10px] uppercase tracking-[0.14em] text-ink-faint">{label}</p>
+          <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">{label}</p>
           <p className="mt-2 truncate font-mono text-xl text-ink">{value}</p>
         </div>
         <span className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-gold-600/15 bg-gold-600/8 text-gold-400">

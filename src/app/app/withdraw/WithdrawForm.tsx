@@ -21,6 +21,7 @@ type Props = {
   referenceRate: number;
   payout: PayoutDetails;
   restrictions: Record<Method, FinancialRestriction | null>;
+  twoFactorEnabled: boolean;
 };
 
 const methods: { id: Method; label: string; note: string }[] = [
@@ -50,7 +51,7 @@ function PayoutDetailsCard({ method, payout }: { method: Method; payout: PayoutD
       <div className="rounded-xl border border-gold-600/20 bg-vault-950/60 p-4">
         {payout.crypto ? (
           <>
-            <p className="text-[10px] uppercase tracking-[0.16em] text-ink-faint">USDT payout destination</p>
+            <p className="text-xs uppercase tracking-[0.16em] text-ink-faint">USDT payout destination</p>
             <p className="mt-1.5 font-mono text-sm text-ink">{payout.crypto.network}</p>
             <p className="mt-1 break-all font-mono text-xs text-ink-dim">{payout.crypto.address}</p>
           </>
@@ -124,7 +125,7 @@ function WithdrawalDialog({
   );
 }
 
-function WithdrawalDetailsForm({ method, available, referenceRate, onDismiss }: { method: Method; available: number; referenceRate: number; onDismiss: () => void }) {
+function WithdrawalDetailsForm({ method, available, referenceRate, twoFactorEnabled, onDismiss }: { method: Method; available: number; referenceRate: number; twoFactorEnabled: boolean; onDismiss: () => void }) {
   const [state, action] = useActionState<WithdrawFormState, FormData>(requestWithdrawal, {});
   const [amountInput, setAmountInput] = useState("");
   const amountNumber = Number(amountInput);
@@ -165,7 +166,7 @@ function WithdrawalDetailsForm({ method, available, referenceRate, onDismiss }: 
           className="rounded-xl border border-gold-600/20 bg-gold-600/8 px-4 py-3"
           aria-live="polite"
         >
-          <p className="text-[10px] uppercase tracking-[0.16em] text-ink-faint">
+          <p className="text-xs uppercase tracking-[0.16em] text-ink-faint">
             Estimated INR payout
           </p>
           <p className="mt-1 font-mono text-lg text-gold-300">
@@ -186,12 +187,26 @@ function WithdrawalDetailsForm({ method, available, referenceRate, onDismiss }: 
           </p>
         </div>
       )}
+      {twoFactorEnabled && (
+        <Field
+          id={`withdraw-${method.toLowerCase()}-code`}
+          label="Authenticator code"
+          name="code"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          pattern="\d{6}"
+          maxLength={6}
+          required
+          placeholder="000000"
+          hint="Required because two-factor authentication is enabled on your account."
+        />
+      )}
       <SubmitButton pendingLabel="Submitting...">Request withdrawal</SubmitButton>
     </form>
   );
 }
 
-export function WithdrawForm({ open, available, referenceRate, payout, restrictions }: Props) {
+export function WithdrawForm({ open, available, referenceRate, payout, restrictions, twoFactorEnabled }: Props) {
   const [method, setMethod] = useState<Method>("CRYPTO");
   const [formVersion, setFormVersion] = useState(0);
   const restriction = restrictions[method];
@@ -241,6 +256,7 @@ export function WithdrawForm({ open, available, referenceRate, payout, restricti
           method={method}
           available={available}
           referenceRate={referenceRate}
+          twoFactorEnabled={twoFactorEnabled}
           onDismiss={() => setFormVersion((version) => version + 1)}
         />
       </Step>

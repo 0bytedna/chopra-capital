@@ -212,7 +212,7 @@ export function DepositHistory({ deposits }: Props) {
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2 sm:shrink-0 sm:justify-end">
-                <span className={cn("rounded-full border px-2.5 py-1 text-[11px] font-medium", statusClass[deposit.status])}>
+                <span className={cn("rounded-full border px-2.5 py-1 text-xs font-medium", statusClass[deposit.status])}>
                   {statusLabel(deposit.status)}
                 </span>
                 {canEdit && !editing && !cancelling && (

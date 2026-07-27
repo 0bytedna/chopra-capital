@@ -3,11 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { withdrawSchema } from "@/lib/validation";
+import { totpCodeSchema, withdrawSchema } from "@/lib/validation";
 import { currentWeekKey, withdrawalRequestWindowMessage, withdrawalsOpenNow, NETWORKS } from "@/lib/config";
 import { getPortfolioMetrics } from "@/lib/portfolio";
 import { getSettingDecimal } from "@/lib/nav";
 import { D, toNumber } from "@/lib/money";
+import { verifyTotp } from "@/lib/totp";
 import {
   getDepositEligibility,
   getWithdrawalEligibility,
@@ -30,6 +31,20 @@ export type WithdrawFormState = {
   restriction?: FinancialRestriction;
 };
 
+async function withdrawalTwoFactorError(
+  user: { twoFactorEnabled: boolean; twoFactorSecret: string | null },
+  formData: FormData,
+): Promise<string | null> {
+  if (!user.twoFactorEnabled) return null;
+  if (!user.twoFactorSecret) return "Two-factor authentication is enabled but not configured correctly. Contact support before withdrawing.";
+
+  const parsed = totpCodeSchema.safeParse({ code: formData.get("code") });
+  if (!parsed.success) return parsed.error.issues[0]?.message ?? "Enter the 6-digit authenticator code.";
+  if (!(await verifyTotp(parsed.data.code, user.twoFactorSecret))) {
+    return "That authenticator code is incorrect or has expired. Enter the current 6-digit code.";
+  }
+  return null;
+}
 function profileDestination(method: WithdrawalMethod, banking: BankingDetail | null): { network: string; address: string } | null {
   if (method === "CASH") return { network: "CASH", address: "Cash collection" };
   if (!banking) return null;
@@ -128,6 +143,9 @@ export async function requestWithdrawal(_prev: WithdrawFormState, formData: Form
   if (!destination) return { error: missingPayoutDetailsMessage(method) };
   if (amountError) return amountError;
 
+  const twoFactorError = await withdrawalTwoFactorError(user, formData);
+  if (twoFactorError) return { error: twoFactorError };
+
   await prisma.withdrawal.create({
     data: {
       userId: user.id,
@@ -185,6 +203,9 @@ export async function editWithdrawal(_prev: WithdrawFormState, formData: FormDat
   const destination = profileDestination(method, banking);
   if (!destination) return { error: missingPayoutDetailsMessage(method) };
   if (amountError) return amountError;
+
+  const twoFactorError = await withdrawalTwoFactorError(user, formData);
+  if (twoFactorError) return { error: twoFactorError };
 
   const result = await prisma.withdrawal.updateMany({
     where: { id, userId: user.id, status: "REQUESTED" },

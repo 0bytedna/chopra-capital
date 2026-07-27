@@ -88,7 +88,7 @@ function ChartTooltip({
 
   return (
     <div className="rounded-lg border border-gold-600/25 bg-vault-900/95 px-3.5 py-2.5 shadow-xl backdrop-blur">
-      <p className="text-[11px] uppercase tracking-[0.14em] text-ink-faint">
+      <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">
         {fmtAxisDate(String(label))}
       </p>
       <p className="mt-1 font-mono text-sm text-gold-300">
@@ -197,9 +197,9 @@ function GraphCard({
           <p className="mt-1 max-w-md text-xs leading-relaxed text-ink-faint">{caption}</p>
         </div>
         <div className="shrink-0 sm:text-right">
-          <p className="text-[10px] uppercase tracking-[0.16em] text-ink-faint">{summaryLabel}</p>
+          <p className="text-xs uppercase tracking-[0.16em] text-ink-faint">{summaryLabel}</p>
           <p className={cn("mt-1 font-mono text-base sm:text-lg", valueTone)}>
-            {fmtMoney(latest, signed)} <span className="text-[10px] text-ink-faint">USD</span>
+            {fmtMoney(latest, signed)} <span className="text-xs text-ink-faint">USD</span>
           </p>
         </div>
       </div>
@@ -237,7 +237,7 @@ function GraphCard({
               min={firstActivityDate}
               max={to}
               onChange={(event) => changeFrom(event.target.value)}
-              className="w-full min-w-0 rounded-lg border border-gold-600/20 bg-vault-900/80 px-3 py-2 font-mono text-xs text-ink [color-scheme:dark] focus:border-gold-500/50 focus:outline-none focus:ring-2 focus:ring-gold-500/25"
+              className="w-full min-w-0 rounded-lg border border-gold-600/20 bg-vault-900/80 px-3 py-2 font-mono text-xs text-ink [color-scheme:light] focus:border-gold-500/50 focus:outline-none focus:ring-2 focus:ring-gold-500/25"
             />
           </label>
           <label className="space-y-1.5 text-xs font-medium uppercase tracking-[0.14em] text-ink-dim">
@@ -248,11 +248,11 @@ function GraphCard({
               min={from}
               max={today}
               onChange={(event) => changeTo(event.target.value)}
-              className="w-full min-w-0 rounded-lg border border-gold-600/20 bg-vault-900/80 px-3 py-2 font-mono text-xs text-ink [color-scheme:dark] focus:border-gold-500/50 focus:outline-none focus:ring-2 focus:ring-gold-500/25"
+              className="w-full min-w-0 rounded-lg border border-gold-600/20 bg-vault-900/80 px-3 py-2 font-mono text-xs text-ink [color-scheme:light] focus:border-gold-500/50 focus:outline-none focus:ring-2 focus:ring-gold-500/25"
             />
           </label>
         </div>
-        <p className="text-right text-[11px] text-ink-faint" aria-live="polite">
+        <p className="text-right text-xs text-ink-faint" aria-live="polite">
           {loading ? "Updating…" : "Auto-refreshes every 15 seconds"}
         </p>
       </div>
@@ -266,18 +266,18 @@ function GraphCard({
                 <stop offset="100%" stopColor={stroke} stopOpacity={0.02} />
               </linearGradient>
             </defs>
-            <CartesianGrid stroke="rgba(236,231,219,0.06)" vertical={false} />
+            <CartesianGrid stroke="rgba(148,163,184,0.22)" vertical={false} />
             <XAxis
               dataKey="date"
               tickFormatter={fmtAxisDate}
-              tick={{ fill: "#837b6c", fontSize: 11 }}
-              axisLine={{ stroke: "rgba(236,231,219,0.1)" }}
+              tick={{ fill: "#475569", fontSize: 13 }}
+              axisLine={{ stroke: "rgba(148,163,184,0.30)" }}
               tickLine={false}
               minTickGap={36}
             />
             <YAxis
               tickFormatter={fmtAxisMoney}
-              tick={{ fill: "#837b6c", fontSize: 11 }}
+              tick={{ fill: "#475569", fontSize: 13 }}
               axisLine={false}
               tickLine={false}
               width={52}
@@ -315,7 +315,7 @@ export function PortfolioChart({
         dataKey="profit"
         initialSeries={initialSeries}
         firstActivityDate={firstActivityDate}
-        stroke="#d3ab52"
+        stroke="#38bdf8"
         gradientId="profitGoldFill"
         endpoint={endpoint}
         signed
@@ -328,7 +328,7 @@ export function PortfolioChart({
         dataKey="value"
         initialSeries={initialSeries}
         firstActivityDate={firstActivityDate}
-        stroke="#78b6a4"
+        stroke="#2563eb"
         gradientId="balanceGreenFill"
         endpoint={endpoint}
       />

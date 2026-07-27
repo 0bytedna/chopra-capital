@@ -13,9 +13,11 @@ type WithdrawalItems = ComponentProps<typeof WithdrawalHistory>["withdrawals"];
 export function HistoryTabs({
   deposits,
   withdrawals,
+  twoFactorEnabled,
 }: {
   deposits: DepositItems;
   withdrawals: WithdrawalItems;
+  twoFactorEnabled: boolean;
 }) {
   const [tab, setTab] = useState<Tab>("DEPOSITS");
 
@@ -40,7 +42,7 @@ export function HistoryTabs({
         >
           <ArrowDownToLine className="size-4" aria-hidden />
           Deposits
-          <span className="rounded-full bg-vault-950/70 px-2 py-0.5 font-mono text-[10px]">
+          <span className="rounded-full bg-vault-950/70 px-2 py-0.5 font-mono text-xs">
             {deposits.length}
           </span>
         </button>
@@ -58,7 +60,7 @@ export function HistoryTabs({
         >
           <ArrowUpFromLine className="size-4" aria-hidden />
           Withdrawals
-          <span className="rounded-full bg-vault-950/70 px-2 py-0.5 font-mono text-[10px]">
+          <span className="rounded-full bg-vault-950/70 px-2 py-0.5 font-mono text-xs">
             {withdrawals.length}
           </span>
         </button>
@@ -68,7 +70,7 @@ export function HistoryTabs({
         {tab === "DEPOSITS" ? (
           <DepositHistory deposits={deposits} />
         ) : (
-          <WithdrawalHistory withdrawals={withdrawals} />
+          <WithdrawalHistory withdrawals={withdrawals} twoFactorEnabled={twoFactorEnabled} />
         )}
       </div>
     </div>

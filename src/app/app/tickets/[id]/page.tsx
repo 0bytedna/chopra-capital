@@ -49,7 +49,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                 : "glass-card ml-auto",
             )}
           >
-            <p className="text-[10px] uppercase tracking-[0.16em] text-ink-faint">
+            <p className="text-xs uppercase tracking-[0.16em] text-ink-faint">
               {m.isStaff ? "Chopra Capital" : "You"} ·{" "}
               {m.createdAt.toLocaleString("en-US", {
                 day: "numeric",

@@ -7635,3 +7635,844 @@ The width(-1) and height(-1) of chart should be greater than 0,
  GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 124ms (next.js: 10ms, application-code: 114ms)
  GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 58ms (next.js: 10ms, application-code: 49ms)
  GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 75ms (next.js: 4ms, application-code: 71ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 87ms (next.js: 8ms, application-code: 79ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 120ms (next.js: 3ms, application-code: 117ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 20ms (next.js: 9ms, application-code: 11ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 26ms (next.js: 5ms, application-code: 21ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 44ms (next.js: 5ms, application-code: 39ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 75ms (next.js: 9ms, application-code: 65ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 22ms (next.js: 4ms, application-code: 18ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 56ms (next.js: 11ms, application-code: 45ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 22ms (next.js: 11ms, application-code: 11ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 27ms (next.js: 4ms, application-code: 23ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 21ms (next.js: 9ms, application-code: 12ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 25ms (next.js: 4ms, application-code: 21ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 21ms (next.js: 10ms, application-code: 10ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 25ms (next.js: 4ms, application-code: 21ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 54ms (next.js: 9ms, application-code: 45ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 70ms (next.js: 4ms, application-code: 66ms)
+✓ Compiled in 646ms
+ GET / 200 in 1303ms (next.js: 174ms, application-code: 1129ms)
+ GET / 200 in 1008ms (next.js: 14ms, application-code: 994ms)
+ GET / 200 in 667ms (next.js: 41ms, application-code: 626ms)
+ GET /app 200 in 1455ms (next.js: 211ms, proxy.ts: 351ms, application-code: 893ms)
+ GET /app 200 in 758ms (next.js: 31ms, proxy.ts: 237ms, application-code: 490ms)
+ GET /app 200 in 340ms (next.js: 17ms, proxy.ts: 187ms, application-code: 136ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 125ms (next.js: 89ms, application-code: 35ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 130ms (next.js: 104ms, application-code: 25ms)
+✓ Compiled in 119ms
+ GET / 200 in 504ms (next.js: 109ms, application-code: 396ms)
+ GET /app 200 in 506ms (next.js: 109ms, proxy.ts: 244ms, application-code: 153ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 171ms (next.js: 92ms, application-code: 79ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 184ms (next.js: 105ms, application-code: 79ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 33ms (next.js: 7ms, application-code: 26ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 70ms (next.js: 6ms, application-code: 63ms)
+✓ Compiled in 203ms
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 42ms (next.js: 4ms, application-code: 38ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 71ms (next.js: 10ms, application-code: 61ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 106ms (next.js: 4ms, application-code: 102ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 137ms (next.js: 10ms, application-code: 127ms)
+✓ Compiled in 145ms
+ GET / 200 in 545ms (next.js: 132ms, application-code: 413ms)
+ GET /app 200 in 578ms (next.js: 112ms, proxy.ts: 293ms, application-code: 174ms)
+ GET / 200 in 412ms (next.js: 6ms, application-code: 406ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 144ms (next.js: 125ms, application-code: 20ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 147ms (next.js: 110ms, application-code: 37ms)
+ GET / 200 in 160ms (next.js: 9ms, application-code: 151ms)
+ GET / 200 in 267ms (next.js: 9ms, application-code: 259ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 30ms (next.js: 14ms, application-code: 16ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 40ms (next.js: 6ms, application-code: 34ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 41ms (next.js: 6ms, application-code: 35ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 71ms (next.js: 11ms, application-code: 60ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 32ms (next.js: 14ms, application-code: 18ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 55ms (next.js: 7ms, application-code: 48ms)
+✓ Compiled in 111ms
+ GET / 200 in 633ms (next.js: 152ms, application-code: 481ms)
+ GET / 200 in 332ms (next.js: 9ms, application-code: 323ms)
+ GET /app 200 in 723ms (next.js: 166ms, proxy.ts: 305ms, application-code: 251ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 201ms (next.js: 158ms, application-code: 43ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 216ms (next.js: 133ms, application-code: 83ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 43ms (next.js: 4ms, application-code: 39ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 50ms (next.js: 8ms, application-code: 42ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 22ms (next.js: 10ms, application-code: 12ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 30ms (next.js: 4ms, application-code: 26ms)
+ GET / 200 in 338ms (next.js: 9ms, application-code: 329ms)
+✓ Compiled in 131ms
+ GET / 200 in 716ms (next.js: 180ms, application-code: 536ms)
+ GET / 200 in 716ms (next.js: 262ms, application-code: 454ms)
+ GET / 200 in 306ms (next.js: 9ms, application-code: 297ms)
+ GET /app 200 in 834ms (next.js: 149ms, proxy.ts: 417ms, application-code: 269ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 124ms (next.js: 102ms, application-code: 21ms)
+ GET /api/portfolio?from=2026-07-27&to=2026-07-27 200 in 137ms (next.js: 91ms, application-code: 45ms)
+✓ Compiled in 111ms
+ GET / 200 in 290ms (next.js: 206ms, application-code: 84ms)
+ GET / 200 in 294ms (next.js: 147ms, application-code: 147ms)
+ GET / 200 in 46ms (next.js: 7ms, application-code: 40ms)
+✓ Compiled in 338ms
+ GET / 200 in 294ms (next.js: 119ms, application-code: 175ms)
+ GET / 200 in 294ms (next.js: 193ms, application-code: 101ms)
+ GET / 200 in 58ms (next.js: 7ms, application-code: 51ms)
+✓ Compiled in 195ms
+ GET / 200 in 332ms (next.js: 104ms, application-code: 227ms)
+ GET / 200 in 211ms (next.js: 5ms, application-code: 205ms)
+ GET / 200 in 162ms (next.js: 9ms, application-code: 154ms)
+ GET / 200 in 163ms (next.js: 48ms, application-code: 115ms)
+ GET / 200 in 163ms (next.js: 83ms, application-code: 80ms)
+ GET / 200 in 46ms (next.js: 5ms, application-code: 41ms)
+✓ Compiled in 216ms
+✓ Compiled in 97ms
+ GET / 200 in 378ms (next.js: 203ms, application-code: 175ms)
+ GET / 200 in 357ms (next.js: 6ms, application-code: 351ms)
+ GET / 200 in 144ms (next.js: 6ms, application-code: 138ms)
+ GET /signin 200 in 576ms (next.js: 234ms, proxy.ts: 99ms, application-code: 242ms)
+ GET /signup 200 in 432ms (next.js: 241ms, proxy.ts: 5ms, application-code: 186ms)
+ GET / 200 in 213ms (next.js: 5ms, application-code: 207ms)
+ GET / 200 in 109ms (next.js: 6ms, application-code: 103ms)
+✓ Compiled in 302ms
+ GET / 200 in 259ms (next.js: 122ms, application-code: 137ms)
+ GET / 200 in 77ms (next.js: 4ms, application-code: 73ms)
+ GET / 200 in 41ms (next.js: 5ms, application-code: 36ms)
+✓ Compiled in 171ms
+ GET / 200 in 349ms (next.js: 97ms, application-code: 252ms)
+ GET / 200 in 205ms (next.js: 4ms, application-code: 201ms)
+ GET / 200 in 173ms (next.js: 5ms, application-code: 168ms)
+ GET / 200 in 173ms (next.js: 40ms, application-code: 134ms)
+ GET / 200 in 173ms (next.js: 83ms, application-code: 90ms)
+ GET / 200 in 95ms (next.js: 48ms, application-code: 47ms)
+ GET / 200 in 325ms (next.js: 5ms, application-code: 319ms)
+ GET / 200 in 127ms (next.js: 4ms, application-code: 123ms)
+ GET /signin 200 in 382ms (next.js: 137ms, proxy.ts: 113ms, application-code: 132ms)
+ GET /signup 200 in 140ms (next.js: 45ms, proxy.ts: 8ms, application-code: 87ms)
+⨯ ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+ GET / 500 in 28ms (next.js: 11ms, application-code: 17ms)
+⨯ ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+ GET / 500 in 25ms (next.js: 10ms, application-code: 15ms)
+✓ Compiled in 2.2s
+[browser] Uncaught Error: ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+[browser] ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+⨯ ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+ GET / 500 in 27ms (next.js: 13ms, application-code: 13ms)
+[browser] Uncaught Error: ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+[browser] ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+[browser] ./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: E:\WorkStation\chopra-capital\src\app\globals.css:54:22: Unknown word color
+    [at error (turbopack:///[project]/node_modules/postcss/lib/input.js:135:16)]
+    [at unknownWord (turbopack:///[project]/node_modules/postcss/lib/parser.js:602:22)]
+    [at decl (turbopack:///[project]/node_modules/postcss/lib/parser.js:242:14)]
+    [at other (turbopack:///[project]/node_modules/postcss/lib/parser.js:408:18)]
+    [at parse (turbopack:///[project]/node_modules/postcss/lib/parser.js:479:16)]
+    [at parser (turbopack:///[project]/node_modules/postcss/lib/parse.js:11:12)]
+    [at new LazyResult (turbopack:///[project]/node_modules/postcss/lib/lazy-result.js:165:16)]
+    [at process (turbopack:///[project]/node_modules/postcss/lib/processor.js:53:14)]
+    [at transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:51)]
+    [at run (turbopack:///[turbopack-node]/child_process/evaluate.ts:89:29)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component] 
+✓ Compiled in 742ms
+ GET / 200 in 585ms (next.js: 178ms, application-code: 407ms)
+ GET /app 200 in 330ms (next.js: 168ms, proxy.ts: 4ms, application-code: 158ms)
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+ GET /app/deposit 200 in 517ms (next.js: 170ms, proxy.ts: 4ms, application-code: 343ms)
+ GET /app/withdraw 200 in 292ms (next.js: 163ms, proxy.ts: 5ms, application-code: 124ms)
+ GET /app/history 200 in 267ms (next.js: 162ms, proxy.ts: 4ms, application-code: 101ms)
+ GET /app/profile 200 in 273ms (next.js: 165ms, proxy.ts: 4ms, application-code: 105ms)
+ GET /app 200 in 61ms (next.js: 4ms, proxy.ts: 4ms, application-code: 53ms)
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[browser] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+ GET / 200 in 35ms (next.js: 4ms, application-code: 32ms)
+ POST /app 303 in 111ms (next.js: 4ms, proxy.ts: 4ms, application-code: 104ms)
+  └─ ƒ signout() in 2ms src/app/(auth)/actions.ts
+ GET /signin 200 in 98ms (next.js: 55ms, proxy.ts: 5ms, application-code: 38ms)
+ GET /admin 200 in 349ms (next.js: 193ms, proxy.ts: 5ms, application-code: 151ms)
+ POST /signin 303 in 1105ms (next.js: 4ms, proxy.ts: 5ms, application-code: 1096ms)
+  └─ ƒ signin({}, {}) in 684ms src/app/(auth)/actions.ts
+ POST /admin 200 in 2.0s (next.js: 8ms, proxy.ts: 11ms, application-code: 2.0s)
+  └─ ƒ adminRecordTradingAdjustment({}, {}) in 1944ms src/app/admin/actions.ts
+ GET /admin/deposits 200 in 2.7s (next.js: 752ms, proxy.ts: 5ms, application-code: 1960ms)
+ GET /admin/withdrawals 200 in 1398ms (next.js: 1310ms, proxy.ts: 5ms, application-code: 83ms)
+ GET /admin/kyc 200 in 769ms (next.js: 686ms, proxy.ts: 22ms, application-code: 60ms)
+ GET /admin/tickets 200 in 835ms (next.js: 776ms, proxy.ts: 5ms, application-code: 54ms)
+ GET /admin/investors 200 in 397ms (next.js: 265ms, proxy.ts: 8ms, application-code: 124ms)
+ POST /admin/investors 200 in 1086ms (next.js: 7ms, proxy.ts: 6ms, application-code: 1073ms)
+  └─ ƒ adminDeleteInvestor({}, {}) in 922ms src/app/admin/actions.ts
+✓ Compiled in 456ms
+ GET /admin/investors 200 in 2.0s (next.js: 294ms, proxy.ts: 872ms, application-code: 871ms)
+ GET /admin/investors 200 in 813ms (next.js: 28ms, proxy.ts: 52ms, application-code: 733ms)
+ GET /admin/investors 200 in 772ms (next.js: 33ms, proxy.ts: 151ms, application-code: 588ms)
+ GET /admin/investors 200 in 794ms (next.js: 136ms, proxy.ts: 106ms, application-code: 552ms)
+ GET /admin/investors 200 in 791ms (next.js: 184ms, proxy.ts: 104ms, application-code: 503ms)
+ GET /admin/investors 200 in 801ms (next.js: 95ms, proxy.ts: 108ms, application-code: 598ms)
+ GET /admin/investors 200 in 488ms (next.js: 19ms, proxy.ts: 15ms, application-code: 454ms)
+ GET /admin/investors 200 in 470ms (next.js: 16ms, proxy.ts: 41ms, application-code: 413ms)
+ GET /admin/investors 200 in 404ms (next.js: 19ms, proxy.ts: 46ms, application-code: 340ms)
+ GET /admin/investors 200 in 432ms (next.js: 70ms, proxy.ts: 28ms, application-code: 334ms)
+ GET /admin/investors 200 in 431ms (next.js: 108ms, proxy.ts: 27ms, application-code: 297ms)
+ GET /admin/investors 200 in 441ms (next.js: 163ms, proxy.ts: 26ms, application-code: 252ms)
+ GET /admin/investors 200 in 435ms (next.js: 8ms, proxy.ts: 15ms, application-code: 412ms)
+ GET /admin/investors 200 in 443ms (next.js: 9ms, proxy.ts: 16ms, application-code: 418ms)
+ GET /admin/investors 200 in 445ms (next.js: 22ms, proxy.ts: 55ms, application-code: 368ms)
+ GET /admin/investors 200 in 409ms (next.js: 87ms, proxy.ts: 27ms, application-code: 296ms)
+ GET /admin/investors 200 in 409ms (next.js: 134ms, proxy.ts: 27ms, application-code: 248ms)
+ GET /admin/investors 200 in 506ms (next.js: 156ms, proxy.ts: 81ms, application-code: 269ms)
+ GET /admin/investors 200 in 635ms (next.js: 7ms, proxy.ts: 14ms, application-code: 614ms)
+ GET /admin/investors 200 in 725ms (next.js: 15ms, proxy.ts: 34ms, application-code: 677ms)
+ GET /admin/investors 200 in 740ms (next.js: 28ms, proxy.ts: 76ms, application-code: 636ms)
+ GET /admin/investors 200 in 721ms (next.js: 210ms, proxy.ts: 67ms, application-code: 444ms)
+ GET /admin/investors 200 in 797ms (next.js: 130ms, proxy.ts: 68ms, application-code: 599ms)
+ GET /admin/investors 200 in 756ms (next.js: 287ms, proxy.ts: 124ms, application-code: 345ms)
+ GET /admin/investors 200 in 444ms (next.js: 13ms, proxy.ts: 21ms, application-code: 410ms)
+ GET /admin/investors 200 in 366ms (next.js: 15ms, proxy.ts: 27ms, application-code: 324ms)
+ GET /admin/investors 200 in 335ms (next.js: 14ms, proxy.ts: 107ms, application-code: 213ms)
+ GET /admin/investors 200 in 254ms (next.js: 72ms, proxy.ts: 33ms, application-code: 150ms)
+ GET /admin/investors 200 in 239ms (next.js: 96ms, proxy.ts: 66ms, application-code: 78ms)
+ GET /admin/investors 200 in 210ms (next.js: 6ms, proxy.ts: 6ms, application-code: 198ms)
+ GET /admin/investors 200 in 104ms (next.js: 5ms, proxy.ts: 6ms, application-code: 94ms)
+ GET / 200 in 149ms (next.js: 94ms, application-code: 54ms)
+ POST /admin/investors 303 in 227ms (next.js: 5ms, proxy.ts: 4ms, application-code: 219ms)
+  └─ ƒ signout() in 3ms src/app/(auth)/actions.ts
+ GET /signin 200 in 274ms (next.js: 189ms, proxy.ts: 3ms, application-code: 81ms)
+ GET /admin 200 in 531ms (next.js: 225ms, proxy.ts: 3ms, application-code: 302ms)
+ POST /signin 303 in 1298ms (next.js: 7ms, proxy.ts: 4ms, application-code: 1287ms)
+  └─ ƒ signin({}, {}) in 657ms src/app/(auth)/actions.ts
+ GET / 200 in 67ms (next.js: 5ms, application-code: 62ms)
+ POST /admin 303 in 167ms (next.js: 8ms, proxy.ts: 5ms, application-code: 154ms)
+  └─ ƒ signout() in 2ms src/app/(auth)/actions.ts
+ GET /signin 200 in 47ms (next.js: 6ms, proxy.ts: 6ms, application-code: 35ms)
+ POST /signin 200 in 22ms (next.js: 5ms, proxy.ts: 5ms, application-code: 12ms)
+  └─ ƒ signin({}, {}) in 2ms src/app/(auth)/actions.ts
+ POST /signin 200 in 27ms (next.js: 6ms, proxy.ts: 7ms, application-code: 14ms)
+  └─ ƒ signin({"error":"Incorrect email or password."}, {}) in 1ms src/app/(auth)/actions.ts
+✓ Compiled in 265ms
+ GET /signin 200 in 306ms (next.js: 219ms, proxy.ts: 5ms, application-code: 82ms)
+ GET /signin 200 in 701ms (next.js: 204ms, proxy.ts: 120ms, application-code: 377ms)
+ GET /signin 200 in 619ms (next.js: 10ms, proxy.ts: 270ms, application-code: 340ms)
+✓ Compiled in 144ms
+ GET /signin 200 in 481ms (next.js: 161ms, proxy.ts: 66ms, application-code: 254ms)
+ GET /signin 200 in 210ms (next.js: 5ms, proxy.ts: 4ms, application-code: 201ms)
+ GET /signin 200 in 250ms (next.js: 12ms, proxy.ts: 11ms, application-code: 228ms)
+ GET /signin 200 in 250ms (next.js: 43ms, proxy.ts: 12ms, application-code: 195ms)
+ GET /signin 200 in 250ms (next.js: 79ms, proxy.ts: 13ms, application-code: 158ms)
+ GET /signin 200 in 250ms (next.js: 110ms, proxy.ts: 14ms, application-code: 126ms)
+ GET /signin 200 in 94ms (next.js: 7ms, proxy.ts: 5ms, application-code: 82ms)
+ GET /signin 200 in 47ms (next.js: 6ms, proxy.ts: 6ms, application-code: 36ms)
+✓ Compiled in 207ms
+ GET /signin 200 in 1485ms (next.js: 598ms, proxy.ts: 153ms, application-code: 734ms)
+ GET /signin 200 in 681ms (next.js: 18ms, proxy.ts: 137ms, application-code: 525ms)
+ GET /signin 200 in 526ms (next.js: 29ms, proxy.ts: 87ms, application-code: 410ms)
+ GET /signin 200 in 519ms (next.js: 220ms, proxy.ts: 90ms, application-code: 208ms)
+ GET /signin 200 in 525ms (next.js: 101ms, proxy.ts: 88ms, application-code: 336ms)
+ GET /signin 200 in 526ms (next.js: 158ms, proxy.ts: 89ms, application-code: 279ms)
+ GET /signin 200 in 374ms (next.js: 10ms, proxy.ts: 8ms, application-code: 356ms)
+ GET /signin 200 in 315ms (next.js: 10ms, proxy.ts: 6ms, application-code: 299ms)
+ GET /signin 200 in 231ms (next.js: 18ms, proxy.ts: 12ms, application-code: 201ms)
+ GET /signin 200 in 231ms (next.js: 65ms, proxy.ts: 12ms, application-code: 153ms)
+ GET /signin 200 in 230ms (next.js: 158ms, proxy.ts: 18ms, application-code: 54ms)
+ GET /signin 200 in 232ms (next.js: 109ms, proxy.ts: 13ms, application-code: 110ms)
+✓ Compiled in 100ms
+ GET /signin 200 in 463ms (next.js: 223ms, proxy.ts: 87ms, application-code: 154ms)
+ GET /signin 200 in 106ms (next.js: 6ms, proxy.ts: 5ms, application-code: 96ms)
+ GET /signin 200 in 58ms (next.js: 6ms, proxy.ts: 5ms, application-code: 46ms)
+✓ Compiled in 85ms
+ GET /signin 200 in 379ms (next.js: 165ms, proxy.ts: 71ms, application-code: 143ms)
+ GET /signin 200 in 90ms (next.js: 5ms, proxy.ts: 4ms, application-code: 80ms)
+ GET /signin 200 in 45ms (next.js: 4ms, proxy.ts: 4ms, application-code: 36ms)
+ GET /admin 200 in 357ms (next.js: 190ms, proxy.ts: 6ms, application-code: 161ms)
+ POST /signin 303 in 1102ms (next.js: 5ms, proxy.ts: 4ms, application-code: 1092ms)
+  └─ ƒ signin({}, {}) in 644ms src/app/(auth)/actions.ts
+ GET /admin/security 200 in 663ms (next.js: 582ms, proxy.ts: 4ms, application-code: 77ms)
+ POST /admin/security 200 in 1346ms (next.js: 4ms, proxy.ts: 6ms, application-code: 1337ms)
+  └─ ƒ startTotpEnrolment() in 1283ms src/app/app/profile/actions.ts
+ GET / 200 in 53ms (next.js: 16ms, application-code: 37ms)
+ POST /admin/security 303 in 73ms (next.js: 4ms, proxy.ts: 4ms, application-code: 64ms)
+  └─ ƒ signout() in 1ms src/app/(auth)/actions.ts
+ GET / 200 in 13ms (next.js: 6ms, application-code: 7ms)
+ GET / 200 in 20ms (next.js: 6ms, application-code: 14ms)
+ GET / 200 in 10ms (next.js: 4ms, application-code: 6ms)
+ GET / 200 in 10ms (next.js: 4ms, application-code: 6ms)
+ GET / 200 in 14ms (next.js: 6ms, application-code: 8ms)
+  Reload env: .env
+ GET / 200 in 149ms (next.js: 88ms, application-code: 61ms)
+  Reload env: .env
+ GET / 200 in 156ms (next.js: 98ms, application-code: 58ms)
+ GET /signin 200 in 300ms (next.js: 177ms, proxy.ts: 71ms, application-code: 51ms)
+ GET /admin 200 in 217ms (next.js: 73ms, proxy.ts: 6ms, application-code: 138ms)
+ POST /signin 303 in 1113ms (next.js: 5ms, proxy.ts: 4ms, application-code: 1104ms)
+  └─ ƒ signin({}, {}) in 790ms src/app/(auth)/actions.ts
+ GET /admin/investors 200 in 267ms (next.js: 168ms, proxy.ts: 4ms, application-code: 96ms)
+ GET /admin 200 in 52ms (next.js: 4ms, proxy.ts: 4ms, application-code: 44ms)
