@@ -24,7 +24,7 @@ import {
   rejectWithdrawal,
   createInternalTransfer,
 } from "@/lib/wallet";
-import { recordTradingAdjustment, setTradingSnapshot } from "@/lib/tradingAccount";
+import { recordTradingAdjustment } from "@/lib/tradingAccount";
 import { stageRequiredBankPayoutCorrections } from "@/lib/payoutDetails";
 
 export type AdminFormState = { error?: string; success?: string };
@@ -34,20 +34,6 @@ function fail(err: unknown): AdminFormState {
 }
 
 // --- Manual trading account -------------------------------------------------
-
-export async function adminSetTradingSnapshot(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
-  const admin = await requireAdmin();
-  try {
-    const balance = D(String(formData.get("balance") ?? ""));
-    const note = String(formData.get("note") ?? "");
-    await setTradingSnapshot({ balance, note, adminId: admin.id });
-    revalidatePath("/admin");
-    revalidatePath("/app");
-    return { success: "Trading balance updated." };
-  } catch (error) {
-    return fail(error);
-  }
-}
 
 export async function adminRecordTradingAdjustment(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
   const admin = await requireAdmin();
@@ -723,17 +709,6 @@ export async function adminCompleteWithdrawalPayout(
   return { success: "Payout completed." };
 }
 
-/**
- * Compatibility-only action for a stale admin tab from the previous build.
- * There is intentionally no rate control in the current admin interface.
- */
-export async function adminUpdateWithdrawalRate(
-  _prev: AdminFormState,
-  _formData: FormData,
-): Promise<AdminFormState> {
-  await requireAdmin();
-  return { error: "This reference-rate control was removed. Refresh the page to load the current admin interface." };
-}
 export async function adminRejectWithdrawal(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
   await requireAdmin();
   const id = String(formData.get("id") ?? "");

@@ -10,7 +10,8 @@ import { prisma } from "@/lib/prisma";
 import type { User } from "@/generated/prisma";
 
 export const SESSION_COOKIE = "gf_session";
-const SESSION_DAYS = 7;
+const USER_SESSION_DAYS = 7;
+const ADMIN_SESSION_DAYS = 1;
 
 function secretKey(): Uint8Array {
   const secret = process.env.AUTH_SECRET;
@@ -27,22 +28,25 @@ export type SessionPayload = {
 };
 
 export async function createSessionToken(payload: SessionPayload): Promise<string> {
+  const sessionDays = payload.role === "ADMIN" ? ADMIN_SESSION_DAYS : USER_SESSION_DAYS;
   return new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime(`${SESSION_DAYS}d`)
+    .setExpirationTime(`${sessionDays}d`)
     .sign(secretKey());
 }
 
 export async function verifySessionToken(token: string): Promise<SessionPayload | null> {
   try {
     const { payload } = await jwtVerify(token, secretKey());
-    if (typeof payload.sub !== "string") return null;
-    return {
-      sub: payload.sub,
-      role: payload.role === "ADMIN" ? "ADMIN" : "USER",
-      stage: payload.stage === "2fa" ? "2fa" : "full",
-    };
+    if (
+      typeof payload.sub !== "string" ||
+      (payload.role !== "ADMIN" && payload.role !== "USER") ||
+      (payload.stage !== "full" && payload.stage !== "2fa")
+    ) {
+      return null;
+    }
+    return { sub: payload.sub, role: payload.role, stage: payload.stage };
   } catch {
     return null;
   }
@@ -50,13 +54,14 @@ export async function verifySessionToken(token: string): Promise<SessionPayload 
 
 export async function setSessionCookie(payload: SessionPayload): Promise<void> {
   const token = await createSessionToken(payload);
+  const sessionDays = payload.role === "ADMIN" ? ADMIN_SESSION_DAYS : USER_SESSION_DAYS;
   const store = await cookies();
   store.set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: SESSION_DAYS * 24 * 60 * 60,
+    maxAge: sessionDays * 24 * 60 * 60,
   });
 }
 

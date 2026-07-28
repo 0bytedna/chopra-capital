@@ -103,44 +103,91 @@ function formatNotificationTime(value: Date): string {
   }).format(value);
 }
 
-export function NotificationList({ items }: { items: UserNotification[] }) {
+export function NotificationList({
+  items,
+  openNotification,
+}: {
+  items: UserNotification[];
+  openNotification?: (formData: FormData) => Promise<void>;
+}) {
   return (
     <div className="space-y-3">
       {items.map((item) => {
         const style = notificationStyle[item.kind];
         const Icon = style.icon;
+        const isReadUpdate = item.kind === "UPDATE" && item.isUnread === false;
+        const surfaceClass = isReadUpdate
+          ? "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/80"
+          : style.surfaceClass;
+        const iconClass = isReadUpdate
+          ? "bg-slate-100 text-slate-600"
+          : style.iconClass;
+        const actionClass = isReadUpdate
+          ? "border-slate-300 bg-slate-50 text-slate-700 group-hover:border-slate-400 group-hover:bg-slate-100"
+          : "border-blue-300 bg-white text-blue-700 group-hover:border-blue-500 group-hover:bg-blue-50";
+
+        const information = (
+          <div className="flex min-w-0 flex-1 items-start gap-3">
+            <span
+              className={`flex size-10 shrink-0 items-center justify-center rounded-full ${iconClass}`}
+            >
+              <Icon className="size-5" aria-hidden />
+            </span>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="font-semibold text-ink">{item.title}</h3>
+                {item.isUnread && (
+                  <span className="rounded-full bg-blue-600 px-2.5 py-0.5 text-xs font-bold text-white">
+                    New
+                  </span>
+                )}
+                {item.occurredAt && (
+                  <time
+                    dateTime={item.occurredAt.toISOString()}
+                    className="text-xs font-medium text-slate-600"
+                  >
+                    {formatNotificationTime(item.occurredAt)}
+                  </time>
+                )}
+              </div>
+              <p className="mt-1 text-sm leading-6 text-ink-dim">{item.message}</p>
+            </div>
+          </div>
+        );
+
+        if (item.notificationId && openNotification) {
+          return (
+            <form
+              key={item.id}
+              action={openNotification}
+              className={`group relative rounded-xl border transition-colors ${surfaceClass} ${item.isUnread ? "ring-2 ring-blue-200 shadow-sm" : ""}`}
+            >
+              <input type="hidden" name="notificationId" value={item.notificationId} />
+              <input type="hidden" name="href" value={item.href} />
+              <button
+                type="submit"
+                aria-label={`${item.actionLabel}: ${item.title}`}
+                className="absolute inset-0 z-10 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+              />
+              <div className="pointer-events-none relative z-20 flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
+                {information}
+                <span
+                  className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${actionClass}`}
+                >
+                  {item.actionLabel}
+                  <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
+                </span>
+              </div>
+            </form>
+          );
+        }
 
         return (
           <article
             key={item.id}
-            className={`flex flex-col gap-4 rounded-xl border p-4 sm:flex-row sm:items-center ${style.surfaceClass} ${item.isUnread ? "ring-2 ring-blue-200 shadow-sm" : ""}`}
+            className={`flex flex-col gap-4 rounded-xl border p-4 sm:flex-row sm:items-center ${surfaceClass} ${item.isUnread ? "ring-2 ring-blue-200 shadow-sm" : ""}`}
           >
-            <div className="flex min-w-0 flex-1 items-start gap-3">
-              <span
-                className={`flex size-10 shrink-0 items-center justify-center rounded-full ${style.iconClass}`}
-              >
-                <Icon className="size-5" aria-hidden />
-              </span>
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="font-semibold text-ink">{item.title}</h3>
-                  {item.isUnread && (
-                    <span className="rounded-full bg-blue-600 px-2.5 py-0.5 text-xs font-bold text-white">
-                      New
-                    </span>
-                  )}
-                  {item.occurredAt && (
-                    <time
-                      dateTime={item.occurredAt.toISOString()}
-                      className="text-xs font-medium text-slate-600"
-                    >
-                      {formatNotificationTime(item.occurredAt)}
-                    </time>
-                  )}
-                </div>
-                <p className="mt-1 text-sm leading-6 text-ink-dim">{item.message}</p>
-              </div>
-            </div>
+            {information}
             <Link
               href={item.href}
               className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-blue-300 bg-white px-4 py-2 text-sm font-semibold text-blue-700 transition-colors hover:border-blue-500 hover:bg-blue-50"
@@ -154,7 +201,6 @@ export function NotificationList({ items }: { items: UserNotification[] }) {
     </div>
   );
 }
-
 export function AttentionPanel({ center }: { center: UserNotificationCenter }) {
   if (center.actionItems.length > 0) {
     const visibleItems = center.actionItems.slice(0, 3);
@@ -259,7 +305,9 @@ export function AttentionPanel({ center }: { center: UserNotificationCenter }) {
     );
   }
 
-  const currentStep = center.journey.find((step) => step.state === "CURRENT");
+  const currentStep = center.journey.find(
+    (step) => step.state === "CURRENT" && step.id !== "withdraw",
+  );
   if (!currentStep) return null;
 
   return (

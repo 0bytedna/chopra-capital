@@ -8,6 +8,7 @@ export type UserNotificationKind = "ACTION" | "UPDATE" | "RECOMMENDATION";
 
 export type UserNotification = {
   id: string;
+  notificationId?: string;
   kind: UserNotificationKind;
   title: string;
   message: string;
@@ -117,6 +118,7 @@ export const getUserNotificationCenter = cache(
     const actionItems: UserNotification[] = [];
     const updates: UserNotification[] = accountNotifications.map((notification) => ({
       id: `account-${notification.id}`,
+      notificationId: notification.id,
       kind: notification.kind === "ACTION" ? "ACTION" : "UPDATE",
       title: notification.title,
       message: notification.message,

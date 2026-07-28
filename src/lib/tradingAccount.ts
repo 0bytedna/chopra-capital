@@ -11,41 +11,6 @@ const DECREASE_TYPES = new Set<TradingAdjustmentType>([
   "OTHER_DECREASE",
 ]);
 
-export async function setTradingSnapshot(input: {
-  balance: Dec;
-  note: string;
-  adminId: string;
-}) {
-  if (input.balance.lt(0)) throw new Error("Balance cannot be negative.");
-  if (!input.note.trim()) throw new Error("Enter an audit note explaining this update.");
-
-  return prisma.$transaction(async (tx) => {
-    const before = await tx.poolState.upsert({ where: { id: "pool" }, update: {}, create: { id: "pool" } });
-    const totalUnits = D(before.totalUnits);
-    const nav = totalUnits.gt(0) && input.balance.gt(0) ? input.balance.div(totalUnits) : D(before.lastNav);
-    const after = await tx.poolState.update({
-      where: { id: "pool" },
-      data: { tradingBalance: input.balance, tradingEquity: input.balance, lastNav: nav },
-    });
-    await tx.tradingAccountEntry.create({ data: {
-      type: "MANUAL_SNAPSHOT",
-      amount: input.balance.sub(D(before.tradingBalance)),
-      balanceBefore: before.tradingBalance,
-      balanceAfter: input.balance,
-      equityBefore: before.tradingBalance,
-      equityAfter: input.balance,
-      note: input.note.trim(),
-      adminId: input.adminId,
-    }});
-    await tx.navSnapshot.upsert({
-      where: { day: utcDayKey() },
-      update: { nav, equity: input.balance, totalUnits },
-      create: { day: utcDayKey(), nav, equity: input.balance, totalUnits },
-    });
-    return after;
-  });
-}
-
 export async function recordTradingAdjustment(input: {
   type: "TRADING_PROFIT" | "TRADING_LOSS" | "SERVER_FEE" | "ADMIN_SHARE" | "OTHER_INCREASE" | "OTHER_DECREASE";
   amount: Dec;

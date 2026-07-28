@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { verifyTotp } from "@/lib/totp";
 import { signupSchema, totpCodeSchema } from "@/lib/validation";
+import { authRateLimit, rateLimitMessage } from "@/lib/rateLimit";
 
 const WHATSAPP_RECOVERY_URL = "https://wa.me/918123320128?text=Hello%20Chopra%20Capital%2C%20I%20need%20help%20resetting%20my%20account%20password.";
 
@@ -19,6 +20,10 @@ export async function beginPasswordRecovery(
   _previous: RecoveryState,
   formData: FormData,
 ): Promise<RecoveryState> {
+  const subject = String(formData.get("email") ?? "");
+  const retryAfter = await authRateLimit("password-recovery-start", subject, 5, 60 * 60_000);
+  if (retryAfter) return { stage: "email", error: rateLimitMessage(retryAfter) };
+
   const parsed = signupSchema.shape.email.safeParse(formData.get("email"));
   if (!parsed.success) return { stage: "email", error: parsed.error.issues[0]?.message ?? "Enter a valid email." };
 
@@ -38,6 +43,10 @@ export async function resetPasswordWithTwoFactor(
   _previous: RecoveryState,
   formData: FormData,
 ): Promise<RecoveryState> {
+  const subject = String(formData.get("email") ?? "");
+  const retryAfter = await authRateLimit("password-recovery-2fa", subject, 8, 15 * 60_000);
+  if (retryAfter) return { stage: "two-factor", email: subject, error: rateLimitMessage(retryAfter) };
+
   const emailResult = signupSchema.shape.email.safeParse(formData.get("email"));
   const codeResult = totpCodeSchema.safeParse({ code: formData.get("code") });
   const passwordResult = signupSchema.shape.password.safeParse(formData.get("password"));

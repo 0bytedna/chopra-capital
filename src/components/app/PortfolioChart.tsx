@@ -81,6 +81,7 @@ function ChartTooltip({
   label?: string | number;
   dataKey: GraphKey;
   signed?: boolean;
+  emphasizeSummary?: boolean;
 }) {
   if (!active || !payload || payload.length === 0) return null;
   const item = payload.find((entry) => entry.dataKey === dataKey);
@@ -110,6 +111,7 @@ function GraphCard({
   gradientId,
   endpoint,
   signed = false,
+  emphasizeSummary = false,
 }: {
   title: string;
   eyebrow: string;
@@ -122,6 +124,7 @@ function GraphCard({
   gradientId: string;
   endpoint: string;
   signed?: boolean;
+  emphasizeSummary?: boolean;
 }) {
   const today = useMemo(() => dayKey(new Date()), []);
   const [preset, setPreset] = useState<PresetKey | "CUSTOM">("ALL");
@@ -198,8 +201,24 @@ function GraphCard({
         </div>
         <div className="shrink-0 sm:text-right">
           <p className="text-xs uppercase tracking-[0.16em] text-ink-faint">{summaryLabel}</p>
-          <p className={cn("mt-1 font-mono text-base sm:text-lg", valueTone)}>
-            {fmtMoney(latest, signed)} <span className="text-xs text-ink-faint">USD</span>
+          <p
+            className={cn(
+              "mt-1 font-mono",
+              emphasizeSummary
+                ? "text-2xl font-bold tracking-tight sm:text-3xl"
+                : "text-base sm:text-lg",
+              valueTone,
+            )}
+          >
+            {fmtMoney(latest, signed)}{" "}
+            <span
+              className={cn(
+                emphasizeSummary ? "text-sm font-semibold" : "text-xs",
+                "text-ink-faint",
+              )}
+            >
+              USD
+            </span>
           </p>
         </div>
       </div>
@@ -325,6 +344,7 @@ export function PortfolioChart({
         gradientId="profitGoldFill"
         endpoint={endpoint}
         signed
+        emphasizeSummary
       />
       <GraphCard
         eyebrow="Total account value"

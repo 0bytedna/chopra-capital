@@ -7,10 +7,18 @@ import { setSessionCookie, clearSessionCookie, getSession } from "@/lib/auth";
 import { verifyTotp } from "@/lib/totp";
 import { signupSchema, signinSchema, totpCodeSchema } from "@/lib/validation";
 import { BUILTIN_ADMIN_EMAIL, ensureBuiltinAdminForSignin } from "@/lib/builtinAdmin";
+import { authRateLimit, rateLimitMessage } from "@/lib/rateLimit";
 
 export type AuthFormState = { error?: string };
 
 export async function signup(_prev: AuthFormState, formData: FormData): Promise<AuthFormState> {
+  const retryAfter = await authRateLimit(
+    "signup",
+    String(formData.get("email") ?? ""),
+    5,
+    60 * 60_000,
+  );
+  if (retryAfter) return { error: rateLimitMessage(retryAfter) };
   const parsed = signupSchema.safeParse({
     fullName: formData.get("fullName"),
     email: formData.get("email"),
@@ -36,6 +44,13 @@ export async function signup(_prev: AuthFormState, formData: FormData): Promise<
 }
 
 export async function signin(_prev: AuthFormState, formData: FormData): Promise<AuthFormState> {
+  const retryAfter = await authRateLimit(
+    "signin",
+    String(formData.get("email") ?? ""),
+    10,
+    15 * 60_000,
+  );
+  if (retryAfter) return { error: rateLimitMessage(retryAfter) };
   const parsed = signinSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
@@ -65,7 +80,10 @@ export async function signin(_prev: AuthFormState, formData: FormData): Promise<
 
 export async function verifyTwoFactor(_prev: AuthFormState, formData: FormData): Promise<AuthFormState> {
   const session = await getSession();
-  if (!session) redirect("/signin");
+  if (!session || session.stage !== "2fa") redirect("/signin");
+
+  const retryAfter = await authRateLimit("signin-2fa", session.sub, 8, 10 * 60_000);
+  if (retryAfter) return { error: rateLimitMessage(retryAfter) };
 
   const parsed = totpCodeSchema.safeParse({ code: formData.get("code") });
   if (!parsed.success) {

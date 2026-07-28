@@ -37,5 +37,5 @@ export async function GET(request: NextRequest) {
       nav: toNumber(metrics.nav),
       navLive: metrics.navLive,
     },
-  });
+  }, { headers: { "Cache-Control": "private, no-store" } });
 }

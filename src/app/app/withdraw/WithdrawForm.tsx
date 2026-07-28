@@ -235,7 +235,7 @@ export function WithdrawForm({ open, available, referenceRate, payout, restricti
               Withdrawal requests are open on <strong>Sundays from 12:00 AM to 12:00 PM IST</strong>. Approved withdrawals are processed on Monday. You can still select a method and submit to see the schedule reminder.
             </Alert>
           )}
-          {restriction && <Alert tone="warning">{restriction.message}</Alert>}
+          {restriction && <Alert tone="error">{restriction.message}</Alert>}
         </div>
       )}
       <Step n={1} title="Choose a withdrawal method">

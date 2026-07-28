@@ -1,40 +1,67 @@
 # Chopra Capital
 
-A Next.js investor portal with KYC, deposits, withdrawals, support tickets, manual pooled-account reporting, investor unit/NAV accounting, profit-share settlements and a secured administrator workspace.
+A Next.js investor portal for KYC, deposits, withdrawals, support tickets, pooled-account reporting, investor unit/NAV accounting, and a secured administrator workspace.
 
 ## Local setup
 
-1. Copy `.env.example` to `.env` and set every secret/company payment value.
-2. Set `ADMIN_PASSWORD` to a unique password of at least 12 characters. The built-in admin email defaults to `admin@chopracapital.com` and can be changed with `ADMIN_EMAIL`.
-3. Install dependencies with `npm ci`.
-4. Apply database migrations with `npm run db:deploy`.
-5. Build with `npm run build`.
-6. Run production with `npm start`.
+1. Copy `.env.example` to `.env` and replace every placeholder.
+2. Install the locked dependencies with `npm ci`.
+3. Apply migrations with `npm run db:deploy`.
+4. Build with `npm run build`.
+5. Start with `npm start`.
 
-No user or administrator accounts are seeded. The built-in administrator is created on its first valid sign-in from `ADMIN_EMAIL` and `ADMIN_PASSWORD`. If 2FA is enabled on that account, the TOTP challenge is required after the password.
+No demo user or administrator accounts are seeded. The built-in administrator is created on its first valid sign-in using `ADMIN_EMAIL` and `ADMIN_PASSWORD`. If that account has 2FA enabled, its TOTP challenge is mandatory.
 
-## Manual trading account
+## Accounting model
 
-The administrator maintains the central trading balance and equity from the admin overview. Every snapshot or adjustment records its reason, signed amount, before/after balance, before/after equity, administrator and timestamp.
+The administrator records trading profit, trading loss, server/operating fees, company profit share, and other audited increases or decreases. Verified deposits and processed withdrawals use their own dedicated workflows and are not entered as manual adjustments. Balance is the single source of truth; investor value is derived from issued units and NAV.
 
-Supported reasons include verified user deposits, trading profit, trading loss, server fees, admin profit share, user withdrawals and other corrections. Invested deposit batches and broker withdrawal batches update the central account automatically. NAV is calculated as trading equity divided by issued pool units.
+## Production environment
+
+Use Node.js 20.19.0 or newer (Node.js 24 LTS is suitable). Create the real production environment from `.env.production.example`. At minimum:
+
+- use a long random `AUTH_SECRET`;
+- use a unique high-entropy `ADMIN_PASSWORD`;
+- use an HTTPS `NEXT_PUBLIC_APP_URL`;
+- keep one stable `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` for all processes serving the same build;
+- set a new `NEXT_DEPLOYMENT_ID` for every deployment;
+- keep `WITHDRAWAL_WINDOW_TEST_MODE=false`;
+- configure company deposit destinations and the public read-only MT5 investor credentials.
+
+Run `npm run check:production` before a production build. The check reports missing names but never prints secret values.
+
+## Production deployment
+
+This project currently uses SQLite and local private uploads. Run exactly one application instance and keep the database and `uploads/` directory on persistent storage. Put Nginx or another reverse proxy in front of Next.js for HTTPS, request-size enforcement, authentication rate limits, and access logging.
+
+A safe update sequence on Ubuntu is:
+
+```bash
+git pull --ff-only
+npm ci
+sudo systemctl stop chopra-capital
+sudo cp /var/lib/chopra-capital/production.db /var/backups/chopra-capital/production-$(date +%F-%H%M%S).db
+npm run db:deploy
+export NEXT_DEPLOYMENT_ID="$(git rev-parse --short HEAD)-$(date +%s)"
+npm run build:production
+sudo systemctl start chopra-capital
+sudo systemctl status chopra-capital --no-pager
+curl -I https://your-domain.example
+```
+
+`NEXT_DEPLOYMENT_ID` prevents an older browser tab from submitting stale Server Action identifiers after deployment. Stopping the service before migrations/building also prevents the running process from reading a changing SQLite schema or a partially replaced `.next` directory.
+
+Back up both the SQLite database and `uploads/` directory before every migration. Test that backups can be restored. Never copy `.env`, the database, or private uploads into Git.
+
+## Verification commands
+
+- `npm run lint` — static code checks
+- `npx prisma validate` — schema validation
+- `npx prisma migrate status` — migration status
+- `npm run build` — normal production compilation
+- `npm run check:production` — production environment guardrails
+- `npm run build:production` — guarded production build
 
 ## Account recovery
 
-Until email delivery is configured, the sign-in page directs investors to the administrator WhatsApp number `+91 81233 20128`. An administrator can set a temporary password from the investor’s full record.
-
-## Deployment updates
-
-Copy the project source (excluding `.next`, `node_modules`, local `.env`, and local database files) or pull the latest Git revision on the server. Then run:
-
-```bash
-npm ci
-npm run db:deploy
-sudo systemctl stop chopra-capital
-NEXT_DEPLOYMENT_ID="$(git rev-parse --short HEAD)-$(date +%s)" npm run build
-sudo systemctl start chopra-capital
-```
-
-`NEXT_DEPLOYMENT_ID` must be different for every production build. It lets Next.js detect an older browser tab and perform a full reload instead of sending obsolete Server Action IDs to the new server. Stopping the service before rebuilding also prevents the running process from serving files while `.next` is being replaced.
-
-Keep `.env` and the production SQLite database on the server and back them up before migrations.
+Investors with 2FA can reset their password using their authenticator. Until email delivery is configured, investors without 2FA are redirected to the administrator WhatsApp recovery channel. Administrators can also set a temporary investor password from the investor record.

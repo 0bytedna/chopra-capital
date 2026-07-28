@@ -27,11 +27,7 @@ export function Counter({
   const [display, setDisplay] = useState(0);
 
   useEffect(() => {
-    if (!inView) return;
-    if (reduceMotion) {
-      setDisplay(value);
-      return;
-    }
+    if (!inView || reduceMotion) return;
     let raf = 0;
     const start = performance.now();
     const tick = (now: number) => {
@@ -44,7 +40,8 @@ export function Counter({
     return () => cancelAnimationFrame(raf);
   }, [inView, value, durationMs, reduceMotion]);
 
-  const formatted = display.toLocaleString("en-US", {
+  const visibleValue = inView && reduceMotion ? value : display;
+  const formatted = visibleValue.toLocaleString("en-US", {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   });

@@ -13,7 +13,6 @@ import {
   FileText,
   Landmark,
   Mail,
-  Percent,
   ShieldCheck,
   WalletCards,
 } from "lucide-react";

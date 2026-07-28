@@ -1,5 +1,4 @@
-// GET /api/admin/kyc-file?id=<docId> — streams a KYC upload to an admin.
-// Files live outside /public on purpose; this is the only way to read them.
+// Streams a private KYC document to an authenticated administrator.
 
 import path from "node:path";
 import { readFile } from "node:fs/promises";
@@ -24,13 +23,12 @@ export async function GET(request: NextRequest) {
   const id = request.nextUrl.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
-  const doc = await prisma.kycDocument.findUnique({ where: { id } });
-  if (!doc) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const document = await prisma.kycDocument.findUnique({ where: { id } });
+  if (!document) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  // Defence in depth: only ever serve files from the uploads directory.
-  const uploadsRoot = path.join(process.cwd(), "uploads");
-  const resolved = path.resolve(doc.filePath);
-  if (!resolved.startsWith(uploadsRoot)) {
+  const uploadsRoot = path.resolve(process.cwd(), "uploads", "kyc");
+  const resolved = path.resolve(document.filePath);
+  if (resolved !== uploadsRoot && !resolved.startsWith(`${uploadsRoot}${path.sep}`)) {
     return NextResponse.json({ error: "Invalid path" }, { status: 400 });
   }
 
@@ -41,12 +39,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "File missing on disk" }, { status: 404 });
   }
 
-  const ext = path.extname(resolved).toLowerCase();
+  const extension = path.extname(resolved).toLowerCase();
+  const safeName = document.fileName.replace(/[\r\n"\\]/g, "_");
   return new NextResponse(new Uint8Array(bytes), {
     headers: {
-      "Content-Type": contentTypes[ext] ?? "application/octet-stream",
-      "Content-Disposition": `inline; filename="${doc.fileName.replace(/[^\w.\- ]/g, "_")}"`,
+      "Content-Type": contentTypes[extension] ?? "application/octet-stream",
+      "Content-Disposition": `inline; filename="${safeName}"; filename*=UTF-8''${encodeURIComponent(document.fileName)}`,
       "Cache-Control": "private, no-store",
+      "Content-Security-Policy": "default-src 'none'; sandbox",
+      "X-Content-Type-Options": "nosniff",
     },
   });
 }

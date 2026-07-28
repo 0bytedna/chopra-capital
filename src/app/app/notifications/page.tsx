@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth";
 import { getUserNotificationCenter } from "@/lib/userNotifications";
-import { markAllNotificationsRead } from "./actions";
+import { markAllNotificationsRead, markNotificationReadAndOpen } from "./actions";
 import {
   AccountJourney,
   AllCaughtUp,
@@ -54,7 +54,7 @@ export default async function NotificationsPage() {
               {center.urgentCount} pending
             </span>
           </div>
-          <NotificationList items={center.actionItems} />
+          <NotificationList items={center.actionItems} openNotification={markNotificationReadAndOpen} />
         </section>
       ) : (
         <AllCaughtUp />
@@ -87,7 +87,7 @@ export default async function NotificationsPage() {
           <p className="text-sm leading-6 text-ink-dim">
             Important changes to your account are stored here, newest first.
           </p>
-          <NotificationList items={center.updates} />
+          <NotificationList items={center.updates} openNotification={markNotificationReadAndOpen} />
         </section>
       )}
 
@@ -102,7 +102,7 @@ export default async function NotificationsPage() {
           <p className="text-sm leading-6 text-ink-dim">
             These are optional until you use the related withdrawal method.
           </p>
-          <NotificationList items={center.recommendations} />
+          <NotificationList items={center.recommendations} openNotification={markNotificationReadAndOpen} />
         </section>
       )}
     </div>

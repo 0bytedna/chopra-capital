@@ -17,10 +17,13 @@ async function readSession(request: NextRequest): Promise<TokenInfo> {
   if (!token || !secret) return null;
   try {
     const { payload } = await jwtVerify(token, new TextEncoder().encode(secret));
-    return {
-      role: typeof payload.role === "string" ? payload.role : "USER",
-      stage: typeof payload.stage === "string" ? payload.stage : "full",
-    };
+    if (
+      (payload.role !== "ADMIN" && payload.role !== "USER") ||
+      (payload.stage !== "full" && payload.stage !== "2fa")
+    ) {
+      return null;
+    }
+    return { role: payload.role, stage: payload.stage };
   } catch {
     return null;
   }

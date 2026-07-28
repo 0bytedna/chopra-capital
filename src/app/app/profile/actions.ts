@@ -1,7 +1,5 @@
 "use server";
 
-import path from "node:path";
-import { mkdir, writeFile } from "node:fs/promises";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { requireUser } from "@/lib/auth";
@@ -15,6 +13,7 @@ import {
 } from "@/lib/validation";
 import { generateTotpSecret, totpEnrolmentQr, verifyTotp } from "@/lib/totp";
 import { stageRequiredBankPayoutCorrections } from "@/lib/payoutDetails";
+import { removeStoredKycFiles, storeKycFiles } from "@/lib/kycFiles";
 
 export type ProfileFormState = { error?: string; success?: string };
 
@@ -168,27 +167,6 @@ export async function updateCryptoWallet(
 
 // --- KYC upload -------------------------------------------------------------
 
-const MAX_FILE_BYTES = 8 * 1024 * 1024;
-const ALLOWED_EXT = new Set([".jpg", ".jpeg", ".png", ".webp", ".pdf"]);
-
-async function saveKycFile(userId: string, file: File, docType: string): Promise<void> {
-  const ext = path.extname(file.name).toLowerCase() || ".bin";
-  if (!ALLOWED_EXT.has(ext)) throw new Error("Only JPG, PNG, WEBP or PDF files are accepted");
-  if (file.size === 0) throw new Error("File is empty");
-  if (file.size > MAX_FILE_BYTES) throw new Error("Files must be under 8 MB");
-
-  const dir = path.join(process.cwd(), "uploads", "kyc", userId);
-  await mkdir(dir, { recursive: true });
-  const fileName = `${docType.toLowerCase()}-${Date.now()}${ext}`;
-  const filePath = path.join(dir, fileName);
-  const bytes = Buffer.from(await file.arrayBuffer());
-  await writeFile(filePath, bytes);
-
-  await prisma.kycDocument.create({
-    data: { userId, docType, fileName: file.name, filePath },
-  });
-}
-
 export async function submitKyc(_prev: ProfileFormState, formData: FormData): Promise<ProfileFormState> {
   const user = await requireUser();
   if (user.kycStatus === "PENDING") return { error: "Your documents are already in review." };
@@ -199,22 +177,33 @@ export async function submitKyc(_prev: ProfileFormState, formData: FormData): Pr
   if (!(aadhaar instanceof File) || aadhaar.size === 0) return { error: "Please attach your Aadhaar card." };
   if (!(pan instanceof File) || pan.size === 0) return { error: "Please attach your PAN card." };
 
+  let stored = [] as Awaited<ReturnType<typeof storeKycFiles>>;
   try {
-    await saveKycFile(user.id, aadhaar, "AADHAAR");
-    await saveKycFile(user.id, pan, "PAN");
-  } catch (err) {
-    return { error: err instanceof Error ? err.message : "Upload failed — please try again." };
+    stored = await storeKycFiles(user.id, [
+      { file: aadhaar, docType: "AADHAAR" },
+      { file: pan, docType: "PAN" },
+    ]);
+
+    await prisma.$transaction(async (tx) => {
+      const claimed = await tx.user.updateMany({
+        where: { id: user.id, kycStatus: { in: ["NOT_SUBMITTED", "REJECTED"] } },
+        data: { kycStatus: "PENDING", kycNote: null },
+      });
+      if (claimed.count !== 1) throw new Error("Your KYC status changed. Refresh the page and try again.");
+
+      for (const document of stored) {
+        await tx.kycDocument.create({ data: { userId: user.id, ...document } });
+      }
+    });
+  } catch (error) {
+    await removeStoredKycFiles(stored);
+    return { error: error instanceof Error ? error.message : "Upload failed. Please try again." };
   }
 
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { kycStatus: "PENDING", kycNote: null },
-  });
   revalidatePath("/app/profile");
   revalidatePath("/app", "layout");
   return { success: "Documents submitted. We'll review them shortly." };
 }
-
 // --- TOTP 2FA -----------------------------------------------------------------
 
 export type TotpEnrolState = { error?: string; qr?: string; secret?: string };
