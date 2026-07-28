@@ -5,9 +5,9 @@ const columns = [
     title: "Platform",
     links: [
       { href: "/#how-it-works", label: "How it works" },
-      { href: "/#about", label: "About Chopra Capital" },
-      { href: "/#visibility", label: "Investor visibility" },
-      { href: "/#backtesting", label: "Backtesting data" },
+      { href: "/#strategy", label: "Trading approach" },
+      { href: "/#visibility", label: "Investor dashboard" },
+      { href: "/#backtesting", label: "Live account history" },
       { href: "/#terms", label: "Terms & schedule" },
       { href: "/#faq", label: "FAQ" },
     ],
@@ -48,8 +48,8 @@ export function Footer() {
               </span>
             </div>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-faint">
-              A Dubai-based specialist gold strategy. Hedged XAU positions executed by AI-powered
-              bots under continuous human supervision, with administrator-maintained account reporting.
+              Automated gold trading with human oversight, clear investor reporting, and simple
+              account access from deposit through withdrawal.
             </p>
           </div>
 
@@ -90,7 +90,7 @@ export function Footer() {
             addresses inside your account area before sending funds.
           </p>
           <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:items-center sm:justify-between">
-            <p>© {new Date().getFullYear()} Chopra Capital. All rights reserved. Dubai, United Arab Emirates.</p>
+            <p>© {new Date().getFullYear()} Chopra Capital. All rights reserved.</p>
             <div className="flex gap-4">
               <Link href="/legal/terms" className="hover:text-ink">Terms</Link>
               <Link href="/legal/privacy" className="hover:text-ink">Privacy</Link>

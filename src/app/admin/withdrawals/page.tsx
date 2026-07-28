@@ -467,7 +467,7 @@ export default async function AdminWithdrawalsPage() {
                           <span className="text-sm text-amber-800">Waiting for investor</span>
                         )}
                       </td>
-                      <td className="w-56 px-4 py-3">
+                      <td className="w-72 px-4 py-3">
                         {awaitingReview ? (
                           <div className="space-y-3">
                             <AdminActionForm
@@ -475,6 +475,7 @@ export default async function AdminWithdrawalsPage() {
                               submitLabel="Approve corrected details"
                               pendingLabel="Approving..."
                               confirmMessage="Approve this new bank destination and return the withdrawal to ready for payout?"
+                              submitClassName="min-h-11 w-full whitespace-nowrap"
                             >
                               <input type="hidden" name="id" value={withdrawal.id} />
                             </AdminActionForm>
@@ -483,6 +484,7 @@ export default async function AdminWithdrawalsPage() {
                               submitLabel="Request another correction"
                               pendingLabel="Sending..."
                               variant="danger"
+                              submitClassName="min-h-11 w-full whitespace-nowrap"
                             >
                               <input type="hidden" name="id" value={withdrawal.id} />
                               <input

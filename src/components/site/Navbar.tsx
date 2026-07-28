@@ -6,9 +6,9 @@ import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const links = [
-  { href: "/#about", label: "About" },
-  { href: "/#how-it-works", label: "Process" },
-  { href: "/#operations", label: "Operations" },
+  { href: "/#strategy", label: "Strategy" },
+  { href: "/#how-it-works", label: "How it works" },
+  { href: "/#features", label: "Features" },
   { href: "/#backtesting", label: "Live history" },
   { href: "/#faq", label: "FAQ" },
 ];

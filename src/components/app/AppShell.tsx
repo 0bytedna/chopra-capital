@@ -9,6 +9,7 @@ import {
   ArrowUpFromLine,
   History,
   LifeBuoy,
+  Bell,
   UserCog,
   ShieldCheck,
   LogOut,
@@ -27,13 +28,17 @@ export type ShellProps = {
   kycStatus: KycStatus;
   investedDisplay: string;
   queuedDisplay: string;
+  attentionCount: number;
   children: React.ReactNode;
 };
 
 const groups = [
   {
     title: "Overview",
-    items: [{ href: "/app", label: "Dashboard", Icon: LayoutDashboard }],
+    items: [
+      { href: "/app", label: "Dashboard", Icon: LayoutDashboard },
+      { href: "/app/notifications", label: "Notifications", Icon: Bell },
+    ],
   },
   {
     title: "Money",
@@ -60,7 +65,17 @@ const kycBadge: Record<KycStatus, { label: string; cls: string }> = {
   REJECTED: { label: "KYC rejected", cls: "border-negative/40 bg-negative/10 text-negative" },
 };
 
-function NavLinks({ pathname, isAdmin, onNavigate }: { pathname: string; isAdmin: boolean; onNavigate?: () => void }) {
+function NavLinks({
+  pathname,
+  isAdmin,
+  attentionCount,
+  onNavigate,
+}: {
+  pathname: string;
+  isAdmin: boolean;
+  attentionCount: number;
+  onNavigate?: () => void;
+}) {
   return (
     <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5" aria-label="App">
       {groups.map((group) => (
@@ -89,7 +104,15 @@ function NavLinks({ pathname, isAdmin, onNavigate }: { pathname: string; isAdmin
                       />
                     )}
                     <Icon className="size-4" aria-hidden />
-                    {label}
+                    <span className="flex-1">{label}</span>
+                    {href === "/app/notifications" && attentionCount > 0 && (
+                      <span
+                        className="inline-flex min-h-7 min-w-7 items-center justify-center rounded-full bg-amber-600 px-2 text-sm font-bold text-white shadow-sm"
+                        aria-label={`${attentionCount} items need attention`}
+                      >
+                        {attentionCount > 99 ? "99+" : attentionCount}
+                      </span>
+                    )}
                   </Link>
                 </li>
               );
@@ -136,7 +159,16 @@ function SidebarFooter({ name, email }: { name: string; email: string }) {
   );
 }
 
-export function AppShell({ name, email, isAdmin, kycStatus, investedDisplay, queuedDisplay, children }: ShellProps) {
+export function AppShell({
+  name,
+  email,
+  isAdmin,
+  kycStatus,
+  investedDisplay,
+  queuedDisplay,
+  attentionCount,
+  children,
+}: ShellProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const badge = kycBadge[kycStatus];
@@ -161,7 +193,7 @@ export function AppShell({ name, email, isAdmin, kycStatus, investedDisplay, que
       <aside className="product-window sticky top-3 hidden h-[calc(100svh-1.5rem)] w-64 shrink-0 flex-col overflow-hidden rounded-2xl lg:flex">
         {brand}
         <hr className="hairline" />
-        <NavLinks pathname={pathname} isAdmin={isAdmin} />
+        <NavLinks pathname={pathname} isAdmin={isAdmin} attentionCount={attentionCount} />
         <SidebarFooter name={name} email={email} />
       </aside>
 
@@ -187,7 +219,12 @@ export function AppShell({ name, email, isAdmin, kycStatus, investedDisplay, que
               </button>
             </div>
             <hr className="hairline" />
-            <NavLinks pathname={pathname} isAdmin={isAdmin} onNavigate={() => setOpen(false)} />
+            <NavLinks
+              pathname={pathname}
+              isAdmin={isAdmin}
+              attentionCount={attentionCount}
+              onNavigate={() => setOpen(false)}
+            />
             <SidebarFooter name={name} email={email} />
           </aside>
         </div>
@@ -218,6 +255,30 @@ export function AppShell({ name, email, isAdmin, kycStatus, investedDisplay, que
             </div>
 
             <div className="ml-auto flex items-center gap-3">
+              <Link
+                href="/app/notifications"
+                aria-label={
+                  attentionCount > 0
+                    ? `Notifications: ${attentionCount} items need attention`
+                    : "Notifications"
+                }
+                className={cn(
+                  "relative flex size-10 items-center justify-center rounded-full border transition-colors",
+                  attentionCount > 0
+                    ? "border-amber-300 bg-amber-100 text-amber-800 hover:bg-amber-200"
+                    : "border-slate-200 bg-white text-ink-dim hover:border-blue-300 hover:text-blue-700",
+                )}
+              >
+                <Bell className="size-5" aria-hidden />
+                {attentionCount > 0 && (
+                  <span
+                    aria-hidden
+                    className="absolute -right-2 -top-2 inline-flex min-h-6 min-w-6 items-center justify-center rounded-full border-2 border-white bg-amber-600 px-1 text-xs font-bold text-white shadow-sm"
+                  >
+                    {attentionCount > 99 ? "99+" : attentionCount}
+                  </span>
+                )}
+              </Link>
               <Link
                 href="/app/profile"
                 className={cn("rounded-full border px-3 py-1 text-xs font-medium", badge.cls)}

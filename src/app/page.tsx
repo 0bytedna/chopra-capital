@@ -1,7 +1,7 @@
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { Hero } from "@/components/landing/Hero";
-import { LandingSections } from "@/components/landing/Sections";
+import { LandingSections } from "@/components/landing/SimpleSections";
 import { mt5InvestorAccount } from "@/lib/mt5";
 
 export default function HomePage() {

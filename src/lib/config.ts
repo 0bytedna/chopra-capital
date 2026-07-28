@@ -3,8 +3,6 @@
 
 export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? "Chopra Capital";
 
-export const MIN_DEPOSIT_USDT = 2000;
-
 export const NETWORKS = ["TRC20", "ERC20", "BEP20"] as const;
 export type Network = (typeof NETWORKS)[number];
 

@@ -59,7 +59,7 @@ export default async function ProfilePage() {
         </div>
       </section>
 
-      <section className="glass-card rounded-2xl p-5 sm:p-7">
+      <section id="kyc-verification" className="glass-card scroll-mt-24 rounded-2xl p-5 sm:p-7">
         <h2 className="font-serif text-xl text-ink">Identity verification (KYC)</h2>
         <div className="mt-4 space-y-4">
           {user.kycStatus === "APPROVED" && (
@@ -109,7 +109,7 @@ export default async function ProfilePage() {
         </div>
       </section>
 
-      <section className="glass-card rounded-2xl p-5 sm:p-7">
+      <section id="crypto-wallet" className="glass-card scroll-mt-24 rounded-2xl p-5 sm:p-7">
         <h2 className="font-serif text-xl text-ink">Crypto wallet</h2>
         <p className="mt-1 text-xs text-ink-faint">
           Required only when you choose crypto for a withdrawal.
@@ -124,7 +124,7 @@ export default async function ProfilePage() {
         </div>
       </section>
 
-      <section className="glass-card rounded-2xl p-5 sm:p-7">
+      <section id="two-factor-security" className="glass-card scroll-mt-24 rounded-2xl p-5 sm:p-7">
         <h2 className="font-serif text-xl text-ink">Two-factor authentication</h2>
         <div className="mt-4">
           <TotpSection enabled={user.twoFactorEnabled} />

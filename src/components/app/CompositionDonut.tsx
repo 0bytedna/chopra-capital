@@ -44,7 +44,13 @@ export function CompositionDonut({ principal, profit }: Props) {
           </div>
         ) : (
           <>
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer
+              width="100%"
+              height="100%"
+              minWidth={176}
+              minHeight={176}
+              initialDimension={{ width: 176, height: 176 }}
+            >
               <PieChart>
                 <Pie
                   data={data}

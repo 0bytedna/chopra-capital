@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
-import { Ban, Pencil, X } from "lucide-react";
+import { Ban, Info, Pencil, X } from "lucide-react";
 import { cancelWithdrawal, editWithdrawal, type WithdrawFormState } from "./actions";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
@@ -206,6 +206,7 @@ function CancelWithdrawalForm({
 export function WithdrawalHistory({ withdrawals, twoFactorEnabled = false }: { withdrawals: Withdrawal[]; twoFactorEnabled?: boolean }) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [detailsId, setDetailsId] = useState<string | null>(null);
 
   if (withdrawals.length === 0) {
     return (
@@ -221,6 +222,7 @@ export function WithdrawalHistory({ withdrawals, twoFactorEnabled = false }: { w
         const canEdit = withdrawal.status === "REQUESTED";
         const editing = canEdit && editingId === withdrawal.id;
         const cancelling = canEdit && cancellingId === withdrawal.id;
+        const detailsOpen = detailsId === withdrawal.id;
         const crypto = withdrawal.method === "CRYPTO";
         const currentReferenceRate = Number(withdrawal.referenceRate);
         const requestedUsd = Number(withdrawal.editAmount);
@@ -236,47 +238,26 @@ export function WithdrawalHistory({ withdrawals, twoFactorEnabled = false }: { w
                 <p className="font-mono text-sm text-ink">
                   {withdrawal.amount} USD requested
                 </p>
-                {!crypto && (
-                  <p className="mt-0.5 text-xs text-ink-faint">
-                    Current reference estimate: {currentReferenceEstimate > 0
-                      ? currentReferenceEstimate.toLocaleString("en-IN", {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })
-                      : "—"} INR · {withdrawal.referenceRate} INR/USD. Not saved with the request.
-                  </p>
-                )}
-                {withdrawal.brokerReceivedUsdt && (
-                  <p className="mt-1 text-xs text-ink-dim">
-                    Received from broker: {withdrawal.brokerReceivedUsdt} USDT
-                  </p>
-                )}
-                {withdrawal.convertedInrAmount && (
-                  <p className="mt-1 text-xs text-ink-dim">
-                    Converted for payout: {withdrawal.convertedInrAmount} INR
-                  </p>
-                )}
-                {withdrawal.paidAmount && (
-                  <p className="mt-1 text-xs text-positive">
-                    Sent to wallet: {withdrawal.paidAmount} USDT
-                  </p>
-                )}
-                {withdrawal.paidInrAmount && (
-                  <p className="mt-1 text-xs text-positive">
-                    Paid: {withdrawal.paidInrAmount} INR
-                  </p>
-                )}
                 <p className="mt-1 text-xs text-ink-faint">
                   {methodLabel(withdrawal)} · {new Date(withdrawal.createdAt).toLocaleDateString("en-IN", {
                     day: "numeric",
                     month: "short",
                     year: "numeric",
-                  })} · week {withdrawal.weekKey}
-                  {withdrawal.adminNote ? " · " + withdrawal.adminNote : ""}
+                  })}
                 </p>
-                <p className="mt-0.5 break-all font-mono text-xs text-ink-faint">
-                  to: {withdrawal.address}
-                </p>
+                {withdrawal.paidAmount && (
+                  <p className="mt-1 text-xs font-medium text-positive">
+                    Paid {withdrawal.paidAmount} USDT
+                  </p>
+                )}
+                {withdrawal.paidInrAmount && (
+                  <p className="mt-1 text-xs font-medium text-positive">
+                    Paid {withdrawal.paidInrAmount} INR
+                  </p>
+                )}
+                {withdrawal.status === "REJECTED" && withdrawal.adminNote && (
+                  <p className="mt-2 text-xs text-negative">Reason: {withdrawal.adminNote}</p>
+                )}
                 {withdrawal.status === "PAYOUT_DETAILS_REQUIRED" && (
                   <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-50 px-3 py-2 text-sm text-amber-900">
                     <p>
@@ -302,6 +283,21 @@ export function WithdrawalHistory({ withdrawals, twoFactorEnabled = false }: { w
                 >
                   {statusLabel(withdrawal)}
                 </span>
+                <button
+                  type="button"
+                  aria-expanded={detailsOpen}
+                  aria-controls={`withdrawal-details-${withdrawal.id}`}
+                  title={detailsOpen ? "Hide withdrawal details" : "Show withdrawal details"}
+                  onClick={() => {
+                    setDetailsId(detailsOpen ? null : withdrawal.id);
+                    setEditingId(null);
+                    setCancellingId(null);
+                  }}
+                  className="inline-flex size-9 items-center justify-center rounded-full border border-gold-600/20 text-ink-dim transition-colors hover:border-gold-500/45 hover:bg-gold-600/8 hover:text-ink"
+                >
+                  <Info className="size-4" aria-hidden />
+                  <span className="sr-only">{detailsOpen ? "Hide" : "Show"} withdrawal details</span>
+                </button>
                 {canEdit && !editing && !cancelling && (
                   <>
                     <Button
@@ -311,6 +307,7 @@ export function WithdrawalHistory({ withdrawals, twoFactorEnabled = false }: { w
                       onClick={() => {
                         setEditingId(withdrawal.id);
                         setCancellingId(null);
+                        setDetailsId(null);
                       }}
                     >
                       <Pencil className="size-3.5" aria-hidden />
@@ -323,6 +320,7 @@ export function WithdrawalHistory({ withdrawals, twoFactorEnabled = false }: { w
                       onClick={() => {
                         setCancellingId(withdrawal.id);
                         setEditingId(null);
+                        setDetailsId(null);
                       }}
                     >
                       <Ban className="size-3.5" aria-hidden />
@@ -332,6 +330,52 @@ export function WithdrawalHistory({ withdrawals, twoFactorEnabled = false }: { w
                 )}
               </div>
             </div>
+            {detailsOpen && (
+              <dl
+                id={`withdrawal-details-${withdrawal.id}`}
+                className="mt-4 grid gap-3 border-t border-gold-600/15 pt-4 sm:grid-cols-2"
+              >
+                {!crypto && (
+                  <div className="rounded-lg bg-vault-950/35 px-3 py-2">
+                    <dt className="text-xs uppercase tracking-[0.12em] text-ink-faint">Current INR estimate</dt>
+                    <dd className="mt-1 text-xs text-ink-dim">
+                      {currentReferenceEstimate > 0
+                        ? currentReferenceEstimate.toLocaleString("en-IN", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })
+                        : "—"} INR at {withdrawal.referenceRate} INR/USD
+                    </dd>
+                  </div>
+                )}
+                {withdrawal.brokerReceivedUsdt && (
+                  <div className="rounded-lg bg-vault-950/35 px-3 py-2">
+                    <dt className="text-xs uppercase tracking-[0.12em] text-ink-faint">Received from broker</dt>
+                    <dd className="mt-1 font-mono text-xs text-ink">{withdrawal.brokerReceivedUsdt} USDT</dd>
+                  </div>
+                )}
+                {withdrawal.convertedInrAmount && (
+                  <div className="rounded-lg bg-vault-950/35 px-3 py-2">
+                    <dt className="text-xs uppercase tracking-[0.12em] text-ink-faint">Converted for payout</dt>
+                    <dd className="mt-1 font-mono text-xs text-ink">{withdrawal.convertedInrAmount} INR</dd>
+                  </div>
+                )}
+                <div className="rounded-lg bg-vault-950/35 px-3 py-2">
+                  <dt className="text-xs uppercase tracking-[0.12em] text-ink-faint">Processing week</dt>
+                  <dd className="mt-1 font-mono text-xs text-ink">{withdrawal.weekKey}</dd>
+                </div>
+                <div className="rounded-lg bg-vault-950/35 px-3 py-2 sm:col-span-2">
+                  <dt className="text-xs uppercase tracking-[0.12em] text-ink-faint">Destination</dt>
+                  <dd className="mt-1 break-all font-mono text-xs text-ink">{withdrawal.address}</dd>
+                </div>
+                {withdrawal.adminNote && withdrawal.status !== "REJECTED" && (
+                  <div className="rounded-lg bg-vault-950/35 px-3 py-2 sm:col-span-2">
+                    <dt className="text-xs uppercase tracking-[0.12em] text-ink-faint">Admin note</dt>
+                    <dd className="mt-1 text-xs text-ink-dim">{withdrawal.adminNote}</dd>
+                  </div>
+                )}
+              </dl>
+            )}
             {editing && (
               <WithdrawalEditForm
                 key={withdrawal.id}

@@ -139,7 +139,7 @@ export function BrokerTransferForm({ deposits }: Props) {
             </div>
           </div>
 
-          <div className="grid gap-4 rounded-xl border border-gold-500/25 bg-gold-600/6 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+          <div className="grid gap-4 rounded-xl border border-gold-500/25 bg-gold-600/6 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
             <div>
               <label htmlFor="broker-received-usdt" className="block text-xs uppercase tracking-[0.14em] text-ink-dim">
                 Total USDT received by broker
@@ -161,7 +161,7 @@ export function BrokerTransferForm({ deposits }: Props) {
                 {selected.length} selected · company wallet {formatUsdt(totalQueued)} · transfer fee {receivedNumber > 0 && receivedNumber <= totalQueued ? formatUsdt(totalQueued - receivedNumber) : "—"}
               </p>
             </div>
-            <Button type="submit" size="md" disabled={!canSubmit || pending} aria-busy={pending} className="w-full sm:w-auto">
+            <Button type="submit" size="md" disabled={!canSubmit || pending} aria-busy={pending} className="w-full sm:mt-6 sm:w-auto">
               {pending ? (
                 <>
                   <Loader2 className="size-4 animate-spin" aria-hidden />

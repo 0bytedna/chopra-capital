@@ -16,7 +16,6 @@ type Method = "CRYPTO" | "BANK" | "CASH";
 type Props = {
   addresses: Record<Network, string>;
   qrCodes: Record<Network, string>;
-  minDeposit: number;
   restriction: FinancialRestriction | null;
   bankEnabled: boolean;
   cashEnabled: boolean;
@@ -60,7 +59,6 @@ function BankRow({ label, value }: { label: string; value: string }) {
 export function DepositForm({
   addresses,
   qrCodes,
-  minDeposit,
   restriction,
   bankEnabled,
   cashEnabled,
@@ -147,7 +145,7 @@ export function DepositForm({
             </div>
           </div>
           <p className="mt-3 text-xs leading-relaxed text-ink-faint">
-            Send only USDT on the <strong className="text-ink-dim">{network}</strong> network to this address. Transfers on the wrong network can be lost permanently. Minimum deposit: ${minDeposit.toLocaleString()} USDT.
+            Send only USDT on the <strong className="text-ink-dim">{network}</strong> network to this address. Transfers on the wrong network can be lost permanently.
           </p>
         </Step>
       )}
@@ -187,7 +185,6 @@ export function DepositForm({
         key={`${activeMethod}-${formVersion}`}
         method={activeMethod}
         network={network}
-        minDeposit={minDeposit}
         restriction={restriction}
         onDismiss={() => setFormVersion((version) => version + 1)}
       />
@@ -238,13 +235,11 @@ function DepositDialog({
 function DepositDetailsForm({
   method,
   network,
-  minDeposit,
   restriction,
   onDismiss,
 }: {
   method: Method;
   network: Network;
-  minDeposit: number;
   restriction: FinancialRestriction | null;
   onDismiss: () => void;
 }) {
@@ -277,9 +272,9 @@ function DepositDetailsForm({
             name="amount"
             type="number"
             step="0.01"
-            min={method === "CRYPTO" ? minDeposit : "0.01"}
+            min="0.01"
             required
-            placeholder={method === "CRYPTO" ? `${minDeposit.toLocaleString()} minimum` : "Enter amount in INR"}
+            placeholder={method === "CRYPTO" ? "Enter amount in USDT" : "Enter amount in INR"}
           />
           {method === "CRYPTO" ? (
             <Field

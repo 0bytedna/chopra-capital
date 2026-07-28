@@ -66,11 +66,26 @@ function PayoutDetailsCard({ method, payout }: { method: Method; payout: PayoutD
     return (
       <div className="rounded-xl border border-gold-600/20 bg-vault-950/60 px-4 py-3">
         {payout.bank ? (
-          <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-ink-dim">
-            {payout.bank.upiId && <p>UPI: <span className="font-mono text-ink">{payout.bank.upiId}</span></p>}
-            {payout.bank.accountNumber && <p>Account: <span className="font-mono text-ink">{payout.bank.accountNumber}</span></p>}
-            {payout.bank.ifsc && <p>IFSC: <span className="font-mono text-ink">{payout.bank.ifsc}</span></p>}
-          </div>
+          <dl className="divide-y divide-gold-600/10">
+            {payout.bank.upiId && (
+              <div className="grid gap-1 py-2 first:pt-0 sm:grid-cols-[8rem_minmax(0,1fr)] sm:items-baseline">
+                <dt className="text-xs uppercase tracking-[0.14em] text-ink-faint">UPI ID</dt>
+                <dd className="break-all font-mono text-sm text-ink">{payout.bank.upiId}</dd>
+              </div>
+            )}
+            {payout.bank.accountNumber && (
+              <div className="grid gap-1 py-2 sm:grid-cols-[8rem_minmax(0,1fr)] sm:items-baseline">
+                <dt className="text-xs uppercase tracking-[0.14em] text-ink-faint">Account number</dt>
+                <dd className="break-all font-mono text-sm text-ink">{payout.bank.accountNumber}</dd>
+              </div>
+            )}
+            {payout.bank.ifsc && (
+              <div className="grid gap-1 py-2 last:pb-0 sm:grid-cols-[8rem_minmax(0,1fr)] sm:items-baseline">
+                <dt className="text-xs uppercase tracking-[0.14em] text-ink-faint">IFSC</dt>
+                <dd className="break-all font-mono text-sm text-ink">{payout.bank.ifsc}</dd>
+              </div>
+            )}
+          </dl>
         ) : (
           <p className="text-sm text-ink-faint">Add your bank account number and IFSC in Profile &amp; Security before submitting this request.</p>
         )}

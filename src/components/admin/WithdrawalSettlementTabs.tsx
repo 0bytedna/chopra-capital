@@ -271,7 +271,7 @@ function BulkConversionForm({
         </div>
       </div>
 
-      <div className="grid gap-4 rounded-xl border border-gold-500/25 bg-gold-600/6 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+      <div className="grid gap-4 rounded-xl border border-gold-500/25 bg-gold-600/6 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
         <div>
           <label
             htmlFor={"bulk-inr-" + method.toLowerCase()}
@@ -308,7 +308,7 @@ function BulkConversionForm({
           size="md"
           disabled={!canSubmit || pending}
           aria-busy={pending}
-          className="w-full sm:w-auto"
+          className="w-full sm:mt-6 sm:w-auto"
         >
           {pending ? (
             <>

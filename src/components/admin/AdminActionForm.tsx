@@ -18,6 +18,7 @@ type Props = {
   confirmMessage?: string;
   resetOnSuccess?: boolean;
   className?: string;
+  submitClassName?: string;
   children?: ReactNode;
 };
 
@@ -29,6 +30,7 @@ export function AdminActionForm({
   confirmMessage,
   resetOnSuccess = false,
   className,
+  submitClassName,
   children,
 }: Props) {
   const [state, formAction] = useActionState<AdminFormState, FormData>(action, {});
@@ -50,7 +52,7 @@ export function AdminActionForm({
       {state.error && <Alert tone="error">{state.error}</Alert>}
       {state.success && <Alert tone="success">{state.success}</Alert>}
       {children}
-      <SubmitButton size="sm" variant={variant} pendingLabel={pendingLabel}>
+      <SubmitButton size="sm" variant={variant} pendingLabel={pendingLabel} className={submitClassName}>
         {submitLabel}
       </SubmitButton>
     </form>

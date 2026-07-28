@@ -1,30 +1,21 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { getPortfolioMetrics, getPortfolioSeries } from "@/lib/portfolio";
 import { toNumber } from "@/lib/money";
+import { getUserNotificationCenter } from "@/lib/userNotifications";
 import { AccountMetricCards } from "@/components/app/AccountMetricCards";
 import { PortfolioChart } from "@/components/app/PortfolioChart";
-import { Alert } from "@/components/ui/Alert";
-import { prisma } from "@/lib/prisma";
+import { AttentionPanel } from "@/components/app/UserNotifications";
 import { mt5InvestorAccount } from "@/lib/mt5";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
 export default async function DashboardPage() {
   const user = await requireUser();
-  const [metrics, performance, payoutCorrection] = await Promise.all([
+  const [metrics, performance, notifications] = await Promise.all([
     getPortfolioMetrics(user.id),
     getPortfolioSeries(user.id),
-    prisma.withdrawal.findFirst({
-      where: {
-        userId: user.id,
-        method: "BANK",
-        status: { in: ["PAYOUT_DETAILS_REQUIRED", "PAYOUT_DETAILS_REVIEW"] },
-      },
-      select: { status: true, payoutCorrectionNote: true },
-      orderBy: { payoutCorrectionRequestedAt: "desc" },
-    }),
+    getUserNotificationCenter(user.id),
   ]);
   const balance = metrics.units.mul(metrics.nav);
   const mt5 = mt5InvestorAccount();
@@ -37,21 +28,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
-      {payoutCorrection && (
-        <Alert tone="warning">
-          {payoutCorrection.status === "PAYOUT_DETAILS_REQUIRED" ? (
-            <>
-              A bank withdrawal is on hold{payoutCorrection.payoutCorrectionNote ? `: ${payoutCorrection.payoutCorrectionNote}` : "."}{" "}
-              <Link href="/app/profile#banking-details" className="font-medium underline underline-offset-2">
-                Correct your bank details
-              </Link>
-              .
-            </>
-          ) : (
-            "Your corrected bank details are awaiting admin approval. The payout remains safely on hold."
-          )}
-        </Alert>
-      )}
+      <AttentionPanel center={notifications} />
       <AccountMetricCards
         initialBalance={toNumber(balance)}
         initialQueued={toNumber(metrics.queued)}

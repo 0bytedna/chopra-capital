@@ -31,10 +31,10 @@ export default function TermsPage() {
 
       <h2>3. Deposits</h2>
       <p>
-        Deposits are accepted in USDT on the supported networks shown in your account. The
-        minimum deposit is $2,000 USDT. Deposits are credited after on-chain confirmation by our
-        team and join the pool on the next weekly allocation run. Funds sent on unsupported
-        networks or to incorrect addresses may be unrecoverable.
+        Deposits are accepted in USDT on the supported networks shown in your account. Deposits
+        must be greater than zero and are credited after on-chain confirmation by our team.
+        They join the pool on the next weekly allocation run. Funds sent on unsupported networks
+        or to incorrect addresses may be unrecoverable.
       </p>
 
       <h2>4. Withdrawals</h2>
@@ -78,8 +78,8 @@ export default function TermsPage() {
 
       <h2>9. Governing law</h2>
       <p>
-        These terms are governed by the laws applicable in the Emirate of Dubai, United Arab
-        Emirates, and disputes are subject to the exclusive jurisdiction of its courts.
+        These terms are governed by applicable law. Any dispute is subject to the courts with
+        jurisdiction over Chopra Capital&apos;s registered place of business.
       </p>
     </>
   );

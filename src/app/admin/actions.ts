@@ -381,6 +381,7 @@ export async function adminRequestDepositCorrection(
   revalidatePath("/app/history");
   revalidatePath("/admin/deposits");
   revalidatePath("/admin");
+  revalidatePath("/app", "layout");
   return { success: "Correction requested. The deposit cannot be credited until the investor resubmits the details." };
 }
 
@@ -774,6 +775,7 @@ export async function adminKycDecision(_prev: AdminFormState, formData: FormData
   revalidatePath("/admin");
   revalidatePath("/app/deposit");
   revalidatePath("/app/history");
+  revalidatePath("/app", "layout");
   return { success: decision === "APPROVED" ? "KYC approved." : "KYC rejected." };
 }
 
@@ -818,6 +820,7 @@ export async function adminReplyTicket(_prev: AdminFormState, formData: FormData
   revalidatePath(`/admin/tickets/${ticketId}`);
   revalidatePath("/admin/tickets");
   revalidatePath(`/app/tickets/${ticketId}`);
+  revalidatePath("/app", "layout");
   return { success: "Reply sent." };
 }
 
@@ -829,5 +832,6 @@ export async function adminCloseTicket(_prev: AdminFormState, formData: FormData
   await prisma.ticket.update({ where: { id: ticketId }, data: { status: "CLOSED" } });
   revalidatePath(`/admin/tickets/${ticketId}`);
   revalidatePath("/admin/tickets");
+  revalidatePath("/app", "layout");
   return { success: "Ticket closed." };
 }

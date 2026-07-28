@@ -5,7 +5,6 @@ import {
   depositAddress,
   bankDepositDetails,
   cashDepositInstruction,
-  MIN_DEPOSIT_USDT,
 } from "@/lib/config";
 import { getDepositEligibility } from "@/lib/financialEligibility";
 import { DepositForm } from "./DepositForm";
@@ -45,7 +44,6 @@ export default async function DepositPage() {
         <DepositForm
           addresses={addresses}
           qrCodes={qrCodes}
-          minDeposit={MIN_DEPOSIT_USDT}
           restriction={eligibility.restriction}
           bankEnabled={user.bankTransferEnabled}
           cashEnabled={user.cashEnabled}

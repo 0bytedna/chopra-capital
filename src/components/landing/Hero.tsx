@@ -14,13 +14,13 @@ import {
   Sparkles,
 } from "lucide-react";
 
-const trustPoints = ["Hedged gold exposure", "Rules-based execution", "Human supervision"];
+const trustPoints = ["Automated gold trading", "Human oversight", "Clear account reporting"];
 
 export function Hero() {
   const reduceMotion = useReducedMotion();
 
   return (
-    <section className="relative isolate overflow-hidden pb-16 pt-28 sm:pb-24 sm:pt-36">
+    <section className="relative isolate overflow-hidden pb-12 pt-28 sm:pb-16 sm:pt-36">
       <div className="absolute inset-0 -z-20 landing-mesh" aria-hidden />
       <div className="absolute inset-0 -z-10 landing-grid" aria-hidden />
       <div className="absolute inset-0 -z-10 grain" aria-hidden />
@@ -35,14 +35,14 @@ export function Hero() {
         >
           <div className="section-chip mx-auto w-fit">
             <Sparkles className="size-3.5" aria-hidden />
-            Dubai-based managed gold strategy
+            Automated gold trading with human oversight
           </div>
           <h1 className="mt-7 text-balance font-serif text-[3.15rem] leading-[0.98] tracking-[-0.045em] text-ink sm:text-6xl lg:text-[5.25rem]">
             Intelligent execution.
             <span className="gold-text block italic">Human accountability.</span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-pretty text-base leading-7 text-ink-dim sm:text-lg">
-            Chopra Capital manages pooled investor capital through a focused gold trading operation. Automation handles speed, consistency and monitoring; experienced people remain responsible for risk, capital movement and every investor account.
+            Chopra Capital gives investors a simple way to participate in automated gold trading. Open an account, add funds, follow performance, and request withdrawals from one clear dashboard.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
             <Link href="/signup" className="btn-gold min-h-12 px-7 text-base">
@@ -66,7 +66,7 @@ export function Hero() {
           initial={reduceMotion ? false : { opacity: 0, y: 28, scale: 0.985 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.85, delay: 0.15 }}
-          className="relative mx-auto mt-14 max-w-6xl sm:mt-18"
+          className="relative mx-auto mt-10 max-w-6xl sm:mt-12"
         >
           <div className="absolute -inset-10 -z-10 rounded-[3rem] bg-gold-500/8 blur-3xl" aria-hidden />
           <div className="product-window overflow-hidden">
@@ -77,7 +77,7 @@ export function Hero() {
                   <span className="size-2 rounded-full bg-ink-faint/30" />
                   <span className="size-2 rounded-full bg-ink-faint/20" />
                 </div>
-                <span className="hidden text-xs text-ink-faint sm:inline">Chopra Capital · Operating overview</span>
+                <span className="hidden text-xs text-ink-faint sm:inline">Chopra Capital · Strategy overview</span>
               </div>
               <span className="status-pill"><span className="status-dot" /> Monitored</span>
             </div>
@@ -86,16 +86,16 @@ export function Hero() {
               <div className="border-b border-slate-200/80 p-5 sm:p-7 lg:border-b-0 lg:border-r">
                 <div className="flex items-end justify-between gap-4">
                   <div>
-                    <p className="eyebrow">Operating model</p>
-                    <h2 className="mt-2 font-serif text-2xl text-ink sm:text-3xl">Technology beneath a managed fund</h2>
+                    <p className="eyebrow">Gold strategy</p>
+                    <h2 className="mt-2 font-serif text-2xl text-ink sm:text-3xl">Automated trading with human oversight</h2>
                   </div>
                   <LineChart className="hidden size-6 text-gold-400 sm:block" aria-hidden />
                 </div>
                 <div className="mt-7 grid gap-3 sm:grid-cols-3">
                   {[
-                    ["Gold", "Single focus", CircleDollarSign],
-                    ["1:1", "Hedge discipline", ShieldCheck],
-                    ["Weekly", "Liquidity cycle", Clock3],
+                    ["Gold", "Focused market", CircleDollarSign],
+                    ["Automated", "Trade execution", ShieldCheck],
+                    ["Weekly", "Withdrawal requests", Clock3],
                   ].map(([value, label, Icon]) => {
                     const ItemIcon = Icon as typeof CircleDollarSign;
                     return (
@@ -109,8 +109,8 @@ export function Hero() {
                 </div>
                 <div className="mt-4 rounded-2xl border border-slate-200/80 bg-slate-50/90 p-4 sm:p-5">
                   <div className="flex items-center justify-between text-xs uppercase tracking-[0.16em] text-ink-faint">
-                    <span>Managed gold operation</span>
-                    <span>Operating view</span>
+                    <span>Gold market activity</span>
+                    <span>Illustrative view</span>
                   </div>
                   <div className="mt-5 flex h-24 items-end gap-1.5" aria-hidden>
                     {[30, 37, 34, 48, 45, 58, 54, 67, 63, 76, 72, 86, 82, 94].map((height, index) => (
@@ -121,12 +121,12 @@ export function Hero() {
               </div>
 
               <div className="p-5 sm:p-7">
-                <p className="eyebrow">Operating model</p>
+                <p className="eyebrow">What supports the strategy</p>
                 <div className="mt-5 space-y-3">
                   {[
-                    [Eye, "Market monitoring", "Systems watch gold markets continuously during trading hours."],
-                    [Bot, "Automated execution", "Rules place and manage hedged positions without emotion or delay."],
-                    [ShieldCheck, "Human control", "Operators supervise risk, exceptions, deposits and withdrawals."],
+                    [Eye, "Market monitoring", "Systems watch gold markets throughout active trading hours."],
+                    [Bot, "Automated execution", "Rules respond consistently without emotion or delay."],
+                    [ShieldCheck, "Human oversight", "Experienced operators supervise trading and risk controls."],
                   ].map(([Icon, title, copy], index) => {
                     const ItemIcon = Icon as typeof Eye;
                     return (
@@ -150,10 +150,10 @@ export function Hero() {
 
         <div className="mx-auto mt-8 grid max-w-6xl grid-cols-2 divide-x divide-y divide-slate-200/80 overflow-hidden rounded-2xl border border-slate-200/80 bg-white/80 sm:grid-cols-4 sm:divide-y-0">
           {[
-            ["Gold", "Specialist focus"],
-            ["1:1", "Hedge discipline"],
-            ["No lock-in", "Flexible structure"],
-            ["Monday", "Processing day"],
+            ["Gold", "Focused market"],
+            ["24/5", "Market monitoring"],
+            ["No lock-in", "Flexible access"],
+            ["Monday", "Withdrawal processing"],
           ].map(([value, label]) => (
             <div key={label} className="px-4 py-5 text-center">
               <p className="font-serif text-xl text-gold-300">{value}</p>

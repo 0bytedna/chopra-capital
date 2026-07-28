@@ -103,5 +103,6 @@ export async function replyToTicket(_prev: TicketFormState, formData: FormData):
   revalidatePath(`/app/tickets/${ticketId}`);
   revalidatePath(`/admin/tickets/${ticketId}`);
   revalidatePath("/admin/tickets");
+  revalidatePath("/app", "layout");
   return {};
 }

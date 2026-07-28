@@ -87,7 +87,7 @@ function DepositEditForm({ deposit, onCancel }: { deposit: Deposit; onCancel: ()
         name="amount"
         type="number"
         step="0.01"
-        min={deposit.method === "CRYPTO" ? "2000" : "0.01"}
+        min="0.01"
         defaultValue={initialAmount}
         readOnly={correctionRequired}
         hint={correctionRequired ? "The deposited amount is locked while payment details are corrected." : undefined}

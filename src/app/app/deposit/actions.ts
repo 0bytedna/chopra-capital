@@ -4,19 +4,11 @@ import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { depositSchema } from "@/lib/validation";
-import { MIN_DEPOSIT_USDT } from "@/lib/config";
 import { D } from "@/lib/money";
 import { getDepositEligibility, type FinancialRestriction } from "@/lib/financialEligibility";
 
 export type DepositFormState = { error?: string; success?: string; restriction?: FinancialRestriction };
 
-function isCryptoAmountValid(method: "CRYPTO" | "BANK" | "CASH", amount: number): boolean {
-  return method !== "CRYPTO" || amount >= MIN_DEPOSIT_USDT;
-}
-
-function cryptoAmountError(): DepositFormState {
-  return { error: `The minimum crypto deposit is $${MIN_DEPOSIT_USDT.toLocaleString()} USDT.` };
-}
 
 export async function submitDeposit(_prev: DepositFormState, formData: FormData): Promise<DepositFormState> {
   const user = await requireUser();
@@ -35,7 +27,6 @@ export async function submitDeposit(_prev: DepositFormState, formData: FormData)
   }
 
   const { amount, method, network, txHash, reference } = parsed.data;
-  if (!isCryptoAmountValid(method, amount)) return cryptoAmountError();
 
   if (method === "BANK" && !user.bankTransferEnabled) {
     return { error: "Bank transfer deposits are not enabled on your account. Contact support." };
@@ -91,7 +82,6 @@ export async function editDeposit(_prev: DepositFormState, formData: FormData): 
 
   const { amount, method, network, txHash, reference } = parsed.data;
   if (method !== deposit.method) return { error: "The deposit method cannot be changed." };
-  if (!isCryptoAmountValid(method, amount)) return cryptoAmountError();
 
   if (isCorrection) {
     const originalAmount = method === "CRYPTO" ? deposit.reportedUsdtAmount ?? deposit.amount : deposit.inrAmount;
@@ -112,7 +102,8 @@ export async function editDeposit(_prev: DepositFormState, formData: FormData): 
     });
 
     revalidatePath("/app/deposit");
-  revalidatePath("/app/history");
+    revalidatePath("/app/history");
+    revalidatePath("/app", "layout");
     revalidatePath("/admin");
     revalidatePath("/admin/deposits");
     return { success: "Corrected payment details submitted for review." };

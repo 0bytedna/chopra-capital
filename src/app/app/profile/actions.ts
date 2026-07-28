@@ -125,7 +125,7 @@ export async function updateBanking(
   });
   revalidatePath("/app/profile");
   revalidatePath("/app/history");
-  revalidatePath("/app");
+  revalidatePath("/app", "layout");
   revalidatePath("/admin/withdrawals");
   revalidatePath("/admin");
   return {
@@ -162,6 +162,7 @@ export async function updateCryptoWallet(
     },
   });
   revalidatePath("/app/profile");
+  revalidatePath("/app", "layout");
   return { success: "Crypto wallet saved." };
 }
 
@@ -210,6 +211,7 @@ export async function submitKyc(_prev: ProfileFormState, formData: FormData): Pr
     data: { kycStatus: "PENDING", kycNote: null },
   });
   revalidatePath("/app/profile");
+  revalidatePath("/app", "layout");
   return { success: "Documents submitted. We'll review them shortly." };
 }
 
@@ -243,6 +245,7 @@ export async function enableTotp(_prev: ProfileFormState, formData: FormData): P
 
   await prisma.user.update({ where: { id: user.id }, data: { twoFactorEnabled: true } });
   revalidatePath("/app/profile");
+  revalidatePath("/app", "layout");
   revalidatePath("/admin/security");
   return { success: "Two-factor authentication is now enabled." };
 }
@@ -263,6 +266,7 @@ export async function disableTotp(_prev: ProfileFormState, formData: FormData): 
     data: { twoFactorEnabled: false, twoFactorSecret: null },
   });
   revalidatePath("/app/profile");
+  revalidatePath("/app", "layout");
   revalidatePath("/admin/security");
   return { success: "Two-factor authentication disabled." };
 }
