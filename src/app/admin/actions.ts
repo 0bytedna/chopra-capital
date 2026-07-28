@@ -25,6 +25,7 @@ import {
   createInternalTransfer,
 } from "@/lib/wallet";
 import { recordTradingAdjustment, setTradingSnapshot } from "@/lib/tradingAccount";
+import { stageRequiredBankPayoutCorrections } from "@/lib/payoutDetails";
 
 export type AdminFormState = { error?: string; success?: string };
 
@@ -70,53 +71,82 @@ export async function adminRecordTradingAdjustment(_prev: AdminFormState, formDa
 // --- Investor accounts ------------------------------------------------------
 
 export async function adminUpdateInvestorProfile(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const userId = String(formData.get("userId") ?? "");
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   if (!userId || !email) return { error: "Investor and email are required." };
+
+  const bankDetails = {
+    accountNumber: String(formData.get("accountNumber") ?? "").trim() || null,
+    ifsc: String(formData.get("ifsc") ?? "").trim().toUpperCase() || null,
+    upiId: String(formData.get("upiId") ?? "").trim() || null,
+    accountType: String(formData.get("accountType") ?? "").trim() || null,
+  };
+  let submittedForReview = 0;
+
   try {
-    await prisma.user.update({
-      where: { id: userId, role: "USER" },
-      data: {
-        email,
-        fullName: String(formData.get("fullName") ?? "").trim() || null,
-        mobile: String(formData.get("mobile") ?? "").trim() || null,
-        country: String(formData.get("country") ?? "").trim() || null,
-        address: String(formData.get("address") ?? "").trim() || null,
-        city: String(formData.get("city") ?? "").trim() || null,
-        state: String(formData.get("state") ?? "").trim() || null,
-        kycStatus: String(formData.get("kycStatus") ?? "NOT_SUBMITTED") as "NOT_SUBMITTED" | "PENDING" | "APPROVED" | "REJECTED",
-        kycNote: String(formData.get("kycNote") ?? "").trim() || null,
-        bankTransferEnabled: formData.get("bankTransferEnabled") != null,
-        cashEnabled: formData.get("cashEnabled") != null,
-        bankingDetail: {
-          upsert: {
-            create: {
-              accountNumber: String(formData.get("accountNumber") ?? "").trim() || null,
-              ifsc: String(formData.get("ifsc") ?? "").trim().toUpperCase() || null,
-              upiId: String(formData.get("upiId") ?? "").trim() || null,
-              accountType: String(formData.get("accountType") ?? "").trim() || null,
-              usdtAddress: String(formData.get("usdtAddress") ?? "").trim() || null,
-              usdtNetwork: String(formData.get("usdtNetwork") ?? "").trim() || null,
-            },
-            update: {
-              accountNumber: String(formData.get("accountNumber") ?? "").trim() || null,
-              ifsc: String(formData.get("ifsc") ?? "").trim().toUpperCase() || null,
-              upiId: String(formData.get("upiId") ?? "").trim() || null,
-              accountType: String(formData.get("accountType") ?? "").trim() || null,
-              usdtAddress: String(formData.get("usdtAddress") ?? "").trim() || null,
-              usdtNetwork: String(formData.get("usdtNetwork") ?? "").trim() || null,
+    await prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: userId, role: "USER" },
+        data: {
+          email,
+          fullName: String(formData.get("fullName") ?? "").trim() || null,
+          mobile: String(formData.get("mobile") ?? "").trim() || null,
+          country: String(formData.get("country") ?? "").trim() || null,
+          address: String(formData.get("address") ?? "").trim() || null,
+          city: String(formData.get("city") ?? "").trim() || null,
+          state: String(formData.get("state") ?? "").trim() || null,
+          kycStatus: String(formData.get("kycStatus") ?? "NOT_SUBMITTED") as "NOT_SUBMITTED" | "PENDING" | "APPROVED" | "REJECTED",
+          kycNote: String(formData.get("kycNote") ?? "").trim() || null,
+          bankTransferEnabled: formData.get("bankTransferEnabled") != null,
+          cashEnabled: formData.get("cashEnabled") != null,
+          bankingDetail: {
+            upsert: {
+              create: {
+                ...bankDetails,
+                usdtAddress: String(formData.get("usdtAddress") ?? "").trim() || null,
+                usdtNetwork: String(formData.get("usdtNetwork") ?? "").trim() || null,
+              },
+              update: {
+                ...bankDetails,
+                usdtAddress: String(formData.get("usdtAddress") ?? "").trim() || null,
+                usdtNetwork: String(formData.get("usdtNetwork") ?? "").trim() || null,
+              },
             },
           },
         },
-      },
+      });
+
+      if (bankDetails.accountNumber && bankDetails.ifsc && bankDetails.accountType) {
+        submittedForReview = await stageRequiredBankPayoutCorrections(tx, {
+          userId,
+          details: {
+            accountNumber: bankDetails.accountNumber,
+            ifsc: bankDetails.ifsc,
+            upiId: bankDetails.upiId,
+            accountType: bankDetails.accountType,
+          },
+          actorId: admin.id,
+          actorRole: "ADMIN",
+        });
+      }
     });
     revalidatePath(`/admin/investors/${userId}`);
     revalidatePath("/admin/investors");
-    return { success: "Investor profile and financial details updated." };
-  } catch (error) { return fail(error); }
+    revalidatePath("/admin/withdrawals");
+    revalidatePath("/app/profile");
+    revalidatePath("/app/history");
+    revalidatePath("/app");
+    return {
+      success:
+        submittedForReview > 0
+          ? `Investor details updated. Corrected bank details were submitted for ${submittedForReview} held payout${submittedForReview === 1 ? "" : "s"}; approve them in Withdrawals.`
+          : "Investor profile and financial details updated.",
+    };
+  } catch (error) {
+    return fail(error);
+  }
 }
-
 export async function adminResetInvestorPassword(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
   await requireAdmin();
   const userId = String(formData.get("userId") ?? "");
@@ -375,7 +405,7 @@ export async function adminEditWithdrawalRecord(_prev: AdminFormState, formData:
   const id = String(formData.get("id") ?? "");
   const userId = String(formData.get("userId") ?? "");
   const status = String(formData.get("status") ?? "");
-  const statuses = ["REQUESTED", "APPROVED", "BROKER_RECEIVED", "INR_READY", "PROCESSED", "REJECTED", "CANCELLED"] as const;
+  const statuses = ["REQUESTED", "APPROVED", "BROKER_RECEIVED", "INR_READY", "PAYOUT_DETAILS_REQUIRED", "PAYOUT_DETAILS_REVIEW", "PROCESSED", "REJECTED", "CANCELLED"] as const;
   if (!statuses.includes(status as (typeof statuses)[number])) return { error: "Invalid withdrawal status." };
   try {
     const amount = D(String(formData.get("amount") ?? ""));
@@ -493,6 +523,184 @@ export async function adminRecordWithdrawalConversionBatch(
   return {
     success: `${formatInr(result.totalInrReceived)} INR allocated across ${result.count} ${method} withdrawal${result.count === 1 ? "" : "s"}.`,
   };
+}
+export async function adminRequestWithdrawalPayoutCorrection(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  const admin = await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const note = String(formData.get("note") ?? "").trim();
+  if (!id || !note) return { error: "Explain what is wrong with the payout details." };
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const withdrawal = await tx.withdrawal.findUniqueOrThrow({ where: { id } });
+      if (withdrawal.method !== "BANK" || withdrawal.status !== "INR_READY") {
+        throw new Error("Only bank withdrawals ready for payout can request bank-detail correction.");
+      }
+
+      const updated = await tx.withdrawal.updateMany({
+        where: { id, method: "BANK", status: "INR_READY" },
+        data: {
+          status: "PAYOUT_DETAILS_REQUIRED",
+          payoutCorrectionNote: note,
+          payoutCorrectionRequestedAt: new Date(),
+          payoutDetailsSubmittedAt: null,
+          proposedAccountNumber: null,
+          proposedIfsc: null,
+          proposedUpiId: null,
+          proposedAccountType: null,
+        },
+      });
+      if (updated.count !== 1) throw new Error("This payout is no longer ready for correction.");
+
+      await tx.withdrawalPayoutDetailAudit.create({
+        data: {
+          withdrawalId: id,
+          action: "CORRECTION_REQUESTED",
+          actorId: admin.id,
+          actorRole: "ADMIN",
+          accountNumber: withdrawal.payoutAccountNumber,
+          ifsc: withdrawal.payoutIfsc,
+          upiId: withdrawal.payoutUpiId,
+          accountType: withdrawal.payoutAccountType,
+          note,
+        },
+      });
+    });
+  } catch (error) {
+    return fail(error);
+  }
+
+  revalidatePath("/admin/withdrawals");
+  revalidatePath("/admin");
+  revalidatePath("/app/profile");
+  revalidatePath("/app/history");
+  revalidatePath("/app");
+  return { success: "Payout blocked. The investor has been asked to correct their bank details." };
+}
+
+export async function adminApproveWithdrawalPayoutDetails(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  const admin = await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  if (!id) return { error: "Withdrawal not found." };
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const withdrawal = await tx.withdrawal.findUniqueOrThrow({ where: { id } });
+      if (withdrawal.method !== "BANK" || withdrawal.status !== "PAYOUT_DETAILS_REVIEW") {
+        throw new Error("These payout details are no longer awaiting review.");
+      }
+      if (
+        !withdrawal.proposedAccountNumber ||
+        !withdrawal.proposedIfsc ||
+        !withdrawal.proposedAccountType
+      ) {
+        throw new Error("The proposed bank destination is incomplete.");
+      }
+
+      const approvedAt = new Date();
+      const updated = await tx.withdrawal.updateMany({
+        where: { id, method: "BANK", status: "PAYOUT_DETAILS_REVIEW" },
+        data: {
+          status: "INR_READY",
+          payoutAccountNumber: withdrawal.proposedAccountNumber,
+          payoutIfsc: withdrawal.proposedIfsc,
+          payoutUpiId: withdrawal.proposedUpiId,
+          payoutAccountType: withdrawal.proposedAccountType,
+          proposedAccountNumber: null,
+          proposedIfsc: null,
+          proposedUpiId: null,
+          proposedAccountType: null,
+          payoutDetailsApprovedAt: approvedAt,
+        },
+      });
+      if (updated.count !== 1) throw new Error("These payout details changed before approval.");
+
+      await tx.withdrawalPayoutDetailAudit.create({
+        data: {
+          withdrawalId: id,
+          action: "DETAILS_APPROVED",
+          actorId: admin.id,
+          actorRole: "ADMIN",
+          accountNumber: withdrawal.proposedAccountNumber,
+          ifsc: withdrawal.proposedIfsc,
+          upiId: withdrawal.proposedUpiId,
+          accountType: withdrawal.proposedAccountType,
+          note: withdrawal.payoutCorrectionNote,
+        },
+      });
+    });
+  } catch (error) {
+    return fail(error);
+  }
+
+  revalidatePath("/admin/withdrawals");
+  revalidatePath("/admin");
+  revalidatePath("/app/profile");
+  revalidatePath("/app/history");
+  revalidatePath("/app");
+  return { success: "Corrected bank details approved. The withdrawal is ready for payout again." };
+}
+
+export async function adminRejectWithdrawalPayoutDetails(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  const admin = await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const note = String(formData.get("note") ?? "").trim();
+  if (!id || !note) return { error: "Explain what still needs to be corrected." };
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const withdrawal = await tx.withdrawal.findUniqueOrThrow({ where: { id } });
+      if (withdrawal.method !== "BANK" || withdrawal.status !== "PAYOUT_DETAILS_REVIEW") {
+        throw new Error("These payout details are no longer awaiting review.");
+      }
+
+      await tx.withdrawalPayoutDetailAudit.create({
+        data: {
+          withdrawalId: id,
+          action: "DETAILS_REJECTED",
+          actorId: admin.id,
+          actorRole: "ADMIN",
+          accountNumber: withdrawal.proposedAccountNumber,
+          ifsc: withdrawal.proposedIfsc,
+          upiId: withdrawal.proposedUpiId,
+          accountType: withdrawal.proposedAccountType,
+          note,
+        },
+      });
+      const updated = await tx.withdrawal.updateMany({
+        where: { id, method: "BANK", status: "PAYOUT_DETAILS_REVIEW" },
+        data: {
+          status: "PAYOUT_DETAILS_REQUIRED",
+          payoutCorrectionNote: note,
+          payoutCorrectionRequestedAt: new Date(),
+          payoutDetailsSubmittedAt: null,
+          proposedAccountNumber: null,
+          proposedIfsc: null,
+          proposedUpiId: null,
+          proposedAccountType: null,
+        },
+      });
+      if (updated.count !== 1) throw new Error("These payout details changed before rejection.");
+    });
+  } catch (error) {
+    return fail(error);
+  }
+
+  revalidatePath("/admin/withdrawals");
+  revalidatePath("/admin");
+  revalidatePath("/app/profile");
+  revalidatePath("/app/history");
+  revalidatePath("/app");
+  return { success: "Correction rejected. The payout remains blocked until the investor resubmits." };
 }
 export async function adminCompleteWithdrawalPayout(
   _prev: AdminFormState,

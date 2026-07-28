@@ -27,7 +27,7 @@ export default async function AdminOverviewPage() {
     getCurrentNav(),
     prisma.wallet.aggregate({ _sum: { units: true, queued: true } }),
     prisma.deposit.count({ where: { status: { in: ["PENDING", "NEEDS_CORRECTION", "RECEIVED", "QUEUED"] } } }),
-    prisma.withdrawal.count({ where: { status: { in: ["REQUESTED", "APPROVED", "BROKER_RECEIVED", "INR_READY"] } } }),
+    prisma.withdrawal.count({ where: { status: { in: ["REQUESTED", "APPROVED", "BROKER_RECEIVED", "INR_READY", "PAYOUT_DETAILS_REQUIRED", "PAYOUT_DETAILS_REVIEW"] } } }),
     prisma.user.count({ where: { role: "USER", kycStatus: "PENDING", isCompanyAccount: false } }),
     prisma.ticket.count({ where: { status: "OPEN" } }),
     prisma.tradingAccountEntry.findMany({ orderBy: { createdAt: "desc" }, take: 12, include: { admin: { select: { fullName: true, email: true } } } }),

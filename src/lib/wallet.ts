@@ -874,6 +874,16 @@ export async function completeWithdrawalPayout(withdrawalId: string, payoutRefer
     );
   }
 
+  if (
+    withdrawal.method === "BANK" &&
+    (!withdrawal.payoutAccountNumber ||
+      !withdrawal.payoutIfsc ||
+      !withdrawal.payoutAccountType)
+  ) {
+    throw new Error(
+      "The approved bank destination is incomplete. Request corrected bank details before paying.",
+    );
+  }
   return prisma.withdrawal.update({
     where: { id: withdrawalId },
     data: {

@@ -62,6 +62,8 @@ const withdrawalStatusLabels: Record<string, string> = {
   APPROVED: "Approved",
   BROKER_RECEIVED: "Received from broker",
   INR_READY: "INR ready",
+  PAYOUT_DETAILS_REQUIRED: "Bank details required",
+  PAYOUT_DETAILS_REVIEW: "Bank details in review",
   PROCESSED: "Processed",
   REJECTED: "Rejected",
   CANCELLED: "Cancelled",

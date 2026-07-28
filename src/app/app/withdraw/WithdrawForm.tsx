@@ -48,7 +48,7 @@ function Step({ n, title, children }: { n: number; title: string; children: Reac
 function PayoutDetailsCard({ method, payout }: { method: Method; payout: PayoutDetails }) {
   if (method === "CRYPTO") {
     return (
-      <div className="rounded-xl border border-gold-600/20 bg-vault-950/60 p-4">
+      <div className="rounded-xl border border-gold-600/20 bg-vault-950/60 px-4 py-3">
         {payout.crypto ? (
           <>
             <p className="text-xs uppercase tracking-[0.16em] text-ink-faint">USDT payout destination</p>
@@ -64,9 +64,9 @@ function PayoutDetailsCard({ method, payout }: { method: Method; payout: PayoutD
 
   if (method === "BANK") {
     return (
-      <div className="rounded-xl border border-gold-600/20 bg-vault-950/60 p-4">
+      <div className="rounded-xl border border-gold-600/20 bg-vault-950/60 px-4 py-3">
         {payout.bank ? (
-          <div className="space-y-1.5 text-sm text-ink-dim">
+          <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-ink-dim">
             {payout.bank.upiId && <p>UPI: <span className="font-mono text-ink">{payout.bank.upiId}</span></p>}
             {payout.bank.accountNumber && <p>Account: <span className="font-mono text-ink">{payout.bank.accountNumber}</span></p>}
             {payout.bank.ifsc && <p>IFSC: <span className="font-mono text-ink">{payout.bank.ifsc}</span></p>}
@@ -79,7 +79,7 @@ function PayoutDetailsCard({ method, payout }: { method: Method; payout: PayoutD
   }
 
   return (
-    <div className="rounded-xl border border-gold-600/20 bg-vault-950/60 p-4">
+    <div className="rounded-xl border border-gold-600/20 bg-vault-950/60 px-4 py-3">
       <p className="text-sm leading-relaxed text-ink-dim">
         Our team will confirm your approved cash collection and arrange it for Monday. Keep your request reference ready when collecting.
       </p>
@@ -212,7 +212,7 @@ export function WithdrawForm({ open, available, referenceRate, payout, restricti
   const restriction = restrictions[method];
 
   return (
-    <div className="space-y-9">
+    <div className="space-y-6">
       {(!open || restriction) && (
         <div className="space-y-3">
           {!open && (
@@ -246,19 +246,18 @@ export function WithdrawForm({ open, available, referenceRate, payout, restricti
         </div>
       </Step>
 
-      <Step n={2} title="Confirm your saved payout details">
+      <Step n={2} title="Confirm destination and enter amount">
         <PayoutDetailsCard method={method} payout={payout} />
-      </Step>
-
-      <Step n={3} title="Enter your withdrawal amount">
-        <WithdrawalDetailsForm
-          key={`${method}-${formVersion}`}
-          method={method}
-          available={available}
-          referenceRate={referenceRate}
-          twoFactorEnabled={twoFactorEnabled}
-          onDismiss={() => setFormVersion((version) => version + 1)}
-        />
+        <div className="mt-4">
+          <WithdrawalDetailsForm
+            key={`${method}-${formVersion}`}
+            method={method}
+            available={available}
+            referenceRate={referenceRate}
+            twoFactorEnabled={twoFactorEnabled}
+            onDismiss={() => setFormVersion((version) => version + 1)}
+          />
+        </div>
       </Step>
     </div>
   );

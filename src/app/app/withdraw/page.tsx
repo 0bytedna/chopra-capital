@@ -39,36 +39,30 @@ export default async function WithdrawPage() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl space-y-10">
+    <div className="mx-auto max-w-3xl space-y-7">
       <header>
         <p className="eyebrow">Money out</p>
         <h1 className="mt-2 font-serif text-3xl text-ink">
           Withdraw <em className="gold-text italic">weekly</em>
         </h1>
         <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-dim">
-          Enter the amount in USD for every withdrawal method. Crypto payouts are sent as USDT, while bank and cash payouts show an estimated INR value. Approved requests are drawn from the broker on Monday; final INR is recorded after conversion. Capital is at risk until withdrawn.
+          Choose a payout method and request an amount in USD. Approved requests are processed on Monday.
         </p>
       </header>
 
-      <section className="grid gap-4 sm:grid-cols-2">
-        <div className="glass-card rounded-xl p-5">
-          <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">Available balance</p>
-          <p className="mt-1.5 font-serif text-3xl text-ink">
-            {formatUsdt(available)} <span className="text-base text-ink-faint">USD</span>
+      <section className="glass-card flex flex-col gap-4 rounded-xl px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-xs uppercase tracking-[0.14em] text-ink-dim">Available</p>
+          <p className="mt-1 font-serif text-2xl text-ink">
+            {formatUsdt(available)} <span className="text-sm text-ink-dim">USD</span>
           </p>
-          <p className="mt-1 text-xs text-ink-faint">Pool holdings at current NAV plus queued balance.</p>
         </div>
-        <div className="glass-card rounded-xl p-5">
-          <div className="flex items-center gap-2">
-            <CalendarClock className="size-4 text-gold-500" aria-hidden />
-            <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">Schedule</p>
-          </div>
-          <p className="mt-1.5 text-sm leading-relaxed text-ink-dim">
+        <div className="flex items-start gap-2 text-sm text-ink-dim sm:text-right">
+          <CalendarClock className="mt-0.5 size-4 shrink-0 text-gold-500" aria-hidden />
+          <p>
             Requests: <strong className="text-ink">Sunday, 12:00 AM–12:00 PM IST</strong>
-            <br />
-            Processing: <strong className="text-ink">Monday</strong>
+            <br />Processed: <strong className="text-ink">Monday</strong>
           </p>
-          <p className="mt-1 text-xs text-ink-faint">A network or processing fee may apply and appears separately on your ledger.</p>
         </div>
       </section>
 

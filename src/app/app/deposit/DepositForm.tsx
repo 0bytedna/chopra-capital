@@ -79,7 +79,7 @@ export function DepositForm({
   const address = addresses[network];
 
   return (
-    <ol className="space-y-9">
+    <ol className="space-y-6">
       <Step n={1} title="Choose a deposit method">
         <div className="grid gap-2.5 sm:grid-cols-3" role="radiogroup" aria-label="Deposit method">
           {methods.map((option) => (
@@ -90,7 +90,7 @@ export function DepositForm({
               aria-checked={activeMethod === option.id}
               onClick={() => setMethod(option.id)}
               className={cn(
-                "rounded-xl border px-4 py-3.5 text-left transition-colors",
+                "rounded-xl border px-3.5 py-2.5 text-left transition-colors",
                 activeMethod === option.id
                   ? "border-gold-500/60 bg-gold-600/10"
                   : "border-gold-600/15 bg-vault-900/50 hover:border-gold-600/35",
@@ -114,7 +114,7 @@ export function DepositForm({
                 aria-checked={network === option}
                 onClick={() => setNetwork(option)}
                 className={cn(
-                  "rounded-xl border px-4 py-3.5 text-left transition-colors",
+                  "rounded-xl border px-3.5 py-2.5 text-left transition-colors",
                   network === option
                     ? "border-gold-500/60 bg-gold-600/10"
                     : "border-gold-600/15 bg-vault-900/50 hover:border-gold-600/35",
@@ -149,7 +149,6 @@ export function DepositForm({
           <p className="mt-3 text-xs leading-relaxed text-ink-faint">
             Send only USDT on the <strong className="text-ink-dim">{network}</strong> network to this address. Transfers on the wrong network can be lost permanently. Minimum deposit: ${minDeposit.toLocaleString()} USDT.
           </p>
-          <Alert className="mt-3">Crypto deposits are processed by the end of the same day.</Alert>
         </Step>
       )}
 
@@ -168,9 +167,8 @@ export function DepositForm({
             )}
           </div>
           <p className="mt-3 text-xs leading-relaxed text-ink-faint">
-            Enter the INR amount you transfer and the UTR number below. After verification, the INR will be converted with other deposits and its USDT share will enter the company-wallet queue.
+            Transfer to the account above, then enter the INR amount and UTR below for verification.
           </p>
-          <Alert className="mt-3">Bank transfer deposits are processed in 4-7 days.</Alert>
         </Step>
       )}
 
@@ -180,9 +178,8 @@ export function DepositForm({
             <p className="text-sm leading-relaxed text-ink-dim">{cashInstruction}</p>
           </div>
           <p className="mt-3 text-xs leading-relaxed text-ink-faint">
-            Enter the INR cash amount below to create a request. After receiving it, our team will convert it with other INR deposits and move its USDT share into the company-wallet queue.
+            Enter the INR amount below to create a cash deposit request.
           </p>
-          <Alert className="mt-3">Cash deposits are processed in 7-15 days.</Alert>
         </Step>
       )}
 

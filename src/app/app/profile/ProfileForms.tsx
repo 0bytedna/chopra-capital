@@ -110,7 +110,13 @@ export type CryptoWalletInitial = {
   usdtNetwork: string;
 };
 
-export function BankingForm({ initial }: { initial: BankingInitial }) {
+export function BankingForm({
+  initial,
+  twoFactorEnabled = false,
+}: {
+  initial: BankingInitial;
+  twoFactorEnabled?: boolean;
+}) {
   const [state, action] = useActionState<FinancialDetailsFormState, FormData>(updateBanking, {});
 
   return (
@@ -132,6 +138,19 @@ export function BankingForm({ initial }: { initial: BankingInitial }) {
         </SelectField>
       </div>
       <Field label="UPI ID" name="upiId" defaultValue={initial.upiId} placeholder="name@bank" />
+      {twoFactorEnabled && (
+        <Field
+          label="Authenticator code"
+          name="code"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          pattern="\d{6}"
+          maxLength={6}
+          required
+          placeholder="000000"
+          hint="Required to authorize changes to your payout destination."
+        />
+      )}
       <SubmitButton size="sm" pendingLabel="Saving…">
         Save bank details
       </SubmitButton>

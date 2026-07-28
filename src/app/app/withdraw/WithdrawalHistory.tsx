@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
+import Link from "next/link";
 import { Ban, Pencil, X } from "lucide-react";
 import { cancelWithdrawal, editWithdrawal, type WithdrawFormState } from "./actions";
 import { Alert } from "@/components/ui/Alert";
@@ -17,6 +18,8 @@ type Withdrawal = {
     | "APPROVED"
     | "BROKER_RECEIVED"
     | "INR_READY"
+    | "PAYOUT_DETAILS_REQUIRED"
+    | "PAYOUT_DETAILS_REVIEW"
     | "PROCESSED"
     | "REJECTED"
     | "CANCELLED";
@@ -31,6 +34,7 @@ type Withdrawal = {
   convertedInrAmount: string | null;
   weekKey: string;
   adminNote: string | null;
+  payoutCorrectionNote: string | null;
   createdAt: string;
 };
 
@@ -39,6 +43,8 @@ const statusClass: Record<Withdrawal["status"], string> = {
   APPROVED: "border-gold-500/40 bg-gold-600/10 text-gold-300",
   BROKER_RECEIVED: "border-sky-400/40 bg-sky-400/10 text-sky-300",
   INR_READY: "border-sky-400/40 bg-sky-400/10 text-sky-300",
+  PAYOUT_DETAILS_REQUIRED: "border-amber-500/40 bg-amber-50 text-amber-800",
+  PAYOUT_DETAILS_REVIEW: "border-amber-500/40 bg-amber-50 text-amber-800",
   PROCESSED: "border-positive/40 bg-positive/10 text-positive",
   REJECTED: "border-negative/40 bg-negative/10 text-negative",
   CANCELLED: "border-gold-600/20 bg-vault-900/70 text-ink-faint",
@@ -57,6 +63,8 @@ function statusLabel(withdrawal: Withdrawal): string {
     return withdrawal.method === "CRYPTO" ? "ready for wallet payout" : "awaiting INR conversion";
   }
   if (withdrawal.status === "INR_READY") return "INR ready for payout";
+  if (withdrawal.status === "PAYOUT_DETAILS_REQUIRED") return "bank details required";
+  if (withdrawal.status === "PAYOUT_DETAILS_REVIEW") return "corrected details in review";
   if (withdrawal.status === "PROCESSED") return "paid";
   return withdrawal.status.toLowerCase();
 }
@@ -269,6 +277,21 @@ export function WithdrawalHistory({ withdrawals, twoFactorEnabled = false }: { w
                 <p className="mt-0.5 break-all font-mono text-xs text-ink-faint">
                   to: {withdrawal.address}
                 </p>
+                {withdrawal.status === "PAYOUT_DETAILS_REQUIRED" && (
+                  <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                    <p>
+                      This payout is on hold{withdrawal.payoutCorrectionNote ? `: ${withdrawal.payoutCorrectionNote}` : "."}
+                    </p>
+                    <Link href="/app/profile#banking-details" className="mt-1 inline-block font-medium text-gold-600 underline underline-offset-2">
+                      Correct bank details in Profile &amp; Security
+                    </Link>
+                  </div>
+                )}
+                {withdrawal.status === "PAYOUT_DETAILS_REVIEW" && (
+                  <p className="mt-3 rounded-lg border border-amber-500/30 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                    Your corrected bank details were submitted. The payout remains blocked until an admin approves them.
+                  </p>
+                )}
               </div>
               <div className="flex flex-wrap items-center gap-2 sm:shrink-0 sm:justify-end">
                 <span

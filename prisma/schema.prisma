@@ -367,6 +367,8 @@ enum WithdrawalStatus {
   APPROVED
   BROKER_RECEIVED
   INR_READY
+  PAYOUT_DETAILS_REQUIRED
+  PAYOUT_DETAILS_REVIEW
   PROCESSED
   REJECTED
   CANCELLED
@@ -379,37 +381,70 @@ enum WithdrawalMethod {
 }
 
 model Withdrawal {
-  id                  String           @id @default(cuid())
-  userId              String
-  user                User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  method              WithdrawalMethod @default(CRYPTO)
+  id                          String                        @id @default(cuid())
+  userId                      String
+  user                        User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  method                      WithdrawalMethod              @default(CRYPTO)
   // USD amount requested by the investor and removed from holdings after
   // approval and inclusion in the bulk broker withdrawal.
-  amount              Decimal
-  requestedInrAmount  Decimal? // legacy only; new requests leave this null
-  requestExchangeRate Decimal? // legacy only; Giottus reference rates are not persisted
-  fee                 Decimal? // gross USD minus net USDT received from broker
-  brokerReceivedUsdt  Decimal?
-  convertedInrAmount  Decimal?
-  paidAmount          Decimal? // USDT sent for crypto withdrawals
-  paidInrAmount       Decimal? // INR paid for bank/cash withdrawals
-  unitsRedeemed       Decimal?
-  network             String
-  address             String
-  brokerReference     String?
-  conversionReference String?
-  txHash              String? // final payout UTR / receipt / crypto tx hash
-  status              WithdrawalStatus @default(REQUESTED)
-  adminNote           String?
-  weekKey             String // e.g. "2026-W23" — the processing week
-  createdAt           DateTime         @default(now())
-  approvedAt          DateTime?
-  brokerReceivedAt    DateTime?
-  convertedAt         DateTime?
-  processedAt         DateTime?
+  amount                      Decimal
+  requestedInrAmount          Decimal? // legacy only; new requests leave this null
+  requestExchangeRate         Decimal? // legacy only; Giottus reference rates are not persisted
+  fee                         Decimal? // gross USD minus net USDT received from broker
+  brokerReceivedUsdt          Decimal?
+  convertedInrAmount          Decimal?
+  paidAmount                  Decimal? // USDT sent for crypto withdrawals
+  paidInrAmount               Decimal? // INR paid for bank/cash withdrawals
+  unitsRedeemed               Decimal?
+  network                     String
+  address                     String
+  // Immutable bank destination approved for this payout. Profile edits never
+  // silently change an INR_READY withdrawal.
+  payoutAccountNumber         String?
+  payoutIfsc                  String?
+  payoutUpiId                 String?
+  payoutAccountType           String?
+  // A correction is staged here until an admin explicitly approves it.
+  proposedAccountNumber       String?
+  proposedIfsc                String?
+  proposedUpiId               String?
+  proposedAccountType         String?
+  payoutCorrectionNote        String?
+  brokerReference             String?
+  conversionReference         String?
+  txHash                      String? // final payout UTR / receipt / crypto tx hash
+  status                      WithdrawalStatus              @default(REQUESTED)
+  adminNote                   String?
+  weekKey                     String // e.g. "2026-W23" — the processing week
+  createdAt                   DateTime                      @default(now())
+  approvedAt                  DateTime?
+  brokerReceivedAt            DateTime?
+  convertedAt                 DateTime?
+  payoutCorrectionRequestedAt DateTime?
+  payoutDetailsSubmittedAt    DateTime?
+  payoutDetailsApprovedAt     DateTime?
+  processedAt                 DateTime?
+  payoutDetailAudits          WithdrawalPayoutDetailAudit[]
 
   @@index([userId, createdAt])
   @@index([status, method])
+}
+
+model WithdrawalPayoutDetailAudit {
+  id            String     @id @default(cuid())
+  withdrawalId  String
+  withdrawal    Withdrawal @relation(fields: [withdrawalId], references: [id], onDelete: Cascade)
+  action        String
+  actorId       String
+  actorRole     String
+  accountNumber String?
+  ifsc          String?
+  upiId         String?
+  accountType   String?
+  note          String?
+  createdAt     DateTime   @default(now())
+
+  @@index([withdrawalId, createdAt])
 }
 
 // ---------------------------------------------------------------------------

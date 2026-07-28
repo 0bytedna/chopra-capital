@@ -18,6 +18,7 @@ type WithdrawalMethod = "CRYPTO" | "BANK" | "CASH";
 type BankingDetail = {
   accountNumber: string | null;
   ifsc: string | null;
+  upiId: string | null;
   accountType: string | null;
   usdtAddress: string | null;
   usdtNetwork: string | null;
@@ -102,7 +103,7 @@ async function validateWithdrawalAmount(
 async function getBankingDetail(userId: string): Promise<BankingDetail | null> {
   return prisma.bankingDetail.findUnique({
     where: { userId },
-    select: { accountNumber: true, ifsc: true, accountType: true, usdtAddress: true, usdtNetwork: true },
+    select: { accountNumber: true, ifsc: true, upiId: true, accountType: true, usdtAddress: true, usdtNetwork: true },
   });
 }
 
@@ -148,6 +149,26 @@ export async function requestWithdrawal(_prev: WithdrawFormState, formData: Form
       network: destination.network,
       address: destination.address,
       weekKey: currentWeekKey(),
+      ...(method === "BANK" && banking
+        ? {
+            payoutAccountNumber: banking.accountNumber,
+            payoutIfsc: banking.ifsc,
+            payoutUpiId: banking.upiId,
+            payoutAccountType: banking.accountType,
+            payoutDetailsApprovedAt: new Date(),
+            payoutDetailAudits: {
+              create: {
+                action: "REQUEST_SNAPSHOT",
+                actorId: user.id,
+                actorRole: "USER",
+                accountNumber: banking.accountNumber,
+                ifsc: banking.ifsc,
+                upiId: banking.upiId,
+                accountType: banking.accountType,
+              },
+            },
+          }
+        : {}),
     },
   });
 
@@ -205,6 +226,15 @@ export async function editWithdrawal(_prev: WithdrawFormState, formData: FormDat
       requestExchangeRate: null,
       network: destination.network,
       address: destination.address,
+      payoutAccountNumber: method === "BANK" ? banking?.accountNumber : null,
+      payoutIfsc: method === "BANK" ? banking?.ifsc : null,
+      payoutUpiId: method === "BANK" ? banking?.upiId : null,
+      payoutAccountType: method === "BANK" ? banking?.accountType : null,
+      payoutDetailsApprovedAt: method === "BANK" ? new Date() : null,
+      proposedAccountNumber: null,
+      proposedIfsc: null,
+      proposedUpiId: null,
+      proposedAccountType: null,
     },
   });
   if (result.count === 0) {

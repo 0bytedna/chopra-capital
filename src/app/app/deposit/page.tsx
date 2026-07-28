@@ -30,15 +30,14 @@ export default async function DepositPage() {
   const eligibility = getDepositEligibility(user);
 
   return (
-    <div className="mx-auto max-w-3xl space-y-10">
+    <div className="mx-auto max-w-3xl space-y-7">
       <header>
         <p className="eyebrow">Money in</p>
         <h1 className="mt-2 font-serif text-3xl text-ink">
           Deposit <em className="gold-text italic">funds</em>
         </h1>
         <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-dim">
-          Choose crypto, bank transfer, or cash. Verified crypto enters the company-wallet queue immediately;
-          INR enters after conversion to USDT. Queued funds are transferred to the broker and invested on weekends. Capital at risk — returns are not guaranteed.
+          Choose a method, send the funds, and submit the payment reference for verification.
         </p>
       </header>
 

@@ -89,6 +89,7 @@ export default async function HistoryPage() {
                 : formatInr(withdrawal.convertedInrAmount),
             weekKey: withdrawal.weekKey,
             adminNote: withdrawal.adminNote,
+            payoutCorrectionNote: withdrawal.payoutCorrectionNote,
             createdAt: withdrawal.createdAt.toISOString(),
           }))}
         />

@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Clock3, Layers3, WalletCards } from "lucide-react";
+import { ArrowRight, Layers3, WalletCards } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatInr, formatUsdt } from "@/lib/money";
 import { cn } from "@/lib/cn";
-import { AdminActionForm } from "@/components/admin/AdminActionForm";
 import { BulkDepositAllocationForm } from "@/components/admin/BulkDepositAllocationForm";
 import { BrokerTransferForm } from "@/components/admin/BrokerTransferForm";
+import { DepositReviewActions } from "@/components/admin/ReviewDecisionButtons";
 import { adminConfirmDeposit, adminRejectDeposit, adminRequestDepositCorrection } from "../actions";
 
 export const metadata: Metadata = { title: "Admin · Deposits" };
@@ -68,9 +68,6 @@ function historyStatusLabel(status: string): string {
   if (status === "CONFIRMED") return "invested";
   return status.toLowerCase();
 }
-
-const inputClass =
-  "w-full rounded-lg border border-gold-600/20 bg-vault-900/80 px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:border-gold-500/50 focus:outline-none";
 
 type Props = {
   searchParams: Promise<{ method?: string | string[]; history?: string | string[] }>;
@@ -205,11 +202,8 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
             No {methodMeta.label.toLowerCase()} deposits need receipt verification.
           </p>
         ) : (
-          <div className="mt-5 space-y-4">
-            {pending.map((deposit) => (
-              <DepositReviewCard key={deposit.id} deposit={deposit} />
-            ))}
-          </div>
+          <DepositReviewTable deposits={pending} />
+
         )}
       </section>
 
@@ -426,10 +420,10 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
   );
 }
 
-function DepositReviewCard({
-  deposit,
+function DepositReviewTable({
+  deposits,
 }: {
-  deposit: {
+  deposits: Array<{
     id: string;
     method: DepositMethod;
     amount: Parameters<typeof formatUsdt>[0];
@@ -438,83 +432,76 @@ function DepositReviewCard({
     network: string | null;
     txHash: string | null;
     reference: string | null;
-    adminNote: string | null;
     createdAt: Date;
-    user: { email: string; fullName: string | null; kycStatus: string };
-  };
+    user: { email: string; fullName: string | null };
+  }>;
 }) {
-  const crypto = deposit.method === "CRYPTO";
-
   return (
-    <article className="rounded-xl border border-gold-600/15 bg-vault-950/35 p-4 sm:p-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="font-mono text-lg text-ink">{sourceAmountLabel(deposit)}</p>
-          <p className="mt-1 truncate text-xs text-ink-faint">
-            {deposit.user.fullName ?? "Unnamed investor"} · {deposit.user.email} · KYC {deposit.user.kycStatus.toLowerCase()} · {deposit.createdAt.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-          </p>
-          {crypto && deposit.txHash && (
-            <p className="mt-2 break-all font-mono text-xs text-ink-dim">Transaction hash: {deposit.txHash}</p>
-          )}
-          {deposit.method === "BANK" && deposit.reference && (
-            <p className="mt-2 break-all font-mono text-xs text-ink-dim">UTR: {deposit.reference}</p>
-          )}
-        </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-gold-500/35 bg-gold-600/8 px-2.5 py-1 text-xs text-gold-300">
-          <Clock3 className="size-3" aria-hidden /> Pending
-        </span>
-      </div>
+    <div className="mt-5 overflow-x-auto rounded-xl border border-gold-600/15 bg-white">
+      <table className="w-full min-w-[780px] border-collapse text-left">
+        <thead className="bg-vault-950/45 text-xs uppercase tracking-[0.12em] text-ink-dim">
+          <tr>
+            <th scope="col" className="px-4 py-3 font-medium">Investor</th>
+            <th scope="col" className="px-4 py-3 text-right font-medium">Amount</th>
+            <th scope="col" className="px-4 py-3 font-medium">Payment reference</th>
+            <th scope="col" className="px-4 py-3 font-medium">Submitted</th>
+            <th scope="col" className="px-4 py-3 text-right font-medium">Decision</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gold-600/10">
+          {deposits.map((deposit) => {
+            const reference =
+              deposit.method === "CRYPTO"
+                ? deposit.txHash
+                  ? `${deposit.network ?? "USDT"} · ${deposit.txHash}`
+                  : `${deposit.network ?? "USDT"} · No hash supplied`
+                : deposit.method === "BANK"
+                  ? deposit.reference
+                    ? `UTR ${deposit.reference}`
+                    : "UTR missing"
+                  : "Cash request";
 
-      <div className={`mt-5 grid gap-5 ${deposit.method === "CASH" ? "sm:grid-cols-2" : "sm:grid-cols-3"}`}>
-        <AdminActionForm
-          action={adminConfirmDeposit}
-          submitLabel="Confirm funds received"
-          pendingLabel="Confirming…"
-          confirmMessage={
-            crypto
-              ? "Confirm that the company wallet received this USDT? It will move directly into the weekend queue."
-              : "Confirm that the INR was received? It will wait for conversion to USDT before entering the queue."
-          }
-        >
-          <input type="hidden" name="id" value={deposit.id} />
-          <div className="flex min-h-10 items-start gap-2 rounded-lg border border-positive/20 bg-positive/5 px-3 py-2 text-xs leading-relaxed text-ink-dim">
-            <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-positive" aria-hidden />
-            {crypto
-              ? "Verified USDT enters the company-wallet queue immediately."
-              : "Verified INR waits for the conversion batch in step 2."}
-          </div>
-        </AdminActionForm>
-
-        <AdminActionForm action={adminRejectDeposit} submitLabel="Reject" variant="danger" pendingLabel="Rejecting…">
-          <input type="hidden" name="id" value={deposit.id} />
-          <label className="block text-xs uppercase tracking-[0.14em] text-ink-dim" htmlFor={`reject-${deposit.id}`}>
-            Reason shown to investor
-          </label>
-          <input id={`reject-${deposit.id}`} name="note" placeholder="e.g. no matching payment found" className={inputClass} />
-        </AdminActionForm>
-
-        {deposit.method !== "CASH" && (
-          <AdminActionForm
-            action={adminRequestDepositCorrection}
-            submitLabel="Request correction"
-            variant="ghost"
-            pendingLabel="Requesting…"
-            confirmMessage="Request corrected payment details from this investor?"
-          >
-            <input type="hidden" name="id" value={deposit.id} />
-            <label className="block text-xs uppercase tracking-[0.14em] text-ink-dim" htmlFor={`correction-${deposit.id}`}>
-              What needs correction?
-            </label>
-            <input
-              id={`correction-${deposit.id}`}
-              name="note"
-              placeholder={deposit.method === "BANK" ? "e.g. UTR does not match" : "e.g. transaction hash not found"}
-              required
-              className={inputClass}
-            />
-          </AdminActionForm>
-        )}
-      </div>
-    </article>
+            return (
+              <tr key={deposit.id} className="hover:bg-vault-950/25">
+                <td className="px-4 py-3">
+                  <p className="font-medium text-ink">
+                    {deposit.user.fullName ?? "Unnamed investor"}
+                  </p>
+                  <p className="mt-0.5 text-xs text-ink-dim">{deposit.user.email}</p>
+                </td>
+                <td className="whitespace-nowrap px-4 py-3 text-right font-mono text-sm text-ink">
+                  {sourceAmountLabel(deposit)}
+                </td>
+                <td className="max-w-64 px-4 py-3">
+                  <p className="truncate font-mono text-xs text-ink" title={reference}>
+                    {reference}
+                  </p>
+                </td>
+                <td className="whitespace-nowrap px-4 py-3 text-sm text-ink-dim">
+                  {deposit.createdAt.toLocaleString("en-IN", {
+                    day: "numeric",
+                    month: "short",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </td>
+                <td className="px-4 py-3">
+                  <DepositReviewActions
+                    id={deposit.id}
+                    method={deposit.method}
+                    approveAction={adminConfirmDeposit}
+                    correctionAction={adminRequestDepositCorrection}
+                    rejectAction={adminRejectDeposit}
+                  />
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      <p className="border-t border-gold-600/10 px-4 py-2 text-right text-xs text-ink-dim">
+        ✓ confirm · ⚠ request correction · ✕ reject
+      </p>
+    </div>
   );
 }

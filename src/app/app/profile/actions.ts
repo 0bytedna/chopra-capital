@@ -14,6 +14,7 @@ import {
   totpCodeSchema,
 } from "@/lib/validation";
 import { generateTotpSecret, totpEnrolmentQr, verifyTotp } from "@/lib/totp";
+import { stageRequiredBankPayoutCorrections } from "@/lib/payoutDetails";
 
 export type ProfileFormState = { error?: string; success?: string };
 
@@ -65,24 +66,74 @@ export async function updateBanking(
     return { error: parsed.error.issues[0]?.message ?? "Please check the form" };
   }
 
-  await prisma.bankingDetail.upsert({
-    where: { userId: user.id },
-    create: {
+  if (user.twoFactorEnabled) {
+    if (!user.twoFactorSecret) {
+      return { error: "Two-factor authentication is enabled but not configured correctly. Contact support." };
+    }
+    const code = totpCodeSchema.safeParse({ code: formData.get("code") });
+    if (!code.success) {
+      return { error: code.error.issues[0]?.message ?? "Enter the 6-digit authenticator code." };
+    }
+    if (!(await verifyTotp(code.data.code, user.twoFactorSecret))) {
+      return { error: "That authenticator code is incorrect or has expired." };
+    }
+  }
+
+  const heldPayouts = await prisma.withdrawal.count({
+    where: {
       userId: user.id,
-      accountNumber: parsed.data.accountNumber || null,
-      ifsc: parsed.data.ifsc || null,
-      upiId: parsed.data.upiId || null,
-      accountType: parsed.data.accountType,
-    },
-    update: {
-      accountNumber: parsed.data.accountNumber || null,
-      ifsc: parsed.data.ifsc || null,
-      upiId: parsed.data.upiId || null,
-      accountType: parsed.data.accountType,
+      method: "BANK",
+      status: { in: ["PAYOUT_DETAILS_REQUIRED", "PAYOUT_DETAILS_REVIEW"] },
     },
   });
+  if (
+    heldPayouts > 0 &&
+    (!parsed.data.accountNumber || !parsed.data.ifsc || !parsed.data.accountType)
+  ) {
+    return {
+      error:
+        "Enter a complete bank account number, IFSC, and account type to correct the held payout.",
+    };
+  }
+
+  const details = {
+    accountNumber: parsed.data.accountNumber || null,
+    ifsc: parsed.data.ifsc || null,
+    upiId: parsed.data.upiId || null,
+    accountType: parsed.data.accountType,
+  };
+  let submittedForReview = 0;
+  await prisma.$transaction(async (tx) => {
+    await tx.bankingDetail.upsert({
+      where: { userId: user.id },
+      create: { userId: user.id, ...details },
+      update: details,
+    });
+    if (details.accountNumber && details.ifsc && details.accountType) {
+      submittedForReview = await stageRequiredBankPayoutCorrections(tx, {
+        userId: user.id,
+        details: {
+          accountNumber: details.accountNumber,
+          ifsc: details.ifsc,
+          upiId: details.upiId,
+          accountType: details.accountType,
+        },
+        actorId: user.id,
+        actorRole: "USER",
+      });
+    }
+  });
   revalidatePath("/app/profile");
-  return { success: "Banking details saved." };
+  revalidatePath("/app/history");
+  revalidatePath("/app");
+  revalidatePath("/admin/withdrawals");
+  revalidatePath("/admin");
+  return {
+    success:
+      submittedForReview > 0
+        ? `Banking details saved and submitted for ${submittedForReview} held payout${submittedForReview === 1 ? "" : "s"}. An admin must approve the new destination before payment.`
+        : "Banking details saved.",
+  };
 }
 
 export async function updateCryptoWallet(

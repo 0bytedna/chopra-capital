@@ -163,8 +163,19 @@ function Visibility() {
   );
 }
 
-function Backtesting() {
-  const details = [["Broker Name","NewEra Capital"],["Server","NeweraCapitalMarkets-Live"],["MT5 ID","250129"],["Investor access","Available to verified investors"]];
+type LandingMt5Details = {
+  brokerName: string;
+  server: string;
+  accountId: string;
+};
+
+function Backtesting({ mt5 }: { mt5: LandingMt5Details }) {
+  const details = [
+    ["Broker Name", mt5.brokerName],
+    ["Server", mt5.server],
+    ["MT5 ID", mt5.accountId],
+    ["Investor access", "Read-only access available to verified investors"],
+  ];
   return (
     <section id="backtesting" className="scroll-mt-24 px-4 py-20 sm:px-6 sm:py-28">
       <div className="mx-auto max-w-7xl">
@@ -236,6 +247,6 @@ function FinalCta() {
   );
 }
 
-export function LandingSections() {
-  return <><About/><Process/><Operations/><Visibility/><Backtesting/><Terms/><Faq/><FinalCta/></>;
+export function LandingSections({ mt5 }: { mt5: LandingMt5Details }) {
+  return <><About/><Process/><Operations/><Visibility/><Backtesting mt5={mt5}/><Terms/><Faq/><FinalCta/></>;
 }

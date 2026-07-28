@@ -15,7 +15,24 @@ export const metadata: Metadata = { title: "Profile & security" };
 
 export default async function ProfilePage() {
   const user = await requireUser();
-  const banking = await prisma.bankingDetail.findUnique({ where: { userId: user.id } });
+  const [banking, payoutCorrections] = await Promise.all([
+    prisma.bankingDetail.findUnique({ where: { userId: user.id } }),
+    prisma.withdrawal.findMany({
+      where: {
+        userId: user.id,
+        method: "BANK",
+        status: { in: ["PAYOUT_DETAILS_REQUIRED", "PAYOUT_DETAILS_REVIEW"] },
+      },
+      select: { id: true, status: true, payoutCorrectionNote: true },
+      orderBy: { payoutCorrectionRequestedAt: "desc" },
+    }),
+  ]);
+  const correctionsRequired = payoutCorrections.filter(
+    (withdrawal) => withdrawal.status === "PAYOUT_DETAILS_REQUIRED",
+  );
+  const correctionsInReview = payoutCorrections.filter(
+    (withdrawal) => withdrawal.status === "PAYOUT_DETAILS_REVIEW",
+  );
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
@@ -61,13 +78,27 @@ export default async function ProfilePage() {
         </div>
       </section>
 
-      <section className="glass-card rounded-2xl p-5 sm:p-7">
+      <section id="banking-details" className="glass-card scroll-mt-6 rounded-2xl p-5 sm:p-7">
         <h2 className="font-serif text-xl text-ink">Banking details</h2>
         <p className="mt-1 text-xs text-ink-faint">
           Required only when you choose bank transfer for a withdrawal.
         </p>
+        {correctionsRequired.length > 0 && (
+          <Alert tone="warning" className="mt-4">
+            {correctionsRequired.length === 1 ? "A bank payout is" : `${correctionsRequired.length} bank payouts are`} on hold because the saved destination needs correction
+            {correctionsRequired[0]?.payoutCorrectionNote
+              ? `: ${correctionsRequired[0].payoutCorrectionNote}`
+              : "."} Update the details below and save them for admin review.
+          </Alert>
+        )}
+        {correctionsInReview.length > 0 && (
+          <Alert tone="warning" className="mt-4">
+            Your corrected bank details are awaiting admin approval. The affected payout remains blocked until approval.
+          </Alert>
+        )}
         <div className="mt-5">
           <BankingForm
+            twoFactorEnabled={user.twoFactorEnabled}
             initial={{
               accountNumber: banking?.accountNumber ?? "",
               ifsc: banking?.ifsc ?? "",
