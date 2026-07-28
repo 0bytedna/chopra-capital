@@ -64,6 +64,7 @@ model User {
   withdrawals                   Withdrawal[]
   tickets                       Ticket[]
   ticketMessages                TicketMessage[]
+  notifications                 AccountNotification[]
   kycDocuments                  KycDocument[]
   bankingDetail                 BankingDetail?
   internalTransfersSent         InternalTransfer[]       @relation("InternalTransferFrom")
@@ -75,6 +76,27 @@ model User {
   administeredProfitShareRuns   ProfitShareRun[]         @relation("ProfitShareAdmin")
   reversedProfitShareRuns       ProfitShareRun[]         @relation("ProfitShareReversalAdmin")
   tradingAccountEntries         TradingAccountEntry[]    @relation("TradingAccountEntryAdmin")
+}
+
+model AccountNotification {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind        String    @default("UPDATE")
+  title       String
+  message     String
+  href        String    @default("/app/notifications")
+  actionLabel String    @default("View details")
+  sourceType  String?
+  sourceId    String?
+  eventCode   String?
+  isRead      Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  readAt      DateTime?
+
+  @@index([userId, isRead, createdAt])
+  @@index([userId, createdAt])
+  @@index([sourceType, sourceId])
 }
 
 model KycDocument {

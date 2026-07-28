@@ -108,7 +108,7 @@ function NavLinks({
                     {href === "/app/notifications" && attentionCount > 0 && (
                       <span
                         className="inline-flex min-h-7 min-w-7 items-center justify-center rounded-full bg-amber-600 px-2 text-sm font-bold text-white shadow-sm"
-                        aria-label={`${attentionCount} items need attention`}
+                        aria-label={`${attentionCount} new notifications or action items`}
                       >
                         {attentionCount > 99 ? "99+" : attentionCount}
                       </span>
@@ -259,7 +259,7 @@ export function AppShell({
                 href="/app/notifications"
                 aria-label={
                   attentionCount > 0
-                    ? `Notifications: ${attentionCount} items need attention`
+                    ? `Notifications: ${attentionCount} new notifications or action items`
                     : "Notifications"
                 }
                 className={cn(

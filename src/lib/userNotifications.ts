@@ -13,12 +13,28 @@ export type UserNotification = {
   message: string;
   href: string;
   actionLabel: string;
+  isUnread?: boolean;
+  occurredAt?: Date;
+};
+
+export type UserJourneyStepState = "COMPLETE" | "CURRENT" | "UPCOMING";
+
+export type UserJourneyStep = {
+  id: "kyc" | "deposit" | "withdraw";
+  title: string;
+  message: string;
+  href: string;
+  actionLabel: string;
+  state: UserJourneyStepState;
 };
 
 export type UserNotificationCenter = {
+  journey: UserJourneyStep[];
   actionItems: UserNotification[];
   updates: UserNotification[];
   recommendations: UserNotification[];
+  urgentCount: number;
+  unreadCount: number;
   attentionCount: number;
 };
 
@@ -28,55 +44,92 @@ function isFilled(value: string | null | undefined): boolean {
 
 export const getUserNotificationCenter = cache(
   async (userId: string): Promise<UserNotificationCenter> => {
-    const [user, depositCorrections, withdrawalItems, answeredTickets] = await Promise.all([
-      prisma.user.findUnique({
-        where: { id: userId },
-        select: {
-          kycStatus: true,
-          kycNote: true,
-          twoFactorEnabled: true,
-          bankingDetail: {
-            select: {
-              accountNumber: true,
-              ifsc: true,
-              accountType: true,
-              usdtAddress: true,
-              usdtNetwork: true,
+    const [user, depositCorrections, withdrawalItems, accountNotifications, unreadCount] =
+      await Promise.all([
+        prisma.user.findUnique({
+          where: { id: userId },
+          select: {
+            kycStatus: true,
+            kycNote: true,
+            twoFactorEnabled: true,
+            wallet: { select: { units: true } },
+            deposits: {
+              where: { status: { notIn: ["REJECTED", "CANCELLED"] } },
+              select: { id: true },
+              take: 1,
+            },
+            withdrawals: {
+              where: { status: { notIn: ["REJECTED", "CANCELLED"] } },
+              select: { id: true },
+              take: 1,
+            },
+            bankingDetail: {
+              select: {
+                accountNumber: true,
+                ifsc: true,
+                accountType: true,
+                usdtAddress: true,
+                usdtNetwork: true,
+              },
             },
           },
-        },
-      }),
-      prisma.deposit.findMany({
-        where: { userId, status: "NEEDS_CORRECTION" },
-        select: { adminNote: true },
-        orderBy: { createdAt: "desc" },
-      }),
-      prisma.withdrawal.findMany({
-        where: {
-          userId,
-          status: { in: ["PAYOUT_DETAILS_REQUIRED", "PAYOUT_DETAILS_REVIEW"] },
-        },
-        select: { status: true, payoutCorrectionNote: true },
-        orderBy: { payoutCorrectionRequestedAt: "desc" },
-      }),
-      prisma.ticket.findMany({
-        where: { userId, status: "ANSWERED" },
-        select: { id: true, subject: true },
-        orderBy: { updatedAt: "desc" },
-      }),
-    ]);
+        }),
+        prisma.deposit.findMany({
+          where: { userId, status: "NEEDS_CORRECTION" },
+          select: { adminNote: true },
+          orderBy: { createdAt: "desc" },
+        }),
+        prisma.withdrawal.findMany({
+          where: { userId, status: "PAYOUT_DETAILS_REQUIRED" },
+          select: { payoutCorrectionNote: true },
+          orderBy: { payoutCorrectionRequestedAt: "desc" },
+        }),
+        prisma.accountNotification.findMany({
+          where: { userId },
+          select: {
+            id: true,
+            kind: true,
+            title: true,
+            message: true,
+            href: true,
+            actionLabel: true,
+            isRead: true,
+            createdAt: true,
+          },
+          orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+          take: 100,
+        }),
+        prisma.accountNotification.count({ where: { userId, isRead: false } }),
+      ]);
 
     if (!user) {
-      return { actionItems: [], updates: [], recommendations: [], attentionCount: 0 };
+      return {
+        journey: [],
+        actionItems: [],
+        updates: [],
+        recommendations: [],
+        urgentCount: 0,
+        unreadCount: 0,
+        attentionCount: 0,
+      };
     }
 
     const actionItems: UserNotification[] = [];
-    const updates: UserNotification[] = [];
+    const updates: UserNotification[] = accountNotifications.map((notification) => ({
+      id: `account-${notification.id}`,
+      kind: notification.kind === "ACTION" ? "ACTION" : "UPDATE",
+      title: notification.title,
+      message: notification.message,
+      href: notification.href,
+      actionLabel: notification.actionLabel,
+      isUnread: !notification.isRead,
+      occurredAt: notification.createdAt,
+    }));
     const recommendations: UserNotification[] = [];
-    let attentionCount = 0;
+    let urgentCount = 0;
 
     if (user.kycStatus === "NOT_SUBMITTED") {
-      attentionCount += 1;
+      urgentCount += 1;
       actionItems.push({
         id: "kyc-not-submitted",
         kind: "ACTION",
@@ -86,7 +139,7 @@ export const getUserNotificationCenter = cache(
         actionLabel: "Complete KYC",
       });
     } else if (user.kycStatus === "REJECTED") {
-      attentionCount += 1;
+      urgentCount += 1;
       actionItems.push({
         id: "kyc-rejected",
         kind: "ACTION",
@@ -97,44 +150,85 @@ export const getUserNotificationCenter = cache(
         href: "/app/profile#kyc-verification",
         actionLabel: "Correct KYC",
       });
-    } else if (user.kycStatus === "PENDING") {
-      updates.push({
-        id: "kyc-pending",
-        kind: "UPDATE",
-        title: "KYC is under review",
-        message: "Your documents have been submitted. We will update your status after review.",
-        href: "/app/profile#kyc-verification",
-        actionLabel: "View status",
-      });
     }
 
+    const kycApproved = user.kycStatus === "APPROVED";
+    const hasDeposit = user.deposits.length > 0;
+    const hasWithdrawal = user.withdrawals.length > 0;
+    const hasInvestedBalance = (user.wallet?.units.toNumber() ?? 0) > 0;
+
+    const journey: UserJourneyStep[] = [
+      {
+        id: "kyc",
+        title: "Complete KYC",
+        message: kycApproved
+          ? "Your identity verification is approved."
+          : user.kycStatus === "PENDING"
+            ? "Your documents are under review. We will notify you when a decision is made."
+            : user.kycStatus === "REJECTED"
+              ? "Correct the requested documents and resubmit them for approval."
+              : "Verify your identity to unlock deposits and withdrawals.",
+        href: "/app/profile#kyc-verification",
+        actionLabel: kycApproved
+          ? "View KYC"
+          : user.kycStatus === "PENDING"
+            ? "View status"
+            : user.kycStatus === "REJECTED"
+              ? "Correct KYC"
+              : "Complete KYC",
+        state: kycApproved ? "COMPLETE" : "CURRENT",
+      },
+      {
+        id: "deposit",
+        title: "Deposit funds",
+        message: hasDeposit
+          ? "Your first deposit has been submitted. Follow its progress in History."
+          : kycApproved
+            ? "KYC is approved. Choose crypto, bank transfer, or cash to add funds."
+            : "This step unlocks after KYC approval.",
+        href: hasDeposit ? "/app/history" : "/app/deposit",
+        actionLabel: hasDeposit ? "Track deposits" : "Deposit funds",
+        state: hasDeposit ? "COMPLETE" : kycApproved ? "CURRENT" : "UPCOMING",
+      },
+      {
+        id: "withdraw",
+        title: "Withdraw funds",
+        message: hasWithdrawal
+          ? "You have submitted a withdrawal and can follow its progress in History."
+          : hasInvestedBalance
+            ? "When needed, choose a payout method and submit a withdrawal request."
+            : "This step becomes available after funds are invested and a balance is available.",
+        href: hasWithdrawal ? "/app/history" : "/app/withdraw",
+        actionLabel: hasWithdrawal ? "Track withdrawals" : "View withdrawals",
+        state: hasWithdrawal
+          ? "COMPLETE"
+          : hasInvestedBalance
+            ? "CURRENT"
+            : "UPCOMING",
+      },
+    ];
+
     if (depositCorrections.length > 0) {
-      attentionCount += depositCorrections.length;
+      urgentCount += depositCorrections.length;
       const note = depositCorrections[0]?.adminNote?.trim();
       actionItems.push({
         id: "deposit-corrections",
         kind: "ACTION",
         title: `${depositCorrections.length} deposit request${depositCorrections.length === 1 ? "" : "s"} need correction`,
-        message: note || "The operations team needs corrected payment information before verification.",
+        message:
+          note || "The operations team needs corrected payment information before verification.",
         href: "/app/history",
         actionLabel: "Review deposits",
       });
     }
 
-    const payoutCorrections = withdrawalItems.filter(
-      (item) => item.status === "PAYOUT_DETAILS_REQUIRED",
-    );
-    const payoutReviews = withdrawalItems.filter(
-      (item) => item.status === "PAYOUT_DETAILS_REVIEW",
-    );
-
-    if (payoutCorrections.length > 0) {
-      attentionCount += payoutCorrections.length;
-      const note = payoutCorrections[0]?.payoutCorrectionNote?.trim();
+    if (withdrawalItems.length > 0) {
+      urgentCount += withdrawalItems.length;
+      const note = withdrawalItems[0]?.payoutCorrectionNote?.trim();
       actionItems.push({
         id: "payout-detail-corrections",
         kind: "ACTION",
-        title: `${payoutCorrections.length} withdrawal payout${payoutCorrections.length === 1 ? "" : "s"} on hold`,
+        title: `${withdrawalItems.length} withdrawal payout${withdrawalItems.length === 1 ? "" : "s"} on hold`,
         message:
           note ||
           "Correct your bank details so the operations team can continue processing the payout.",
@@ -143,34 +237,13 @@ export const getUserNotificationCenter = cache(
       });
     }
 
-    if (payoutReviews.length > 0) {
-      updates.push({
-        id: "payout-details-review",
-        kind: "UPDATE",
-        title: "Corrected payout details are under review",
-        message: `${payoutReviews.length} withdrawal payout${payoutReviews.length === 1 ? " is" : "s are"} safely on hold until an admin approves the new destination.`,
-        href: "/app/history",
-        actionLabel: "View withdrawals",
-      });
-    }
-
-    for (const ticket of answeredTickets) {
-      attentionCount += 1;
-      actionItems.push({
-        id: `ticket-${ticket.id}`,
-        kind: "ACTION",
-        title: `Support replied: ${ticket.subject}`,
-        message: "A support reply is waiting for you.",
-        href: `/app/tickets/${ticket.id}`,
-        actionLabel: "Read reply",
-      });
-    }
-
     const banking = user.bankingDetail;
     if (
-      !isFilled(banking?.accountNumber) ||
-      !isFilled(banking?.ifsc) ||
-      !isFilled(banking?.accountType)
+      kycApproved &&
+      hasInvestedBalance &&
+      (!isFilled(banking?.accountNumber) ||
+        !isFilled(banking?.ifsc) ||
+        !isFilled(banking?.accountType))
     ) {
       recommendations.push({
         id: "bank-details-missing",
@@ -183,9 +256,11 @@ export const getUserNotificationCenter = cache(
     }
 
     if (
-      !isFilled(banking?.usdtAddress) ||
-      !banking?.usdtNetwork ||
-      !(NETWORKS as readonly string[]).includes(banking.usdtNetwork)
+      kycApproved &&
+      hasInvestedBalance &&
+      (!isFilled(banking?.usdtAddress) ||
+        !banking?.usdtNetwork ||
+        !(NETWORKS as readonly string[]).includes(banking.usdtNetwork))
     ) {
       recommendations.push({
         id: "crypto-wallet-missing",
@@ -208,6 +283,14 @@ export const getUserNotificationCenter = cache(
       });
     }
 
-    return { actionItems, updates, recommendations, attentionCount };
+    return {
+      journey,
+      actionItems,
+      updates,
+      recommendations,
+      urgentCount,
+      unreadCount,
+      attentionCount: urgentCount + unreadCount,
+    };
   },
 );
