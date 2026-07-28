@@ -224,6 +224,19 @@ export async function getPortfolioSeries(
 
   const s = freshState();
   let cursor = 0;
+  while (cursor < entries.length && entries[cursor].createdAt < startDate) {
+    applyEntry(s, entries[cursor]);
+    cursor++;
+  }
+
+  // Use the account state immediately before the selected range as the P/L
+  // baseline. Subtracting the first end-of-day point hid every same-day gain.
+  const baselineNav = navOn(dayKey(addDays(startDate, -1)));
+  const baselineProfit = s.queued
+    .add(s.units.mul(baselineNav))
+    .add(s.netWithdrawals)
+    .sub(s.totalDeposits)
+    .sub(s.netAdjustments);
 
   const series: SeriesPoint[] = [];
   for (let i = 0; i <= totalDays; i += step) {
@@ -239,7 +252,7 @@ export async function getPortfolioSeries(
       date: day,
       value: toNumber(value),
       invested: toNumber(s.queued.add(s.basis)),
-      profit: toNumber(value.add(s.netWithdrawals).sub(s.totalDeposits).sub(s.netAdjustments)),
+      profit: toNumber(value.add(s.netWithdrawals).sub(s.totalDeposits).sub(s.netAdjustments).sub(baselineProfit)),
     });
   }
   // Make sure the last point is the end day even when stepping.
@@ -254,18 +267,14 @@ export async function getPortfolioSeries(
       date: end,
       value: toNumber(value),
       invested: toNumber(s.queued.add(s.basis)),
-      profit: toNumber(value.add(s.netWithdrawals).sub(s.totalDeposits).sub(s.netAdjustments)),
+      profit: toNumber(value.add(s.netWithdrawals).sub(s.totalDeposits).sub(s.netAdjustments).sub(baselineProfit)),
     });
-  }
-
-  const startingProfit = series[0]?.profit ?? 0;
-  for (const point of series) {
-    point.profit -= startingProfit;
   }
 
   const last = series[series.length - 1];
   // Profit over the window = growth in value not explained by net contributions.
-  const profitInRange = series.length > 1 ? last.profit : 0;
+  // A one-day range can still contain real trading P/L.
+  const profitInRange = last?.profit ?? 0;
 
   return { series, profitInRange, firstActivityDate: firstActivity };
 }
