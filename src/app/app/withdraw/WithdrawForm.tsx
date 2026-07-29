@@ -15,7 +15,6 @@ export type PayoutDetails = {
 };
 
 type Props = {
-  open: boolean;
   available: number;
   referenceRate: number;
   payout: PayoutDetails;
@@ -225,7 +224,6 @@ function WithdrawalDetailsForm({ method, available, referenceRate, twoFactorEnab
 }
 
 export function WithdrawForm({
-  open,
   available,
   referenceRate,
   payout,
@@ -245,16 +243,7 @@ export function WithdrawForm({
 
   return (
     <div className="space-y-6">
-      {(!open || restriction) && (
-        <div className="space-y-3">
-          {!open && (
-            <Alert tone="warning">
-              Withdrawal requests are open on <strong>Sundays from 12:00 AM to 12:00 PM IST</strong>. Approved withdrawals are processed on Monday. You can still select a method and submit to see the schedule reminder.
-            </Alert>
-          )}
-          {restriction && <Alert tone="error">{restriction.message}</Alert>}
-        </div>
-      )}
+      {restriction && <Alert tone="error">{restriction.message}</Alert>}
       <Step n={1} title="Choose a withdrawal method">
         <SelectField
           label="Withdrawal method"

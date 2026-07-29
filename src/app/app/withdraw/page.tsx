@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { CalendarClock } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { withdrawalsOpenNow } from "@/lib/config";
 import { getPortfolioMetrics } from "@/lib/portfolio";
 import { getWithdrawalReferenceRate } from "@/lib/withdrawal-rate";
 import { toNumber, formatUsdt } from "@/lib/money";
@@ -53,8 +52,8 @@ export default async function WithdrawPage() {
       <section className="glass-card flex flex-col gap-4 rounded-xl px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
         <div>
           <p className="text-xs uppercase tracking-[0.14em] text-ink-dim">Available</p>
-          <p className="mt-1 font-serif text-2xl text-ink">
-            {formatUsdt(available)} <span className="text-sm text-ink-dim">USD</span>
+          <p className="mt-1 font-sans text-2xl font-semibold tracking-tight text-ink tabular-nums">
+            {formatUsdt(available)} <span className="text-sm font-medium text-ink-dim">USD</span>
           </p>
         </div>
         <div className="flex items-start gap-2 text-sm text-ink-dim sm:text-right">
@@ -68,7 +67,6 @@ export default async function WithdrawPage() {
 
       <section className="glass-card rounded-2xl p-4 sm:p-7">
         <WithdrawForm
-          open={withdrawalsOpenNow()}
           available={available}
           referenceRate={toNumber(inrRate)}
           payout={payout}

@@ -26,21 +26,9 @@ export default async function NotificationsPage() {
             </span>
           )}
         </div>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-dim">
-          Your KYC, deposit, and withdrawal journey appears here alongside requests that need
-          attention, transaction updates, support replies, and security recommendations.
-        </p>
       </header>
 
-      <section aria-labelledby="account-journey-title" className="space-y-3">
-        <div>
-          <h2 id="account-journey-title" className="font-serif text-2xl text-ink">
-            Your account journey
-          </h2>
-          <p className="mt-1 text-sm leading-6 text-ink-dim">
-            Complete each step in order. Your current step is highlighted automatically.
-          </p>
-        </div>
+      <section aria-label="Your account journey">
         <AccountJourney steps={center.journey} />
       </section>
 
@@ -84,10 +72,11 @@ export default async function NotificationsPage() {
               </form>
             )}
           </div>
-          <p className="text-sm leading-6 text-ink-dim">
-            Important changes to your account are stored here, newest first.
-          </p>
-          <NotificationList items={center.updates} openNotification={markNotificationReadAndOpen} />
+          <NotificationList
+            items={center.updates}
+            openNotification={markNotificationReadAndOpen}
+            compact
+          />
         </section>
       )}
 

@@ -58,32 +58,31 @@ const journeyStyle = {
 
 export function AccountJourney({ steps }: { steps: UserJourneyStep[] }) {
   return (
-    <ol className="grid gap-3 lg:grid-cols-3">
+    <ol className="grid snap-x auto-cols-[minmax(15rem,78vw)] grid-flow-col gap-3 overflow-x-auto pb-2 sm:auto-cols-[18rem] lg:grid-flow-row lg:grid-cols-3 lg:overflow-visible lg:pb-0">
       {steps.map((step, index) => {
         const style = journeyStyle[step.state];
 
         return (
-          <li key={step.id} className={`flex h-full flex-col rounded-2xl border p-5 ${style.card}`}>
+          <li key={step.id} className={`flex h-full snap-start flex-col rounded-xl border p-4 ${style.card}`}>
             <div className="flex items-center justify-between gap-3">
-              <span className={`flex size-10 items-center justify-center rounded-full text-base font-bold ${style.number}`}>
+              <span className={`flex size-8 items-center justify-center rounded-full text-sm font-bold ${style.number}`}>
                 {step.state === "COMPLETE" ? (
-                  <CircleCheck className="size-5" aria-label="Completed" />
+                  <CircleCheck className="size-4" aria-label="Completed" />
                 ) : (
                   index + 1
                 )}
               </span>
-              <span className={`rounded-full px-3 py-1 text-xs font-semibold ${style.badge}`}>
+              <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${style.badge}`}>
                 {style.label}
               </span>
             </div>
-            <h3 className="mt-4 font-serif text-xl text-ink">{step.title}</h3>
-            <p className="mt-2 flex-1 text-sm leading-6 text-ink-dim">{step.message}</p>
+            <h3 className="mt-3 font-serif text-lg text-ink">{step.title}</h3>
             {step.state === "UPCOMING" ? (
-              <span className="mt-4 text-sm font-semibold text-slate-500">Available later</span>
+              <span className="mt-3 text-sm font-semibold text-slate-500">Available later</span>
             ) : (
               <Link
                 href={step.href}
-                className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:text-blue-900"
+                className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:text-blue-900"
               >
                 {step.actionLabel}
                 <ArrowRight className="size-4" aria-hidden />
@@ -106,9 +105,11 @@ function formatNotificationTime(value: Date): string {
 export function NotificationList({
   items,
   openNotification,
+  compact = false,
 }: {
   items: UserNotification[];
   openNotification?: (formData: FormData) => Promise<void>;
+  compact?: boolean;
 }) {
   return (
     <div className="space-y-3">
@@ -127,11 +128,11 @@ export function NotificationList({
           : "border-blue-300 bg-white text-blue-700 group-hover:border-blue-500 group-hover:bg-blue-50";
 
         const information = (
-          <div className="flex min-w-0 flex-1 items-start gap-3">
+          <div className={`flex min-w-0 flex-1 gap-3 ${compact ? "items-center" : "items-start"}`}>
             <span
-              className={`flex size-10 shrink-0 items-center justify-center rounded-full ${iconClass}`}
+              className={`flex shrink-0 items-center justify-center rounded-full ${compact ? "size-8" : "size-10"} ${iconClass}`}
             >
-              <Icon className="size-5" aria-hidden />
+              <Icon className={compact ? "size-4" : "size-5"} aria-hidden />
             </span>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
@@ -150,7 +151,7 @@ export function NotificationList({
                   </time>
                 )}
               </div>
-              <p className="mt-1 text-sm leading-6 text-ink-dim">{item.message}</p>
+              {!compact && <p className="mt-1 text-sm leading-6 text-ink-dim">{item.message}</p>}
             </div>
           </div>
         );
@@ -169,10 +170,10 @@ export function NotificationList({
                 aria-label={`${item.actionLabel}: ${item.title}`}
                 className="absolute inset-0 z-10 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
               />
-              <div className="pointer-events-none relative z-20 flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
+              <div className={`pointer-events-none relative z-20 flex gap-3 ${compact ? "items-center p-3" : "flex-col p-4 sm:flex-row sm:items-center"}`}>
                 {information}
                 <span
-                  className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${actionClass}`}
+                  className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-full border font-semibold transition-colors ${compact ? "px-3 py-2 text-xs" : "px-4 py-2 text-sm"} ${actionClass}`}
                 >
                   {item.actionLabel}
                   <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
@@ -185,12 +186,12 @@ export function NotificationList({
         return (
           <article
             key={item.id}
-            className={`flex flex-col gap-4 rounded-xl border p-4 sm:flex-row sm:items-center ${surfaceClass} ${item.isUnread ? "ring-2 ring-blue-200 shadow-sm" : ""}`}
+            className={`flex rounded-xl border ${compact ? "items-center gap-3 p-3" : "flex-col gap-4 p-4 sm:flex-row sm:items-center"} ${surfaceClass} ${item.isUnread ? "ring-2 ring-blue-200 shadow-sm" : ""}`}
           >
             {information}
             <Link
               href={item.href}
-              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-blue-300 bg-white px-4 py-2 text-sm font-semibold text-blue-700 transition-colors hover:border-blue-500 hover:bg-blue-50"
+              className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-blue-300 bg-white font-semibold text-blue-700 transition-colors hover:border-blue-500 hover:bg-blue-50 ${compact ? "px-3 py-2 text-xs" : "px-4 py-2 text-sm"}`}
             >
               {item.actionLabel}
               <ArrowRight className="size-4" aria-hidden />
