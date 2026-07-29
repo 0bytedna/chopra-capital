@@ -5,7 +5,7 @@ import { getWithdrawalReferenceRate } from "@/lib/withdrawal-rate";
 import { formatInr, formatUsdt } from "@/lib/money";
 import { HistoryTabs } from "./HistoryTabs";
 
-export const metadata: Metadata = { title: "History" };
+export const metadata: Metadata = { title: "Transactions" };
 
 export default async function HistoryPage() {
   const user = await requireUser();
@@ -28,7 +28,7 @@ export default async function HistoryPage() {
       <header>
         <p className="eyebrow">Account activity</p>
         <h1 className="mt-2 font-serif text-2xl text-ink sm:text-3xl">
-          Transaction <em className="gold-text italic">history</em>
+          Account <em className="gold-text italic">transactions</em>
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-dim">
           Review, edit, or cancel eligible deposit and withdrawal requests from one place.

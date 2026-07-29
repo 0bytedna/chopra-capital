@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { ReplyForm } from "../TicketForms";
+import { ReopenTicketForm, ReplyForm } from "../TicketForms";
 import { cn } from "@/lib/cn";
 import { TicketAttachments } from "@/components/tickets/TicketAttachments";
 
@@ -66,13 +66,10 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
 
       <section className="glass-card rounded-2xl p-5 sm:p-6">
         {ticket.status === "CLOSED" ? (
-          <p className="text-sm text-ink-faint">
-            This ticket is closed. If you still need help,{" "}
-            <Link href="/app/tickets" className="text-gold-400 hover:text-gold-300">
-              open a new ticket
-            </Link>
-            .
-          </p>
+          <div className="space-y-4">
+            <p className="text-sm text-ink-faint">This ticket is closed.</p>
+            <ReopenTicketForm ticketId={ticket.id} />
+          </div>
         ) : (
           <ReplyForm ticketId={ticket.id} />
         )}

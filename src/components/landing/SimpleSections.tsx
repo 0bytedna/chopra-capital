@@ -22,6 +22,7 @@ import {
   Zap,
 } from "lucide-react";
 import { Reveal } from "@/components/ui/Reveal";
+import { CopyButton } from "@/components/ui/CopyButton";
 import { cn } from "@/lib/cn";
 
 function SectionHeading({
@@ -374,7 +375,7 @@ function InvestorExperience() {
                 [CircleDollarSign, "Balance", "Current account value"],
                 [Clock3, "In queue", "Waiting to be invested"],
                 [LineChart, "Performance", "Profit and balance charts"],
-                [Landmark, "History", "Deposits and withdrawals"],
+                [Landmark, "Transactions", "Deposits and withdrawals"],
               ].map(([Icon, title, copy]) => {
                 const ItemIcon = Icon as typeof CircleDollarSign;
                 return (
@@ -458,7 +459,14 @@ function LiveHistory({ mt5 }: { mt5: LandingMt5Details }) {
                   <dt className="text-xs font-medium uppercase tracking-[.14em] text-ink-dim">
                     {label}
                   </dt>
-                  <dd className="mt-2 break-all font-mono text-sm text-ink">{value}</dd>
+                  <dd className="mt-2 flex items-start gap-2">
+                    <span className="min-w-0 flex-1 break-all font-mono text-sm text-ink">{value}</span>
+                    <CopyButton
+                      value={value}
+                      label={`Copy ${label}`}
+                      className="size-8"
+                    />
+                  </dd>
                 </div>
               ))}
             </dl>

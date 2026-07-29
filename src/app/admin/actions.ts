@@ -810,3 +810,43 @@ export async function adminCloseTicket(_prev: AdminFormState, formData: FormData
   revalidatePath("/app", "layout");
   return { success: "Ticket closed." };
 }
+
+export async function adminReopenTicket(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  const admin = await requireAdmin();
+  const ticketId = String(formData.get("ticketId") ?? "");
+  if (!ticketId) return { error: "Ticket not found." };
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const updated = await tx.ticket.updateMany({
+        where: { id: ticketId, status: "CLOSED" },
+        data: { status: "OPEN" },
+      });
+      if (updated.count !== 1) {
+        throw new Error("This ticket is not closed or no longer exists.");
+      }
+
+      await tx.ticketMessage.create({
+        data: {
+          id: randomUUID(),
+          ticketId,
+          authorId: admin.id,
+          body: "Ticket reopened by staff.",
+          isStaff: true,
+        },
+      });
+    });
+  } catch (error) {
+    return fail(error);
+  }
+
+  revalidatePath(`/admin/tickets/${ticketId}`);
+  revalidatePath("/admin/tickets");
+  revalidatePath("/admin");
+  revalidatePath(`/app/tickets/${ticketId}`);
+  revalidatePath("/app/tickets");
+  return { success: "Ticket reopened." };
+}

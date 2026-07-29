@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { AdminActionForm } from "@/components/admin/AdminActionForm";
-import { adminReplyTicket, adminCloseTicket } from "../../actions";
+import { adminCloseTicket, adminReopenTicket, adminReplyTicket } from "../../actions";
 import { cn } from "@/lib/cn";
 import { AttachmentInput } from "@/components/tickets/AttachmentInput";
 import { TicketAttachments } from "@/components/tickets/TicketAttachments";
@@ -57,7 +57,18 @@ export default async function AdminTicketDetailPage({ params }: { params: Promis
         ))}
       </section>
 
-      {ticket.status !== "CLOSED" && (
+      {ticket.status === "CLOSED" ? (
+        <section className="glass-card space-y-4 rounded-2xl p-5 sm:p-6">
+          <p className="text-sm text-ink-faint">This ticket is closed.</p>
+          <AdminActionForm
+            action={adminReopenTicket}
+            submitLabel="Reopen ticket"
+            pendingLabel="Reopening..."
+          >
+            <input type="hidden" name="ticketId" value={ticket.id} />
+          </AdminActionForm>
+        </section>
+      ) : (
         <section className="glass-card space-y-6 rounded-2xl p-5 sm:p-6">
           <AdminActionForm
             action={adminReplyTicket}

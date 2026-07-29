@@ -121,7 +121,7 @@ export function NotificationList({
   compact?: boolean;
 }) {
   return (
-    <div className="space-y-3">
+    <div className={compact ? "space-y-2" : "space-y-3"}>
       {items.map((item) => {
         const style = notificationStyle[item.kind];
         const Icon = style.icon;
@@ -139,9 +139,9 @@ export function NotificationList({
         const information = (
           <div className={compact ? "contents" : "flex min-w-0 flex-1 items-start gap-3"}>
             <span
-              className={`flex shrink-0 items-center justify-center rounded-full ${compact ? "size-8" : "size-10"} ${iconClass}`}
+              className={`flex shrink-0 items-center justify-center rounded-full ${compact ? "size-7" : "size-10"} ${iconClass}`}
             >
-              <Icon className={compact ? "size-4" : "size-5"} aria-hidden />
+              <Icon className={compact ? "size-3.5" : "size-5"} aria-hidden />
             </span>
             <div className="min-w-0">
               <div className={compact ? "" : "flex flex-wrap items-center gap-2"}>
@@ -185,15 +185,15 @@ export function NotificationList({
               />
               <div
                 className={compact
-                  ? "pointer-events-none relative z-20 grid min-h-28 grid-cols-[2rem_minmax(0,1fr)_5rem] items-center gap-3 p-3 sm:grid-cols-[2rem_minmax(0,1fr)_7rem]"
+                  ? "pointer-events-none relative z-20 grid min-h-20 grid-cols-[1.75rem_minmax(0,1fr)_4rem] items-center gap-2.5 p-2.5 sm:grid-cols-[1.75rem_minmax(0,1fr)_6rem]"
                   : "pointer-events-none relative z-20 flex flex-col gap-4 p-4 sm:flex-row sm:items-center"}
               >
                 {information}
                 <span
-                  className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-full border font-semibold transition-colors ${compact ? "w-20 px-2 py-2 text-xs sm:w-28 sm:text-sm" : "px-4 py-2 text-sm"} ${actionClass}`}
+                  className={`inline-flex shrink-0 items-center justify-center rounded-full border font-semibold transition-colors ${compact ? "w-16 gap-1.5 px-2 py-1.5 text-xs sm:w-24" : "gap-2 px-4 py-2 text-sm"} ${actionClass}`}
                 >
                   {compact ? "View" : item.actionLabel}
-                  <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
+                  <ArrowRight className={`${compact ? "size-3.5" : "size-4"} transition-transform group-hover:translate-x-0.5`} aria-hidden />
                 </span>
               </div>
             </form>
@@ -203,15 +203,15 @@ export function NotificationList({
         return (
           <article
             key={item.id}
-            className={`rounded-xl border ${compact ? "grid min-h-28 grid-cols-[2rem_minmax(0,1fr)_5rem] items-center gap-3 p-3 sm:grid-cols-[2rem_minmax(0,1fr)_7rem]" : "flex flex-col gap-4 p-4 sm:flex-row sm:items-center"} ${surfaceClass} ${item.isUnread ? "ring-2 ring-blue-200 shadow-sm" : ""}`}
+            className={`rounded-xl border ${compact ? "grid min-h-20 grid-cols-[1.75rem_minmax(0,1fr)_4rem] items-center gap-2.5 p-2.5 sm:grid-cols-[1.75rem_minmax(0,1fr)_6rem]" : "flex flex-col gap-4 p-4 sm:flex-row sm:items-center"} ${surfaceClass} ${item.isUnread ? "ring-2 ring-blue-200 shadow-sm" : ""}`}
           >
             {information}
             <Link
               href={item.href}
-              className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-blue-300 bg-white font-semibold text-blue-700 transition-colors hover:border-blue-500 hover:bg-blue-50 ${compact ? "w-20 px-2 py-2 text-xs sm:w-28 sm:text-sm" : "px-4 py-2 text-sm"}`}
+              className={`inline-flex shrink-0 items-center justify-center rounded-full border border-blue-300 bg-white font-semibold text-blue-700 transition-colors hover:border-blue-500 hover:bg-blue-50 ${compact ? "w-16 gap-1.5 px-2 py-1.5 text-xs sm:w-24" : "gap-2 px-4 py-2 text-sm"}`}
             >
               {compact ? "View" : item.actionLabel}
-              <ArrowRight className="size-4" aria-hidden />
+              <ArrowRight className={compact ? "size-3.5" : "size-4"} aria-hidden />
             </Link>
           </article>
         );
@@ -357,16 +357,11 @@ export function AttentionPanel({ center }: { center: UserNotificationCenter }) {
 }
 export function AllCaughtUp() {
   return (
-    <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-        <CircleCheck className="size-5" aria-hidden />
+    <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+      <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+        <CircleCheck className="size-4" aria-hidden />
       </span>
-      <div>
-        <h2 className="font-semibold text-emerald-950">You&apos;re all caught up</h2>
-        <p className="mt-1 text-sm leading-6 text-emerald-900">
-          There are no account issues that require your attention.
-        </p>
-      </div>
+      <h2 className="text-sm font-semibold text-emerald-950">You&apos;re all caught up</h2>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useRef, useEffect } from "react";
-import { createTicket, replyToTicket, type TicketFormState } from "./actions";
+import { createTicket, reopenTicket, replyToTicket, type TicketFormState } from "./actions";
 import { Field, TextareaField } from "@/components/ui/Field";
 import { Alert } from "@/components/ui/Alert";
 import { SubmitButton } from "@/components/ui/SubmitButton";
@@ -38,6 +38,20 @@ export function ReplyForm({ ticketId }: { ticketId: string }) {
       <AttachmentInput />
       <SubmitButton size="sm" pendingLabel="Sending…">
         Send reply
+      </SubmitButton>
+    </form>
+  );
+}
+
+export function ReopenTicketForm({ ticketId }: { ticketId: string }) {
+  const [state, action] = useActionState<TicketFormState, FormData>(reopenTicket, {});
+
+  return (
+    <form action={action} className="space-y-3">
+      {state.error && <Alert tone="error">{state.error}</Alert>}
+      <input type="hidden" name="ticketId" value={ticketId} />
+      <SubmitButton size="sm" pendingLabel="Reopening...">
+        Reopen ticket
       </SubmitButton>
     </form>
   );

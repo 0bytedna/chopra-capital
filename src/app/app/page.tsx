@@ -6,6 +6,7 @@ import { getUserNotificationCenter } from "@/lib/userNotifications";
 import { AccountMetricCards } from "@/components/app/AccountMetricCards";
 import { PortfolioChart } from "@/components/app/PortfolioChart";
 import { AttentionPanel } from "@/components/app/UserNotifications";
+import { CopyButton } from "@/components/ui/CopyButton";
 import { mt5InvestorAccount } from "@/lib/mt5";
 
 export const metadata: Metadata = { title: "Dashboard" };
@@ -64,7 +65,14 @@ export default async function DashboardPage() {
               } ${index % 2 === 0 ? "sm:border-r sm:border-gold-600/10" : ""}`}
             >
               <dt className="text-xs uppercase tracking-[.15em] text-ink-faint">{label}</dt>
-              <dd className="mt-1 break-all font-mono text-sm text-ink">{value}</dd>
+              <dd className="mt-1 flex items-start gap-2">
+                <span className="min-w-0 flex-1 break-all font-mono text-sm text-ink">{value}</span>
+                <CopyButton
+                  value={value}
+                  label={`Copy ${label}`}
+                  className="size-8"
+                />
+              </dd>
             </div>
           ))}
         </dl>

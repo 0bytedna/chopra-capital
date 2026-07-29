@@ -56,9 +56,9 @@ export default async function WithdrawPage() {
             {formatUsdt(available)} <span className="text-sm font-medium text-ink-dim">USD</span>
           </p>
         </div>
-        <div className="flex items-start gap-2 text-sm text-ink-dim sm:text-right">
+        <div className="flex items-start gap-2 text-xs text-ink-dim sm:text-right sm:text-sm">
           <CalendarClock className="mt-0.5 size-4 shrink-0 text-gold-500" aria-hidden />
-          <p>
+          <p className="whitespace-nowrap leading-5">
             Requests: <strong className="text-ink">Sunday, 12:00 AM–12:00 PM IST</strong>
             <br />Processed: <strong className="text-ink">Monday</strong>
           </p>

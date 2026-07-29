@@ -45,7 +45,7 @@ const groups = [
     items: [
       { href: "/app/deposit", label: "Deposit", Icon: ArrowDownToLine },
       { href: "/app/withdraw", label: "Withdraw", Icon: ArrowUpFromLine },
-      { href: "/app/history", label: "History", Icon: History },
+      { href: "/app/history", label: "Transactions", Icon: History },
     ],
   },
   {

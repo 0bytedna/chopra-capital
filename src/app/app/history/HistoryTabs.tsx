@@ -28,7 +28,7 @@ export function HistoryTabs({
       <div
         className="grid gap-2 rounded-xl border border-gold-600/15 bg-vault-900/50 p-1.5 sm:grid-cols-2"
         role="tablist"
-        aria-label="Transaction history type"
+        aria-label="Transaction type"
       >
         <button
           type="button"
