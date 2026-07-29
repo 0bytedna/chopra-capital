@@ -27,7 +27,7 @@ export default async function HistoryPage() {
     <div className="mx-auto max-w-4xl space-y-8">
       <header>
         <p className="eyebrow">Account activity</p>
-        <h1 className="mt-2 font-serif text-3xl text-ink">
+        <h1 className="mt-2 font-serif text-2xl text-ink sm:text-3xl">
           Transaction <em className="gold-text italic">history</em>
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-dim">
@@ -36,9 +36,10 @@ export default async function HistoryPage() {
         </p>
       </header>
 
-      <section className="glass-card rounded-2xl p-5 sm:p-7">
+      <section className="glass-card rounded-2xl p-4 sm:p-7">
         <HistoryTabs
           twoFactorEnabled={user.twoFactorEnabled}
+          withdrawalMethods={{ bank: user.bankTransferEnabled, cash: user.cashEnabled }}
           deposits={deposits.map((deposit) => ({
             id: deposit.id,
             method: deposit.method,

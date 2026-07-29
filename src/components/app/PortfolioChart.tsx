@@ -192,7 +192,7 @@ function GraphCard({
     : "text-ink";
 
   return (
-    <article className="glass-card min-w-0 rounded-2xl p-5 sm:p-6">
+    <article className="glass-card min-w-0 rounded-2xl p-4 sm:p-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="eyebrow">{eyebrow}</p>

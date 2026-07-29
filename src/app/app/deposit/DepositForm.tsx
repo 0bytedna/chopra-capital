@@ -4,10 +4,9 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { submitDeposit, type DepositFormState } from "./actions";
 import { CopyButton } from "@/components/ui/CopyButton";
-import { Field } from "@/components/ui/Field";
+import { Field, SelectField } from "@/components/ui/Field";
 import { Alert } from "@/components/ui/Alert";
 import { SubmitButton } from "@/components/ui/SubmitButton";
-import { cn } from "@/lib/cn";
 import type { FinancialRestriction } from "@/lib/financialEligibility";
 
 type Network = "TRC20" | "ERC20" | "BEP20";
@@ -31,27 +30,27 @@ const networkMeta: Record<Network, { chain: string; note: string }> = {
 
 function Step({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
   return (
-    <li className="relative pl-12">
-      <span
-        aria-hidden
-        className="absolute left-0 top-0 flex size-8 items-center justify-center rounded-full border border-gold-500/40 bg-gold-600/10 font-serif text-sm text-gold-400"
-      >
-        {n}
-      </span>
-      <h2 className="pt-1 font-serif text-lg text-ink">{title}</h2>
-      <div className="mt-3">{children}</div>
+    <li>
+      <div className="flex items-center gap-3">
+        <span
+          aria-hidden
+          className="flex size-8 shrink-0 items-center justify-center rounded-full border border-gold-500/40 bg-gold-600/10 font-serif text-sm text-gold-400"
+        >
+          {n}
+        </span>
+        <h2 className="min-w-0 font-serif text-base leading-snug text-ink sm:text-lg">{title}</h2>
+      </div>
+      <div className="mt-3 sm:pl-11">{children}</div>
     </li>
   );
 }
 
 function BankRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col items-start gap-1.5 py-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_2.25rem] items-center gap-3 py-2 sm:grid-cols-[7rem_minmax(0,1fr)_2.25rem]">
       <span className="text-xs uppercase tracking-[0.14em] text-ink-faint">{label}</span>
-      <span className="flex min-w-0 max-w-full items-center gap-2">
-        <span className="truncate font-mono text-sm text-ink">{value}</span>
-        {value && <CopyButton value={value} label={`Copy ${label}`} className="shrink-0" />}
-      </span>
+      <span className="min-w-0 break-all font-mono text-sm text-ink max-sm:col-span-2 max-sm:col-start-1 max-sm:row-start-2">{value}</span>
+      {value && <CopyButton value={value} label={`Copy ${label}`} />}
     </div>
   );
 }
@@ -74,61 +73,41 @@ export function DepositForm({
     ...(cashEnabled ? [{ id: "CASH" as const, label: "Cash", note: "Processed in 7-15 days" }] : []),
   ];
   const activeMethod = methods.some((option) => option.id === method) ? method : "CRYPTO";
+  const activeMethodMeta = methods.find((option) => option.id === activeMethod) ?? methods[0];
   const address = addresses[network];
 
   return (
     <ol className="space-y-6">
       <Step n={1} title="Choose a deposit method">
-        <div className="grid gap-2.5 sm:grid-cols-3" role="radiogroup" aria-label="Deposit method">
+        <SelectField
+          label="Deposit method"
+          name="depositMethodPicker"
+          value={activeMethod}
+          onChange={(event) => setMethod(event.target.value as Method)}
+          hint={activeMethodMeta?.note}
+        >
           {methods.map((option) => (
-            <button
-              key={option.id}
-              type="button"
-              role="radio"
-              aria-checked={activeMethod === option.id}
-              onClick={() => setMethod(option.id)}
-              className={cn(
-                "rounded-xl border px-3.5 py-2.5 text-left transition-colors",
-                activeMethod === option.id
-                  ? "border-gold-500/60 bg-gold-600/10"
-                  : "border-gold-600/15 bg-vault-900/50 hover:border-gold-600/35",
-              )}
-            >
-              <span className="block font-mono text-sm text-ink">{option.label}</span>
-              <span className="mt-0.5 block text-xs text-ink-faint">{option.note}</span>
-            </button>
+            <option key={option.id} value={option.id}>{option.label}</option>
           ))}
-        </div>
+        </SelectField>
       </Step>
 
       {activeMethod === "CRYPTO" && (
         <Step n={2} title="Send USDT to the company address">
-          <div className="grid gap-2.5 sm:grid-cols-3" role="radiogroup" aria-label="USDT network">
+          <SelectField
+            label="USDT network"
+            name="depositNetworkPicker"
+            value={network}
+            onChange={(event) => setNetwork(event.target.value as Network)}
+            hint={`${networkMeta[network].chain} - ${networkMeta[network].note}`}
+          >
             {(Object.keys(networkMeta) as Network[]).map((option) => (
-              <button
-                key={option}
-                type="button"
-                role="radio"
-                aria-checked={network === option}
-                onClick={() => setNetwork(option)}
-                className={cn(
-                  "rounded-xl border px-3.5 py-2.5 text-left transition-colors",
-                  network === option
-                    ? "border-gold-500/60 bg-gold-600/10"
-                    : "border-gold-600/15 bg-vault-900/50 hover:border-gold-600/35",
-                )}
-              >
-                <span className="block font-mono text-sm text-ink">USDT / {option}</span>
-                <span className="mt-0.5 block text-xs text-ink-faint">
-                  {networkMeta[option].chain} - {networkMeta[option].note}
-                </span>
-              </button>
+              <option key={option} value={option}>USDT / {option} ({networkMeta[option].chain})</option>
             ))}
-          </div>
-          <div className="mt-4 rounded-xl border border-gold-600/20 bg-vault-950/60 p-4">
+          </SelectField>
+          <div className="mt-4 rounded-xl border border-gold-600/20 bg-vault-950/60 p-3.5 sm:p-4">
             <p className="text-xs uppercase tracking-[0.16em] text-ink-faint">{network} deposit address</p>
-            <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex min-w-0 items-center gap-3">
+            <div className="mt-3 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
                 {address && qrCodes[network] && (
                   <Image
                     src={qrCodes[network]}
@@ -136,12 +115,13 @@ export function DepositForm({
                     width={112}
                     height={112}
                     unoptimized
-                    className="size-28 shrink-0 rounded-lg bg-white p-1.5"
+                    className="size-28 shrink-0 self-center rounded-lg bg-white p-1.5 sm:self-auto"
                   />
                 )}
-                <p className="break-all font-mono text-sm text-ink">{address || "Address not configured yet - contact support."}</p>
+              <div className="flex w-full min-w-0 items-start gap-2">
+                <p className="min-w-0 flex-1 break-all font-mono text-sm text-ink">{address || "Address not configured yet - contact support."}</p>
+                {address && <CopyButton value={address} label="Copy address" />}
               </div>
-              {address && <CopyButton value={address} label="Copy address" className="shrink-0" />}
             </div>
           </div>
           <p className="mt-3 text-xs leading-relaxed text-ink-faint">
@@ -152,7 +132,7 @@ export function DepositForm({
 
       {activeMethod === "BANK" && (
         <Step n={2} title="Send via bank transfer / UPI">
-          <div className="rounded-xl border border-gold-600/20 bg-vault-950/60 p-4">
+          <div className="rounded-xl border border-gold-600/20 bg-vault-950/60 p-3.5 sm:p-4">
             {bank.accountNumber || bank.upi ? (
               <div className="divide-y divide-gold-600/10">
                 {bank.accountNumber && <BankRow label="Account no." value={bank.accountNumber} />}
@@ -172,7 +152,7 @@ export function DepositForm({
 
       {activeMethod === "CASH" && (
         <Step n={2} title="Deposit cash at our office">
-          <div className="rounded-xl border border-gold-600/20 bg-vault-950/60 p-4">
+          <div className="rounded-xl border border-gold-600/20 bg-vault-950/60 p-3.5 sm:p-4">
             <p className="text-sm leading-relaxed text-ink-dim">{cashInstruction}</p>
           </div>
           <p className="mt-3 text-xs leading-relaxed text-ink-faint">
@@ -210,15 +190,15 @@ function DepositDialog({
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-vault-950/80 px-5 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-vault-950/80 px-4 backdrop-blur-sm sm:px-5">
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="deposit-dialog-title"
-        className="w-full max-w-md rounded-2xl border border-gold-500/30 bg-vault-900 p-6 shadow-2xl shadow-vault-950/60"
+        className="w-full max-w-md rounded-2xl border border-gold-500/30 bg-vault-900 p-5 shadow-2xl shadow-vault-950/60 sm:p-6"
       >
         <p className="eyebrow">{eyebrow}</p>
-        <h2 id="deposit-dialog-title" className="mt-2 font-serif text-2xl text-ink">
+        <h2 id="deposit-dialog-title" className="mt-2 font-serif text-xl text-ink sm:text-2xl">
           {title}
         </h2>
         <p className="mt-3 text-sm leading-relaxed text-ink-dim">{message}</p>
@@ -298,7 +278,7 @@ function DepositDetailsForm({
               }}
             />
           ) : null}
-          <SubmitButton pendingLabel="Submitting...">
+          <SubmitButton pendingLabel="Submitting..." className="w-full sm:w-auto">
             Submit deposit for confirmation
           </SubmitButton>
         </form>

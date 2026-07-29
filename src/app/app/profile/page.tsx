@@ -38,12 +38,12 @@ export default async function ProfilePage() {
     <div className="mx-auto max-w-3xl space-y-8">
       <header>
         <p className="eyebrow">Account</p>
-        <h1 className="mt-2 font-serif text-3xl text-ink">
+        <h1 className="mt-2 font-serif text-2xl text-ink sm:text-3xl">
           Profile & <em className="gold-text italic">security</em>
         </h1>
       </header>
 
-      <section className="glass-card rounded-2xl p-5 sm:p-7">
+      <section className="glass-card rounded-2xl p-4 sm:p-7">
         <h2 className="font-serif text-xl text-ink">Personal details</h2>
         <p className="mt-1 text-xs text-ink-faint">{user.email}</p>
         <div className="mt-5">
@@ -59,7 +59,7 @@ export default async function ProfilePage() {
         </div>
       </section>
 
-      <section id="kyc-verification" className="glass-card scroll-mt-24 rounded-2xl p-5 sm:p-7">
+      <section id="kyc-verification" className="glass-card scroll-mt-24 rounded-2xl p-4 sm:p-7">
         <h2 className="font-serif text-xl text-ink">Identity verification (KYC)</h2>
         <div className="mt-4 space-y-4">
           {user.kycStatus === "APPROVED" && (
@@ -78,7 +78,7 @@ export default async function ProfilePage() {
         </div>
       </section>
 
-      <section id="banking-details" className="glass-card scroll-mt-6 rounded-2xl p-5 sm:p-7">
+      <section id="banking-details" className="glass-card scroll-mt-6 rounded-2xl p-4 sm:p-7">
         <h2 className="font-serif text-xl text-ink">Banking details</h2>
         <p className="mt-1 text-xs text-ink-faint">
           Required only when you choose bank transfer for a withdrawal.
@@ -109,7 +109,7 @@ export default async function ProfilePage() {
         </div>
       </section>
 
-      <section id="crypto-wallet" className="glass-card scroll-mt-24 rounded-2xl p-5 sm:p-7">
+      <section id="crypto-wallet" className="glass-card scroll-mt-24 rounded-2xl p-4 sm:p-7">
         <h2 className="font-serif text-xl text-ink">Crypto wallet</h2>
         <p className="mt-1 text-xs text-ink-faint">
           Required only when you choose crypto for a withdrawal.
@@ -124,14 +124,14 @@ export default async function ProfilePage() {
         </div>
       </section>
 
-      <section id="two-factor-security" className="glass-card scroll-mt-24 rounded-2xl p-5 sm:p-7">
+      <section id="two-factor-security" className="glass-card scroll-mt-24 rounded-2xl p-4 sm:p-7">
         <h2 className="font-serif text-xl text-ink">Two-factor authentication</h2>
         <div className="mt-4">
           <TotpSection enabled={user.twoFactorEnabled} />
         </div>
       </section>
 
-      <section className="glass-card rounded-2xl p-5 sm:p-7">
+      <section className="glass-card rounded-2xl p-4 sm:p-7">
         <h2 className="font-serif text-xl text-ink">Password</h2>
         <div className="mt-4">
           <PasswordForm />

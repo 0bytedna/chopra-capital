@@ -14,10 +14,12 @@ export function HistoryTabs({
   deposits,
   withdrawals,
   twoFactorEnabled,
+  withdrawalMethods,
 }: {
   deposits: DepositItems;
   withdrawals: WithdrawalItems;
   twoFactorEnabled: boolean;
+  withdrawalMethods: { bank: boolean; cash: boolean };
 }) {
   const [tab, setTab] = useState<Tab>("DEPOSITS");
 
@@ -70,7 +72,7 @@ export function HistoryTabs({
         {tab === "DEPOSITS" ? (
           <DepositHistory deposits={deposits} />
         ) : (
-          <WithdrawalHistory withdrawals={withdrawals} twoFactorEnabled={twoFactorEnabled} />
+          <WithdrawalHistory withdrawals={withdrawals} twoFactorEnabled={twoFactorEnabled} methodAvailability={withdrawalMethods} />
         )}
       </div>
     </div>

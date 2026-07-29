@@ -2,7 +2,7 @@ import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes 
 import { cn } from "@/lib/cn";
 
 const inputClass =
-  "w-full rounded-lg border border-gold-600/20 bg-vault-900/80 px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:border-gold-500/50 focus:outline-none focus:ring-2 focus:ring-gold-500/25 transition-colors";
+  "min-w-0 w-full rounded-lg border border-gold-600/20 bg-vault-900/80 px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:border-gold-500/50 focus:outline-none focus:ring-2 focus:ring-gold-500/25 transition-colors";
 
 type FieldProps = {
   label: string;

@@ -95,14 +95,14 @@ export default async function AdminKycPage() {
                 <input type="hidden" name="userId" value={u.id} />
                 <input type="hidden" name="decision" value="APPROVED" />
                 <fieldset className="space-y-2 rounded-xl border border-gold-600/15 bg-vault-950/40 p-3">
-                  <legend className="px-1 text-xs uppercase tracking-[0.14em] text-ink-dim">Enable deposit methods</legend>
+                  <legend className="px-1 text-xs uppercase tracking-[0.14em] text-ink-dim">Enable account methods</legend>
                   <label className="flex items-center gap-2 text-sm text-ink-dim">
                     <input type="checkbox" name="bankTransferEnabled" defaultChecked={u.bankTransferEnabled} />
-                    Bank transfer / UPI (INR)
+                    Bank transfer / UPI (deposits and withdrawals)
                   </label>
                   <label className="flex items-center gap-2 text-sm text-ink-dim">
                     <input type="checkbox" name="cashEnabled" defaultChecked={u.cashEnabled} />
-                    Cash (INR)
+                    Cash (deposits and withdrawals)
                   </label>
                 </fieldset>
               </AdminActionForm>

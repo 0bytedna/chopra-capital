@@ -233,7 +233,7 @@ export function AppShell({
       <div className="flex min-w-0 flex-1 flex-col lg:gap-3">
         {/* Glass topbar */}
         <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-vault-950/88 backdrop-blur-xl lg:top-3 lg:rounded-2xl lg:border lg:border-slate-200/80 lg:shadow-lg lg:shadow-black/20">
-          <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
+          <div className="flex h-16 items-center gap-2 px-3 sm:gap-3 sm:px-6">
             <button
               type="button"
               className="-ml-1 rounded-md p-2 text-ink-dim hover:text-ink lg:hidden"
@@ -254,7 +254,7 @@ export function AppShell({
               </div>
             </div>
 
-            <div className="ml-auto flex items-center gap-3">
+            <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
               <Link
                 href="/app/notifications"
                 aria-label={
@@ -281,7 +281,7 @@ export function AppShell({
               </Link>
               <Link
                 href="/app/profile"
-                className={cn("rounded-full border px-3 py-1 text-xs font-medium", badge.cls)}
+                className={cn("hidden rounded-full border px-3 py-1 text-xs font-medium sm:inline-flex", badge.cls)}
               >
                 {badge.label}
               </Link>

@@ -32,7 +32,7 @@ export default async function DepositPage() {
     <div className="mx-auto max-w-3xl space-y-7">
       <header>
         <p className="eyebrow">Money in</p>
-        <h1 className="mt-2 font-serif text-3xl text-ink">
+        <h1 className="mt-2 font-serif text-2xl text-ink sm:text-3xl">
           Deposit <em className="gold-text italic">funds</em>
         </h1>
         <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-dim">
@@ -40,7 +40,7 @@ export default async function DepositPage() {
         </p>
       </header>
 
-      <section className="glass-card rounded-2xl p-5 sm:p-7">
+      <section className="glass-card rounded-2xl p-4 sm:p-7">
         <DepositForm
           addresses={addresses}
           qrCodes={qrCodes}

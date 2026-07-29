@@ -1,7 +1,7 @@
 import type { BankingDetail, User } from "@/generated/prisma";
 import { NETWORKS } from "@/lib/config";
 
-type EligibilityUser = Pick<User, "kycStatus">;
+type EligibilityUser = Pick<User, "kycStatus" | "bankTransferEnabled" | "cashEnabled">;
 
 type EligibilityBanking = Pick<
   BankingDetail,
@@ -49,6 +49,26 @@ export function getWithdrawalEligibility(
 ): FinancialEligibility {
   const kycEligibility = getDepositEligibility(user);
   if (!kycEligibility.eligible) return kycEligibility;
+
+  if (method === "BANK" && !user.bankTransferEnabled) {
+    return {
+      eligible: false,
+      restriction: {
+        title: "Bank transfer unavailable",
+        message: "Bank transfer is not enabled on your account. Contact support if you need this deposit or withdrawal method.",
+      },
+    };
+  }
+
+  if (method === "CASH" && !user.cashEnabled) {
+    return {
+      eligible: false,
+      restriction: {
+        title: "Cash unavailable",
+        message: "Cash is not enabled on your account. Contact support if you need this deposit or withdrawal method.",
+      },
+    };
+  }
 
   if (
     method === "BANK" &&

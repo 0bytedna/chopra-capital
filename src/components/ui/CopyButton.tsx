@@ -22,13 +22,14 @@ export function CopyButton({ value, label = "Copy", className }: { value: string
       type="button"
       onClick={copy}
       aria-label={copied ? "Copied" : label}
+      title={copied ? "Copied" : label}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-md border border-gold-600/25 px-2.5 py-1.5 text-xs font-medium text-ink-dim hover:border-gold-500/50 hover:text-ink transition-colors",
+        "inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-gold-600/25 text-ink-dim transition-colors hover:border-gold-500/50 hover:text-ink",
         className,
       )}
     >
-      {copied ? <Check className="size-3.5 text-positive" aria-hidden /> : <Copy className="size-3.5" aria-hidden />}
-      {copied ? "Copied" : label}
+      {copied ? <Check className="size-4 text-positive" aria-hidden /> : <Copy className="size-4" aria-hidden />}
+      <span className="sr-only">{copied ? "Copied" : label}</span>
     </button>
   );
 }

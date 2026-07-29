@@ -125,7 +125,7 @@ export function AdminShell({ email, children }: { email: string; children: React
 
       <div className="flex min-w-0 flex-1 flex-col lg:gap-3">
         <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-vault-950/88 backdrop-blur-xl lg:top-3 lg:rounded-2xl lg:border lg:border-slate-200/80 lg:shadow-lg lg:shadow-black/20">
-          <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
+          <div className="flex h-16 min-w-0 items-center gap-2 px-3 sm:gap-3 sm:px-6">
             <button
               type="button"
               className="-ml-1 rounded-md p-2 text-ink-dim hover:text-ink lg:hidden"

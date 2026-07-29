@@ -395,8 +395,8 @@ export default async function AdminInvestorRecordPage({
             <Detail label="USDT wallet address" value={display(investor.bankingDetail?.usdtAddress)} mono />
             <Detail label="USDT network" value={display(investor.bankingDetail?.usdtNetwork)} />
             <Detail label="Crypto deposits" value="Enabled" />
-            <Detail label="Bank deposits" value={investor.bankTransferEnabled ? "Enabled" : "Disabled"} />
-            <Detail label="Cash deposits" value={investor.cashEnabled ? "Enabled" : "Disabled"} />
+            <Detail label="Bank deposits and withdrawals" value={investor.bankTransferEnabled ? "Enabled" : "Disabled"} />
+            <Detail label="Cash deposits and withdrawals" value={investor.cashEnabled ? "Enabled" : "Disabled"} />
           </dl>
           <div className="mt-5 border-t border-gold-600/15 pt-4">
             <p className="mb-3 text-xs uppercase tracking-[0.14em] text-ink-faint">

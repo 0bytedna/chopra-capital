@@ -420,7 +420,7 @@ export async function adminSetDepositMethods(_prev: AdminFormState, formData: Fo
   }
   revalidatePath("/admin/investors");
   revalidatePath("/admin");
-  return { success: "Deposit methods updated." };
+  return { success: "Bank and cash access updated for deposits and withdrawals." };
 }
 
 // --- Withdrawals ------------------------------------------------------------

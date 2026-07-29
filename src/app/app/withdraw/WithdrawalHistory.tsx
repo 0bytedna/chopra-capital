@@ -38,6 +38,11 @@ type Withdrawal = {
   createdAt: string;
 };
 
+type MethodAvailability = {
+  bank: boolean;
+  cash: boolean;
+};
+
 const statusClass: Record<Withdrawal["status"], string> = {
   REQUESTED: "border-gold-500/40 bg-gold-600/10 text-gold-300",
   APPROVED: "border-gold-500/40 bg-gold-600/10 text-gold-300",
@@ -72,10 +77,12 @@ function statusLabel(withdrawal: Withdrawal): string {
 function WithdrawalEditForm({
   withdrawal,
   twoFactorEnabled,
+  methodAvailability,
   onCancel,
 }: {
   withdrawal: Withdrawal;
   twoFactorEnabled: boolean;
+  methodAvailability: MethodAvailability;
   onCancel: () => void;
 }) {
   const [state, action] = useActionState<WithdrawFormState, FormData>(editWithdrawal, {});
@@ -140,8 +147,8 @@ function WithdrawalEditForm({
         required
       >
         <option value="CRYPTO">Crypto (USDT wallet payout)</option>
-        <option value="BANK">Bank transfer (INR payout)</option>
-        <option value="CASH">Cash (INR payout)</option>
+        <option value="BANK" disabled={!methodAvailability.bank}>Bank transfer (INR payout){methodAvailability.bank ? "" : " - unavailable"}</option>
+        <option value="CASH" disabled={!methodAvailability.cash}>Cash (INR payout){methodAvailability.cash ? "" : " - unavailable"}</option>
       </SelectField>
       <p className="text-xs leading-relaxed text-ink-faint">
         Changing the method uses the current payout details saved in Profile &amp; Security.
@@ -203,7 +210,15 @@ function CancelWithdrawalForm({
   );
 }
 
-export function WithdrawalHistory({ withdrawals, twoFactorEnabled = false }: { withdrawals: Withdrawal[]; twoFactorEnabled?: boolean }) {
+export function WithdrawalHistory({
+  withdrawals,
+  twoFactorEnabled = false,
+  methodAvailability,
+}: {
+  withdrawals: Withdrawal[];
+  twoFactorEnabled?: boolean;
+  methodAvailability: MethodAvailability;
+}) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [detailsId, setDetailsId] = useState<string | null>(null);
@@ -381,6 +396,7 @@ export function WithdrawalHistory({ withdrawals, twoFactorEnabled = false }: { w
                 key={withdrawal.id}
                 withdrawal={withdrawal}
                 twoFactorEnabled={twoFactorEnabled}
+                methodAvailability={methodAvailability}
                 onCancel={() => setEditingId(null)}
               />
             )}

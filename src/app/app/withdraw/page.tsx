@@ -42,7 +42,7 @@ export default async function WithdrawPage() {
     <div className="mx-auto max-w-3xl space-y-7">
       <header>
         <p className="eyebrow">Money out</p>
-        <h1 className="mt-2 font-serif text-3xl text-ink">
+        <h1 className="mt-2 font-serif text-2xl text-ink sm:text-3xl">
           Withdraw <em className="gold-text italic">weekly</em>
         </h1>
         <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-dim">
@@ -50,7 +50,7 @@ export default async function WithdrawPage() {
         </p>
       </header>
 
-      <section className="glass-card flex flex-col gap-4 rounded-xl px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <section className="glass-card flex flex-col gap-4 rounded-xl px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
         <div>
           <p className="text-xs uppercase tracking-[0.14em] text-ink-dim">Available</p>
           <p className="mt-1 font-serif text-2xl text-ink">
@@ -66,13 +66,15 @@ export default async function WithdrawPage() {
         </div>
       </section>
 
-      <section className="glass-card rounded-2xl p-5 sm:p-7">
+      <section className="glass-card rounded-2xl p-4 sm:p-7">
         <WithdrawForm
           open={withdrawalsOpenNow()}
           available={available}
           referenceRate={toNumber(inrRate)}
           payout={payout}
           restrictions={restrictions}
+          bankEnabled={user.bankTransferEnabled}
+          cashEnabled={user.cashEnabled}
           twoFactorEnabled={user.twoFactorEnabled}
         />
       </section>

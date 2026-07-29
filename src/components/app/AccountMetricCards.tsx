@@ -32,14 +32,14 @@ function MetricCard({
   Icon: LucideIcon;
 }) {
   return (
-    <article className="glass-card rounded-xl p-5 sm:p-6">
+    <article className="glass-card min-w-0 rounded-xl p-4 sm:p-6">
       <div className="flex items-start justify-between gap-3">
         <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">{label}</p>
         <span className="flex size-9 items-center justify-center rounded-full border border-gold-600/25 bg-gold-600/10">
           <Icon className="size-4 text-gold-400" aria-hidden />
         </span>
       </div>
-      <p className="mt-3 font-mono text-2xl text-ink sm:text-3xl" aria-live="polite">
+      <p className="mt-3 min-w-0 break-all font-mono text-xl text-ink sm:text-3xl" aria-live="polite">
         {formattedUsd(value)}
         <span className="ml-1.5 text-xs text-ink-faint">USD</span>
       </p>

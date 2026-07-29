@@ -2,10 +2,9 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import { requestWithdrawal, type WithdrawFormState } from "./actions";
-import { Field } from "@/components/ui/Field";
+import { Field, SelectField } from "@/components/ui/Field";
 import { Alert } from "@/components/ui/Alert";
 import { SubmitButton } from "@/components/ui/SubmitButton";
-import { cn } from "@/lib/cn";
 import type { FinancialRestriction } from "@/lib/financialEligibility";
 
 type Method = "CRYPTO" | "BANK" | "CASH";
@@ -22,6 +21,8 @@ type Props = {
   payout: PayoutDetails;
   restrictions: Record<Method, FinancialRestriction | null>;
   twoFactorEnabled: boolean;
+  bankEnabled: boolean;
+  cashEnabled: boolean;
 };
 
 const methods: { id: Method; label: string; note: string }[] = [
@@ -32,15 +33,17 @@ const methods: { id: Method; label: string; note: string }[] = [
 
 function Step({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
   return (
-    <div className="relative pl-12">
-      <span
-        aria-hidden
-        className="absolute left-0 top-0 flex size-8 items-center justify-center rounded-full border border-gold-500/40 bg-gold-600/10 font-serif text-sm text-gold-400"
-      >
-        {n}
-      </span>
-      <h2 className="pt-1 font-serif text-lg text-ink">{title}</h2>
-      <div className="mt-3">{children}</div>
+    <div>
+      <div className="flex items-center gap-3">
+        <span
+          aria-hidden
+          className="flex size-8 shrink-0 items-center justify-center rounded-full border border-gold-500/40 bg-gold-600/10 font-serif text-sm text-gold-400"
+        >
+          {n}
+        </span>
+        <h2 className="min-w-0 font-serif text-base leading-snug text-ink sm:text-lg">{title}</h2>
+      </div>
+      <div className="mt-3 sm:pl-11">{children}</div>
     </div>
   );
 }
@@ -120,15 +123,15 @@ function WithdrawalDialog({
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-vault-950/80 px-5 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-vault-950/80 px-4 backdrop-blur-sm sm:px-5">
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="withdrawal-dialog-title"
-        className="w-full max-w-md rounded-2xl border border-gold-500/30 bg-vault-900 p-6 shadow-2xl shadow-vault-950/60"
+        className="w-full max-w-md rounded-2xl border border-gold-500/30 bg-vault-900 p-5 shadow-2xl shadow-vault-950/60 sm:p-6"
       >
         <p className="eyebrow">{eyebrow}</p>
-        <h2 id="withdrawal-dialog-title" className="mt-2 font-serif text-2xl text-ink">{title}</h2>
+        <h2 id="withdrawal-dialog-title" className="mt-2 font-serif text-xl text-ink sm:text-2xl">{title}</h2>
         <p className="mt-3 text-sm leading-relaxed text-ink-dim">{message}</p>
         <div className="mt-6 flex justify-end">
           <button ref={confirmButtonRef} type="button" onClick={onConfirm} className="btn-gold px-6 py-2.5 text-sm">
@@ -216,15 +219,29 @@ function WithdrawalDetailsForm({ method, available, referenceRate, twoFactorEnab
           hint="Required because two-factor authentication is enabled on your account."
         />
       )}
-      <SubmitButton pendingLabel="Submitting...">Request withdrawal</SubmitButton>
+      <SubmitButton pendingLabel="Submitting..." className="w-full sm:w-auto">Request withdrawal</SubmitButton>
     </form>
   );
 }
 
-export function WithdrawForm({ open, available, referenceRate, payout, restrictions, twoFactorEnabled }: Props) {
+export function WithdrawForm({
+  open,
+  available,
+  referenceRate,
+  payout,
+  restrictions,
+  twoFactorEnabled,
+  bankEnabled,
+  cashEnabled,
+}: Props) {
   const [method, setMethod] = useState<Method>("CRYPTO");
   const [formVersion, setFormVersion] = useState(0);
-  const restriction = restrictions[method];
+  const availableMethods = methods.filter(
+    (option) => option.id === "CRYPTO" || (option.id === "BANK" && bankEnabled) || (option.id === "CASH" && cashEnabled),
+  );
+  const activeMethod = availableMethods.some((option) => option.id === method) ? method : "CRYPTO";
+  const activeMethodMeta = availableMethods.find((option) => option.id === activeMethod) ?? availableMethods[0];
+  const restriction = restrictions[activeMethod];
 
   return (
     <div className="space-y-6">
@@ -239,34 +256,25 @@ export function WithdrawForm({ open, available, referenceRate, payout, restricti
         </div>
       )}
       <Step n={1} title="Choose a withdrawal method">
-        <div className="grid gap-2.5 sm:grid-cols-3" role="radiogroup" aria-label="Withdrawal method">
-          {methods.map((option) => (
-            <button
-              key={option.id}
-              type="button"
-              role="radio"
-              aria-checked={method === option.id}
-              onClick={() => setMethod(option.id)}
-              className={cn(
-                "rounded-xl border px-4 py-3.5 text-left transition-colors",
-                method === option.id
-                  ? "border-gold-500/60 bg-gold-600/10"
-                  : "border-gold-600/15 bg-vault-900/50 hover:border-gold-600/35",
-              )}
-            >
-              <span className="block font-mono text-sm text-ink">{option.label}</span>
-              <span className="mt-0.5 block text-xs text-ink-faint">{option.note}</span>
-            </button>
+        <SelectField
+          label="Withdrawal method"
+          name="withdrawalMethodPicker"
+          value={activeMethod}
+          onChange={(event) => setMethod(event.target.value as Method)}
+          hint={activeMethodMeta?.note}
+        >
+          {availableMethods.map((option) => (
+            <option key={option.id} value={option.id}>{option.label}</option>
           ))}
-        </div>
+        </SelectField>
       </Step>
 
       <Step n={2} title="Confirm destination and enter amount">
-        <PayoutDetailsCard method={method} payout={payout} />
+        <PayoutDetailsCard method={activeMethod} payout={payout} />
         <div className="mt-4">
           <WithdrawalDetailsForm
-            key={`${method}-${formVersion}`}
-            method={method}
+            key={`${activeMethod}-${formVersion}`}
+            method={activeMethod}
             available={available}
             referenceRate={referenceRate}
             twoFactorEnabled={twoFactorEnabled}

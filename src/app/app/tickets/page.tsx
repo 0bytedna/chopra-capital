@@ -26,7 +26,7 @@ export default async function TicketsPage() {
     <div className="mx-auto max-w-3xl space-y-10">
       <header>
         <p className="eyebrow">Support</p>
-        <h1 className="mt-2 font-serif text-3xl text-ink">
+        <h1 className="mt-2 font-serif text-2xl text-ink sm:text-3xl">
           We&apos;re <em className="gold-text italic">here</em>
         </h1>
         <p className="mt-2 text-sm text-ink-dim">
@@ -35,7 +35,7 @@ export default async function TicketsPage() {
         </p>
       </header>
 
-      <section className="glass-card rounded-2xl p-5 sm:p-7">
+      <section className="glass-card rounded-2xl p-4 sm:p-7">
         <h2 className="font-serif text-xl text-ink">New ticket</h2>
         <div className="mt-4">
           <NewTicketForm />

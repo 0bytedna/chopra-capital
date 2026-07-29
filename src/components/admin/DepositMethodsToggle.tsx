@@ -25,7 +25,7 @@ export function DepositMethodsToggle({ userId, bankEnabled, cashEnabled }: Props
             defaultChecked={bankEnabled}
             className="size-3.5 accent-gold-500"
           />
-          Bank
+          Bank / UPI
         </label>
         <label className="flex h-8 cursor-pointer items-center gap-2 rounded-full border border-gold-600/20 bg-vault-950/30 px-3 text-xs text-ink-dim transition-colors has-checked:border-gold-500/45 has-checked:bg-gold-600/10 has-checked:text-gold-300">
           <input

@@ -26,7 +26,7 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 export function Button({ variant = "gold", size = "md", className, ...props }: ButtonProps) {
   return (
     <button
-      className={cn(variantClass(variant), sizeClasses[size], "disabled:opacity-50 disabled:pointer-events-none", className)}
+      className={cn(variantClass(variant), sizeClasses[size], "min-w-0 max-w-full whitespace-normal text-center disabled:opacity-50 disabled:pointer-events-none", className)}
       {...props}
     />
   );
@@ -42,7 +42,7 @@ type ButtonLinkProps = {
 
 export function ButtonLink({ href, children, variant = "gold", size = "md", className }: ButtonLinkProps) {
   return (
-    <Link href={href} className={cn(variantClass(variant), sizeClasses[size], className)}>
+    <Link href={href} className={cn(variantClass(variant), sizeClasses[size], "min-w-0 max-w-full whitespace-normal text-center", className)}>
       {children}
     </Link>
   );
