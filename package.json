@@ -7,7 +7,8 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "prisma generate && next build --webpack",
+    "build:turbopack": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "db:migrate": "prisma migrate dev",
@@ -15,8 +16,8 @@
     "db:seed": "node prisma/seed.mjs",
     "db:studio": "prisma studio",
     "check:production": "node scripts/check-production-env.mjs",
-    "build:production": "npm run check:production && prisma generate && next build",
-    "verify": "npm run lint && prisma validate && npm run build"
+    "build:production": "npm run check:production && prisma generate && next build --webpack",
+    "verify": "npm run lint && prisma validate && npm run build:turbopack"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
