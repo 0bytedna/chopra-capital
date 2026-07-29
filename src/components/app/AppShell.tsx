@@ -246,11 +246,11 @@ export function AppShell({
             <div className="flex min-w-0 items-center gap-4 sm:gap-6">
               <div className="min-w-0">
                 <p className="text-xs uppercase tracking-[0.16em] text-ink-faint">In the pool</p>
-                <p className="truncate font-mono text-sm text-ink">{investedDisplay}</p>
+                <p className="currency-value truncate text-sm text-ink">{investedDisplay}</p>
               </div>
               <div className="hidden min-w-0 sm:block">
                 <p className="text-xs uppercase tracking-[0.16em] text-ink-faint">Queued</p>
-                <p className="truncate font-mono text-sm text-ink">{queuedDisplay}</p>
+                <p className="currency-value truncate text-sm text-ink">{queuedDisplay}</p>
               </div>
             </div>
 

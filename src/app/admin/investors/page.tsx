@@ -29,7 +29,7 @@ function SummaryCard({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">{label}</p>
-          <p className="mt-2 truncate font-mono text-xl text-ink">{value}</p>
+          <p className="currency-value mt-2 truncate text-xl text-ink">{value}</p>
         </div>
         <span className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-gold-600/15 bg-gold-600/8 text-gold-400">
           <Icon className="size-4" aria-hidden />

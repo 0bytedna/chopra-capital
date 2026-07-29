@@ -130,19 +130,19 @@ export function InternalTransferForm({
             <dt className="text-xs uppercase tracking-[0.14em] text-ink-faint">
               Available balance
             </dt>
-            <dd className="mt-1 font-mono text-sm text-ink">{formatUsd(source.balance)}</dd>
+            <dd className="currency-value mt-1 text-sm text-ink">{formatUsd(source.balance)}</dd>
           </div>
           <div>
             <dt className="text-xs uppercase tracking-[0.14em] text-ink-faint">
               Queued funds
             </dt>
-            <dd className="mt-1 font-mono text-sm text-ink">{formatUsd(source.queued)}</dd>
+            <dd className="currency-value mt-1 text-sm text-ink">{formatUsd(source.queued)}</dd>
           </div>
           <div>
             <dt className="text-xs uppercase tracking-[0.14em] text-ink-faint">
               Invested value
             </dt>
-            <dd className="mt-1 font-mono text-sm text-ink">{formatUsd(source.invested)}</dd>
+            <dd className="currency-value mt-1 text-sm text-ink">{formatUsd(source.invested)}</dd>
           </div>
         </dl>
       )}

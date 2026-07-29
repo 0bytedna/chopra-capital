@@ -48,11 +48,11 @@ export default async function HistoryPage() {
             queuedUsdtAmount:
               deposit.queuedUsdtAmount === null
                 ? null
-                : formatUsdt(deposit.queuedUsdtAmount, 8),
+                : formatUsdt(deposit.queuedUsdtAmount),
             reportedUsdtAmount:
               deposit.reportedUsdtAmount === null
                 ? null
-                : formatUsdt(deposit.reportedUsdtAmount, 8),
+                : formatUsdt(deposit.reportedUsdtAmount),
             inrAmount:
               deposit.inrAmount === null ? null : formatInr(deposit.inrAmount),
             editAmount: (deposit.reportedUsdtAmount ?? deposit.amount).toString(),

@@ -27,7 +27,7 @@ function formatUsd(value: number): string {
   if (!Number.isFinite(value)) return "—";
   return `${value.toLocaleString("en-US", {
     minimumFractionDigits: 2,
-    maximumFractionDigits: 8,
+    maximumFractionDigits: 2,
   })} USD`;
 }
 
@@ -136,7 +136,7 @@ export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
                         {withdrawal.weekKey}
                       </span>
                     </span>
-                    <span className="pl-7 font-mono text-sm text-ink sm:pl-0 sm:text-right">
+                    <span className="currency-value pl-7 text-sm text-ink sm:pl-0 sm:text-right">
                       {formatUsd(Number(withdrawal.amount))}
                     </span>
                   </label>
@@ -150,7 +150,7 @@ export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
               <p className="text-xs uppercase tracking-[0.14em] text-ink-dim">
                 Bulk broker withdrawal
               </p>
-              <p className="mt-1 font-mono text-lg text-gold-300">
+              <p className="currency-value mt-1 text-lg text-gold-300">
                 {formatUsd(totalUsd)}
               </p>
               <p className="mt-1 text-xs text-ink-faint">

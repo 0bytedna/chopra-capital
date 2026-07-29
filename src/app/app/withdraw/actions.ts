@@ -71,8 +71,9 @@ function missingPayoutDetailsMessage(method: WithdrawalMethod): string {
 function balanceError(available: number, alreadyReserved: number): WithdrawFormState {
   return {
     error: `That request exceeds your available balance of ${available.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    })} USD${alreadyReserved > 0 ? ` after ${alreadyReserved.toLocaleString("en-US", { maximumFractionDigits: 2 })} USD already reserved for other withdrawals` : ""}.`,
+    })} USD${alreadyReserved > 0 ? ` after ${alreadyReserved.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD already reserved for other withdrawals` : ""}.`,
   };
 }
 

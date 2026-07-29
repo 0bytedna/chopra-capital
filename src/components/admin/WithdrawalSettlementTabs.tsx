@@ -30,13 +30,13 @@ type Props = {
 };
 
 const inputClass =
-  "w-full rounded-lg border border-gold-600/20 bg-vault-900/80 px-3 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:border-gold-500/50 focus:outline-none";
+  "w-full rounded-lg border border-gold-600/20 bg-vault-900/80 px-3 py-2.5 currency-value text-sm text-ink placeholder:text-ink-faint focus:border-gold-500/50 focus:outline-none";
 
 function formatUsd(value: number): string {
   return Number.isFinite(value)
     ? `${value.toLocaleString("en-US", {
         minimumFractionDigits: 2,
-        maximumFractionDigits: 8,
+        maximumFractionDigits: 2,
       })} USD`
     : "—";
 }
@@ -45,7 +45,7 @@ function formatUsdt(value: number): string {
   return Number.isFinite(value)
     ? `${value.toLocaleString("en-US", {
         minimumFractionDigits: 2,
-        maximumFractionDigits: 8,
+        maximumFractionDigits: 2,
       })} USDT`
     : "—";
 }
@@ -83,7 +83,7 @@ function CryptoPayouts({
           key={withdrawal.id}
           className="glass-card rounded-2xl p-5 sm:p-6"
         >
-          <p className="font-mono text-lg text-ink">
+          <p className="currency-value text-lg text-ink">
             {formatUsdt(Number(withdrawal.brokerReceivedUsdt))} ready
           </p>
           <p className="mt-1 text-xs text-ink-faint">
@@ -256,11 +256,11 @@ function BulkConversionForm({
                   </span>
                 </span>
                 <span className="pl-7 text-left sm:pl-0 sm:text-right">
-                  <span className="block font-mono text-sm text-ink">
+                  <span className="currency-value block text-sm text-ink">
                     {formatUsd(usd)}
                   </span>
                   {inrShare !== null && (
-                    <span className="mt-0.5 block font-mono text-xs text-positive">
+                    <span className="currency-value mt-0.5 block text-xs text-positive">
                       → {formatInr(inrShare)}
                     </span>
                   )}

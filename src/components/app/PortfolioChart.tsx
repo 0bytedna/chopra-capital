@@ -92,7 +92,7 @@ function ChartTooltip({
       <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">
         {fmtAxisDate(String(label))}
       </p>
-      <p className="mt-1 font-mono text-sm text-gold-300">
+      <p className="currency-value mt-1 text-sm text-gold-300">
         {fmtMoney(Number(item.value), signed)} <span className="text-ink-faint">USD</span>
       </p>
     </div>
@@ -203,7 +203,7 @@ function GraphCard({
           <p className="text-xs uppercase tracking-[0.16em] text-ink-faint">{summaryLabel}</p>
           <p
             className={cn(
-              "mt-1 font-mono",
+              "currency-value mt-1",
               emphasizeSummary
                 ? "text-2xl font-bold tracking-tight sm:text-3xl"
                 : "text-base sm:text-lg",

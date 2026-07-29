@@ -115,7 +115,7 @@ function MetricCard({
           <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">{label}</p>
           <p
             className={cn(
-              "mt-2 truncate font-mono text-xl",
+              "currency-value mt-2 truncate text-xl",
               tone === "positive"
                 ? "text-positive"
                 : tone === "negative"
@@ -455,12 +455,12 @@ export default async function AdminInvestorRecordPage({
                     <tr key={deposit.id}>
                       <td className="px-2 py-3 text-ink-dim">{formatDate(deposit.createdAt)}</td>
                       <td className="px-2 py-3 text-ink">{methodLabels[deposit.method]}</td>
-                      <td className="px-2 py-3 font-mono text-ink">
+                      <td className="currency-value px-2 py-3 text-ink">
                         {deposit.inrAmount !== null
                           ? `${formatInr(deposit.inrAmount)} INR`
                           : `${formatUsdt(deposit.reportedUsdtAmount ?? deposit.amount)} USDT`}
                       </td>
-                      <td className="px-2 py-3 font-mono text-ink">
+                      <td className="currency-value px-2 py-3 text-ink">
                         {formatUsdt(deposit.queuedUsdtAmount ?? deposit.amount)} USD
                       </td>
                       <td className="px-2 py-3 text-ink-dim">
@@ -505,8 +505,8 @@ export default async function AdminInvestorRecordPage({
                     <tr key={withdrawal.id}>
                       <td className="px-2 py-3 text-ink-dim">{formatDate(withdrawal.createdAt)}</td>
                       <td className="px-2 py-3 text-ink">{methodLabels[withdrawal.method]}</td>
-                      <td className="px-2 py-3 font-mono text-ink">{formatUsdt(withdrawal.amount)} USD</td>
-                      <td className="px-2 py-3 font-mono text-ink">
+                      <td className="currency-value px-2 py-3 text-ink">{formatUsdt(withdrawal.amount)} USD</td>
+                      <td className="currency-value px-2 py-3 text-ink">
                         {withdrawal.paidInrAmount !== null
                           ? `${formatInr(withdrawal.paidInrAmount)} INR`
                           : withdrawal.paidAmount !== null
@@ -567,7 +567,7 @@ export default async function AdminInvestorRecordPage({
                       </div>
                       <p
                         className={cn(
-                          "shrink-0 font-mono text-sm",
+                          "currency-value shrink-0 text-sm",
                           transfer.direction === "SENT" ? "text-negative" : "text-positive",
                         )}
                       >
@@ -604,7 +604,7 @@ export default async function AdminInvestorRecordPage({
                       </p>
                     </div>
                     <div className="shrink-0 text-right">
-                      <p className={cn("font-mono text-sm", D(entry.amount).lt(0) ? "text-negative" : "text-positive")}>
+                      <p className={cn("currency-value text-sm", D(entry.amount).lt(0) ? "text-negative" : "text-positive")}>
                         {signedUsd(entry.amount)}
                       </p>
                       {entry.units !== null && (

@@ -436,10 +436,10 @@ function LiveHistory({ mt5 }: { mt5: LandingMt5Details }) {
         />
         <Reveal delay={0.1}>
           <div className="product-window mx-auto mt-6 max-w-4xl overflow-hidden">
-            <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
+            <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
               <div>
                 <p className="eyebrow">MT5 read-only account</p>
-                <p className="mt-0.5 text-sm text-ink-dim">Live account details</p>
+                <p className="mt-1 text-sm text-ink-dim">Live account details</p>
               </div>
               <span className="status-pill w-fit">
                 <span className="status-dot" />

@@ -140,20 +140,20 @@ export default async function AdminInternalTransfersPage() {
                       </Link>
                       <p className="mt-1 text-xs text-ink-faint">{transfer.toUser.email}</p>
                     </td>
-                    <td className="whitespace-nowrap px-3 py-4 font-mono text-sm text-ink">
+                    <td className="currency-value whitespace-nowrap px-3 py-4 text-sm text-ink">
                       {formatUsdt(transfer.amount)} USD
                     </td>
                     <td className="px-3 py-4 text-ink-dim">
-                      <p>{formatUsdt(transfer.queuedAmount)} USD queued</p>
-                      <p className="mt-1">{formatUsdt(transfer.investedAmount)} USD invested</p>
+                      <p className="currency-value">{formatUsdt(transfer.queuedAmount)} USD queued</p>
+                      <p className="currency-value mt-1">{formatUsdt(transfer.investedAmount)} USD invested</p>
                       {D(transfer.units).gt(0) && (
                         <p className="mt-1 font-mono text-xs text-ink-faint">
                           {formatUsdt(transfer.units, 6)} units
                         </p>
                       )}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-4 font-mono text-ink-dim">
-                      {formatUsdt(transfer.navPrice, 6)} USD
+                    <td className="currency-value whitespace-nowrap px-3 py-4 text-ink-dim">
+                      {formatUsdt(transfer.navPrice)} USD
                     </td>
                     <td className="max-w-64 px-3 py-4 text-ink-dim">
                       <p>{transfer.admin.fullName ?? transfer.admin.email}</p>

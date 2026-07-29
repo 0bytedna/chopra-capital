@@ -52,7 +52,7 @@ export default async function WithdrawPage() {
       <section className="glass-card flex flex-col gap-4 rounded-xl px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
         <div>
           <p className="text-xs uppercase tracking-[0.14em] text-ink-dim">Available</p>
-          <p className="mt-1 font-sans text-2xl font-semibold tracking-tight text-ink tabular-nums">
+          <p className="currency-value mt-1 text-2xl tracking-tight text-ink">
             {formatUsdt(available)} <span className="text-sm font-medium text-ink-dim">USD</span>
           </p>
         </div>

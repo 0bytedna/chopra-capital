@@ -120,7 +120,7 @@ function WithdrawalEditForm({
           <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">
             Estimated INR payout
           </p>
-          <p className="mt-1 font-mono text-sm text-gold-300">
+          <p className="currency-value mt-1 text-sm text-gold-300">
             {estimatedInr > 0
               ? estimatedInr.toLocaleString("en-IN", {
                   minimumFractionDigits: 2,
@@ -250,7 +250,7 @@ export function WithdrawalHistory({
           <li key={withdrawal.id} className="glass-card rounded-xl px-4 py-3.5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
-                <p className="font-mono text-sm text-ink">
+                <p className="currency-value text-sm text-ink">
                   {withdrawal.amount} USD requested
                 </p>
                 <p className="mt-1 text-xs text-ink-faint">
@@ -261,12 +261,12 @@ export function WithdrawalHistory({
                   })}
                 </p>
                 {withdrawal.paidAmount && (
-                  <p className="mt-1 text-xs font-medium text-positive">
+                  <p className="currency-value mt-1 text-xs text-positive">
                     Paid {withdrawal.paidAmount} USDT
                   </p>
                 )}
                 {withdrawal.paidInrAmount && (
-                  <p className="mt-1 text-xs font-medium text-positive">
+                  <p className="currency-value mt-1 text-xs text-positive">
                     Paid {withdrawal.paidInrAmount} INR
                   </p>
                 )}
@@ -366,13 +366,13 @@ export function WithdrawalHistory({
                 {withdrawal.brokerReceivedUsdt && (
                   <div className="rounded-lg bg-vault-950/35 px-3 py-2">
                     <dt className="text-xs uppercase tracking-[0.12em] text-ink-faint">Received from broker</dt>
-                    <dd className="mt-1 font-mono text-xs text-ink">{withdrawal.brokerReceivedUsdt} USDT</dd>
+                    <dd className="currency-value mt-1 text-xs text-ink">{withdrawal.brokerReceivedUsdt} USDT</dd>
                   </div>
                 )}
                 {withdrawal.convertedInrAmount && (
                   <div className="rounded-lg bg-vault-950/35 px-3 py-2">
                     <dt className="text-xs uppercase tracking-[0.12em] text-ink-faint">Converted for payout</dt>
-                    <dd className="mt-1 font-mono text-xs text-ink">{withdrawal.convertedInrAmount} INR</dd>
+                    <dd className="currency-value mt-1 text-xs text-ink">{withdrawal.convertedInrAmount} INR</dd>
                   </div>
                 )}
                 <div className="rounded-lg bg-vault-950/35 px-3 py-2">

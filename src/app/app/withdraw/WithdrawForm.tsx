@@ -176,7 +176,7 @@ function WithdrawalDetailsForm({ method, available, referenceRate, twoFactorEnab
         value={amountInput}
         onChange={(event) => setAmountInput(event.target.value)}
         required
-        hint={`Available: ${available.toLocaleString("en-US", { maximumFractionDigits: 2 })} USD`}
+        hint={`Available: ${available.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`}
       />
       {method !== "CRYPTO" && (
         <div
@@ -186,7 +186,7 @@ function WithdrawalDetailsForm({ method, available, referenceRate, twoFactorEnab
           <p className="text-xs uppercase tracking-[0.16em] text-ink-faint">
             Estimated INR payout
           </p>
-          <p className="mt-1 font-mono text-lg text-gold-300">
+          <p className="currency-value mt-1 text-lg text-gold-300">
             {estimatedInr > 0
               ? estimatedInr.toLocaleString("en-IN", {
                   minimumFractionDigits: 2,

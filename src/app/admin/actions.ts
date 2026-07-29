@@ -323,7 +323,7 @@ export async function adminInvestQueuedDeposits(
     revalidatePath("/app/deposit");
   revalidatePath("/app/history");
     return {
-      success: `${result.totalReceivedUsdt.toFixed(2)} USDT invested across ${result.allocations.length} deposit${result.allocations.length === 1 ? "" : "s"} at NAV ${result.investmentNav.toFixed(6)}. Transfer fees: ${transferFee.toFixed(2)} USDT.`,
+      success: `${result.totalReceivedUsdt.toFixed(2)} USDT invested across ${result.allocations.length} deposit${result.allocations.length === 1 ? "" : "s"} at NAV ${result.investmentNav.toFixed(2)}. Transfer fees: ${transferFee.toFixed(2)} USDT.`,
     };
   } catch (err) {
     return fail(err);

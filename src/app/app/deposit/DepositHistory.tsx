@@ -198,7 +198,7 @@ export function DepositHistory({ deposits }: Props) {
           <li key={deposit.id} className="glass-card rounded-xl px-4 py-3.5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
-                <p className="font-mono text-sm text-ink">{reportedAmount(deposit)}</p>
+                <p className="currency-value text-sm text-ink">{reportedAmount(deposit)}</p>
                 <p className="mt-0.5 text-xs text-ink-faint">
                   {methodLabel(deposit)} · {new Date(deposit.createdAt).toLocaleDateString("en-IN", {
                     day: "numeric",

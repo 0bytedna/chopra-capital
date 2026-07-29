@@ -314,7 +314,7 @@ export default async function AdminWithdrawalsPage() {
                     <td className="px-4 py-3 text-sm text-ink">
                       {methodShortLabel(withdrawal.method)}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-right font-mono text-sm text-ink">
+                    <td className="currency-value whitespace-nowrap px-4 py-3 text-right text-sm text-ink">
                       {requestedAmountLabel(withdrawal.amount)}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-sm text-ink-dim">
@@ -436,7 +436,7 @@ export default async function AdminWithdrawalsPage() {
                           {withdrawal.user.fullName ?? "Unnamed investor"}
                         </p>
                         <p className="mt-0.5 text-xs text-ink-dim">{withdrawal.user.email}</p>
-                        <p className="mt-1 font-mono text-xs text-ink">
+                        <p className="currency-value mt-1 text-xs text-ink">
                           {formatInr(withdrawal.convertedInrAmount)} INR
                         </p>
                       </td>
@@ -520,7 +520,7 @@ export default async function AdminWithdrawalsPage() {
         ) : (
           inrReady.map((withdrawal) => (
             <article key={withdrawal.id} className="glass-card rounded-2xl p-5 sm:p-6">
-              <p className="font-mono text-lg text-ink">
+              <p className="currency-value text-lg text-ink">
                 {formatInr(withdrawal.convertedInrAmount)} INR ready · {methodLabel(withdrawal.method)}
               </p>
               <p className="mt-1 text-xs text-ink-dim">

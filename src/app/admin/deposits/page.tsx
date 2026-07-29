@@ -50,7 +50,7 @@ function sourceAmount(deposit: {
 function sourceAmountLabel(deposit: Parameters<typeof sourceAmount>[0]): string {
   const amount = sourceAmount(deposit);
   return deposit.method === "CRYPTO"
-    ? formatUsdt(amount, 8) + " USDT"
+    ? formatUsdt(amount) + " USDT"
     : formatInr(amount) + " INR";
 }
 function depositMethodLabel(deposit: {
@@ -326,11 +326,11 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0">
                     <p className="truncate text-ink-dim">
-                      <span className="font-mono text-ink">{sourceAmountLabel(deposit)}</span> · {deposit.user.fullName ?? deposit.user.email} · {depositMethodLabel(deposit)}
+                      <span className="currency-value text-ink">{sourceAmountLabel(deposit)}</span> · {deposit.user.fullName ?? deposit.user.email} · {depositMethodLabel(deposit)}
                     </p>
                     <p className="mt-1 text-xs text-ink-faint">
                       {deposit.createdAt.toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
-                      {deposit.status === "CONFIRMED" ? ` · ${formatUsdt(deposit.amount, 8)} USDT invested` : ""}
+                      {deposit.status === "CONFIRMED" ? ` · ${formatUsdt(deposit.amount)} USDT invested` : ""}
                       {deposit.adminNote ? ` · ${deposit.adminNote}` : ""}
                     </p>
                   </div>
@@ -369,7 +369,7 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
                 <li key={batch.id} className="rounded-xl border border-gold-600/12 bg-vault-900/35 p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="font-mono text-sm text-ink">{formatUsdt(batch.totalUsdt, 8)} USDT queued</p>
+                      <p className="currency-value text-sm text-ink">{formatUsdt(batch.totalUsdt)} USDT queued</p>
                       <p className="mt-1 text-xs text-ink-faint">
                         from {formatInr(batch.totalSourceAmount)} INR · {batch._count.deposits} user{batch._count.deposits === 1 ? "" : "s"}
                       </p>
@@ -401,15 +401,15 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
               <li key={batch.id} className="rounded-xl border border-gold-600/12 bg-vault-900/35 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="font-mono text-sm text-ink">{formatUsdt(batch.totalReceivedUsdt, 8)} USDT invested</p>
+                    <p className="currency-value text-sm text-ink">{formatUsdt(batch.totalReceivedUsdt)} USDT invested</p>
                     <p className="mt-1 text-xs text-ink-faint">
-                      from {formatUsdt(batch.totalQueuedUsdt, 8)} queued · fee {formatUsdt(batch.totalQueuedUsdt.sub(batch.totalReceivedUsdt), 8)} · {batch._count.deposits} deposit{batch._count.deposits === 1 ? "" : "s"}
+                      from {formatUsdt(batch.totalQueuedUsdt)} queued · fee {formatUsdt(batch.totalQueuedUsdt.sub(batch.totalReceivedUsdt))} · {batch._count.deposits} deposit{batch._count.deposits === 1 ? "" : "s"}
                     </p>
                   </div>
                   <WalletCards className="size-4 shrink-0 text-gold-500" aria-hidden />
                 </div>
                 <p className="mt-3 text-xs text-ink-faint">
-                  NAV {formatUsdt(batch.navPrice, 6)} · {batch.createdAt.toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })} · {batch.admin.fullName ?? batch.admin.email}
+                  NAV {formatUsdt(batch.navPrice)} · {batch.createdAt.toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })} · {batch.admin.fullName ?? batch.admin.email}
                 </p>
               </li>
             ))}
@@ -469,7 +469,7 @@ function DepositReviewTable({
                   </p>
                   <p className="mt-0.5 text-xs text-ink-dim">{deposit.user.email}</p>
                 </td>
-                <td className="whitespace-nowrap px-4 py-3 text-right font-mono text-sm text-ink">
+                <td className="currency-value whitespace-nowrap px-4 py-3 text-right text-sm text-ink">
                   {sourceAmountLabel(deposit)}
                 </td>
                 <td className="max-w-64 px-4 py-3">

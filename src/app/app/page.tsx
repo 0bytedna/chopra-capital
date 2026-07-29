@@ -47,9 +47,9 @@ export default async function DashboardPage() {
         className="glass-card overflow-hidden rounded-2xl"
         aria-labelledby="trading-account-title"
       >
-        <div className="border-b border-slate-200 px-4 py-3">
+        <div className="border-b border-slate-200 px-5 py-4">
           <p className="eyebrow">Company trading account</p>
-          <h2 id="trading-account-title" className="mt-0.5 font-serif text-lg text-ink">
+          <h2 id="trading-account-title" className="mt-1 font-serif text-lg text-ink">
             MT5 live account details
           </h2>
         </div>

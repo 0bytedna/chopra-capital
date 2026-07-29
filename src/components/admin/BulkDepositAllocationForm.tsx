@@ -25,11 +25,11 @@ type Props = {
 };
 
 const inputClass =
-  "w-full rounded-lg border border-gold-600/20 bg-vault-950/70 px-3 py-2.5 font-mono text-sm text-ink placeholder:text-ink-faint focus:border-gold-500/50 focus:outline-none";
+  "w-full rounded-lg border border-gold-600/20 bg-vault-950/70 px-3 py-2.5 currency-value text-sm text-ink placeholder:text-ink-faint focus:border-gold-500/50 focus:outline-none";
 
 function formatSource(method: Method, amount: number): string {
   if (method === "CRYPTO") {
-    return amount.toLocaleString("en-US", { maximumFractionDigits: 8 }) + " USDT";
+    return amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " USDT";
   }
   return amount.toLocaleString("en-IN", {
     minimumFractionDigits: 2,
@@ -38,7 +38,7 @@ function formatSource(method: Method, amount: number): string {
 }
 function formatUsdt(amount: number): string {
   if (!Number.isFinite(amount)) return "—";
-  return `${amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 8 })} USDT`;
+  return `${amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`;
 }
 
 export function BulkDepositAllocationForm({ method, deposits }: Props) {
@@ -132,9 +132,9 @@ export function BulkDepositAllocationForm({ method, deposits }: Props) {
                       </span>
                     </span>
                     <span className="pl-7 text-left sm:pl-0 sm:text-right">
-                      <span className="block font-mono text-sm text-ink-dim">{formatSource(method, source)}</span>
+                      <span className="currency-value block text-sm text-ink-dim">{formatSource(method, source)}</span>
                       {allocation !== null && (
-                        <span className="mt-0.5 block font-mono text-xs text-positive">→ {formatUsdt(allocation)}</span>
+                        <span className="currency-value mt-0.5 block text-xs text-positive">→ {formatUsdt(allocation)}</span>
                       )}
                     </span>
                   </label>

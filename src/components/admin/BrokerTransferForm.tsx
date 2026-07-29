@@ -19,11 +19,11 @@ type QueuedDeposit = {
 type Props = { deposits: QueuedDeposit[] };
 
 const inputClass =
-  "w-full rounded-lg border border-gold-600/20 bg-vault-950/70 px-3 py-2.5 font-mono text-sm text-ink placeholder:text-ink-faint focus:border-gold-500/50 focus:outline-none";
+  "w-full rounded-lg border border-gold-600/20 bg-vault-950/70 px-3 py-2.5 currency-value text-sm text-ink placeholder:text-ink-faint focus:border-gold-500/50 focus:outline-none";
 
-function formatUsdt(value: number, maximumFractionDigits = 8): string {
+function formatUsdt(value: number): string {
   if (!Number.isFinite(value)) return "—";
-  return `${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits })} USDT`;
+  return `${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`;
 }
 
 function methodLabel(method: QueuedDeposit["method"]): string {
@@ -125,9 +125,9 @@ export function BrokerTransferForm({ deposits }: Props) {
                       </span>
                     </span>
                     <span className="pl-7 text-left sm:pl-0 sm:text-right">
-                      <span className="block font-mono text-sm text-ink-dim">{formatUsdt(queued)}</span>
+                      <span className="currency-value block text-sm text-ink-dim">{formatUsdt(queued)}</span>
                       {receivedShare !== null && feeShare !== null && (
-                        <span className="mt-0.5 block font-mono text-xs text-positive">
+                        <span className="currency-value mt-0.5 block text-xs text-positive">
                           → {formatUsdt(receivedShare)}
                           {feeShare > 0 ? ` · fee ${formatUsdt(feeShare)}` : ""}
                         </span>

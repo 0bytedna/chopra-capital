@@ -252,13 +252,13 @@ export function InvestorDirectory({ rows }: { rows: InvestorDirectoryRow[] }) {
                   <td className="truncate px-5 py-4 text-xs text-ink-dim" title={row.mobile}>
                     {row.mobile}
                   </td>
-                  <td className="whitespace-nowrap px-5 py-4 font-mono text-ink">
+                  <td className="currency-value whitespace-nowrap px-5 py-4 text-ink">
                     {formatUsd(row.balance)}
                   </td>
                   <td className="px-5 py-4">
                     <KycBadge state={row.kyc} />
                   </td>
-                  <td className="whitespace-nowrap px-5 py-4 font-mono text-ink">
+                  <td className="currency-value whitespace-nowrap px-5 py-4 text-ink">
                     {row.share.toFixed(2)}%
                   </td>
                   <td className="px-3 py-4">

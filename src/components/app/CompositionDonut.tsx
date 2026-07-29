@@ -70,7 +70,7 @@ export function CompositionDonut({ principal, profit }: Props) {
             </ResponsiveContainer>
             <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
               <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">Value</p>
-              <p className="font-mono text-sm text-ink">{fmtMoney(currentValue)}</p>
+              <p className="currency-value text-sm text-ink">{fmtMoney(currentValue)}</p>
             </div>
           </>
         )}
@@ -83,7 +83,7 @@ export function CompositionDonut({ principal, profit }: Props) {
               <span aria-hidden className="size-2.5 rounded-full" style={{ backgroundColor: colors[i] }} />
               {d.name}
             </span>
-            <span className={cn("font-mono text-xs", i === 1 && inLoss ? "text-negative" : "text-ink")}>
+            <span className={cn("currency-value text-xs", i === 1 && inLoss ? "text-negative" : "text-ink")}>
               {fmtMoney(d.amount)}
             </span>
           </div>

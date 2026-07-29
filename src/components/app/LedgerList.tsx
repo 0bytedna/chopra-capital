@@ -41,7 +41,7 @@ export function LedgerList({ entries }: { entries: LedgerEntry[] }) {
             </div>
             <p
               className={cn(
-                "shrink-0 font-mono text-sm",
+                "currency-value shrink-0 text-sm",
                 neutral ? "text-ink-dim" : amount >= 0 ? "text-positive" : "text-negative",
               )}
             >

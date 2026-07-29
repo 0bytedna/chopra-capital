@@ -39,7 +39,7 @@ function MetricCard({
           <Icon className="size-4 text-gold-400" aria-hidden />
         </span>
       </div>
-      <p className="mt-3 min-w-0 break-all font-mono text-xl text-ink sm:text-3xl" aria-live="polite">
+      <p className="currency-value mt-3 min-w-0 break-all text-xl text-ink sm:text-3xl" aria-live="polite">
         {formattedUsd(value)}
         <span className="ml-1.5 text-xs text-ink-faint">USD</span>
       </p>
