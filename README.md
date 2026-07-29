@@ -34,6 +34,24 @@ Run `npm run check:production` before a production build. The check reports miss
 
 This project currently uses SQLite and local private uploads. Run exactly one application instance and keep the database and `uploads/` directory on persistent storage. Put Nginx or another reverse proxy in front of Next.js for HTTPS, request-size enforcement, authentication rate limits, and access logging.
 
+The `uploads/` path must be a real directory inside the project, not a symlink. KYC documents and ticket attachments remain private because this directory is not under `public/` and is ignored by Git. If an older deployment links `uploads/` or files beneath it to external storage, localize them before building:
+
+```bash
+sudo systemctl stop chopra-capital
+cd /var/www/chopra-capital
+npm run storage:localize
+SERVICE_USER="$(systemctl show chopra-capital --property=User --value)"
+SERVICE_GROUP="$(systemctl show chopra-capital --property=Group --value)"
+SERVICE_USER="${SERVICE_USER:-root}"
+SERVICE_GROUP="${SERVICE_GROUP:-$SERVICE_USER}"
+sudo chown -R "$SERVICE_USER:$SERVICE_GROUP" uploads
+rm -rf .next
+npm run build:production
+sudo systemctl start chopra-capital
+```
+
+The localization command copies linked file contents into a real `uploads/` directory without changing their database paths. It moves the previous linked tree to a timestamped backup beside the project. Verify several KYC documents and ticket attachments before removing that backup.
+
 A safe update sequence on Ubuntu is:
 
 ```bash
