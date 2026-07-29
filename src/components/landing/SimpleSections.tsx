@@ -22,7 +22,7 @@ import {
   Zap,
 } from "lucide-react";
 import { Reveal } from "@/components/ui/Reveal";
-import { CopyButton } from "@/components/ui/CopyButton";
+import { Mt5AccountDetails, type Mt5Detail } from "@/components/mt5/Mt5AccountDetails";
 import { cn } from "@/lib/cn";
 
 function SectionHeading({
@@ -418,7 +418,7 @@ type LandingMt5Details = {
 };
 
 function LiveHistory({ mt5 }: { mt5: LandingMt5Details }) {
-  const details = [
+  const details: Mt5Detail[] = [
     ["Broker Name", mt5.brokerName],
     ["Server", mt5.server],
     ["MT5 ID", mt5.accountId],
@@ -426,7 +426,7 @@ function LiveHistory({ mt5 }: { mt5: LandingMt5Details }) {
   ];
 
   return (
-    <section id="backtesting" className="scroll-mt-24 px-4 py-14 sm:px-6 sm:py-20">
+    <section id="backtesting" className="scroll-mt-24 px-4 py-10 sm:px-6 sm:py-14">
       <div className="mx-auto max-w-7xl">
         <SectionHeading
           eyebrow="Live account history"
@@ -435,41 +435,18 @@ function LiveHistory({ mt5 }: { mt5: LandingMt5Details }) {
           copy="Use the read-only investor access below to inspect the account in MetaTrader 5. It allows viewing only and cannot place or change trades."
         />
         <Reveal delay={0.1}>
-          <div className="product-window mx-auto mt-10 max-w-4xl overflow-hidden">
-            <div className="flex flex-col gap-4 border-b border-slate-200 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="product-window mx-auto mt-6 max-w-4xl overflow-hidden">
+            <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
               <div>
                 <p className="eyebrow">MT5 read-only account</p>
-                <p className="mt-2 text-sm text-ink-dim">Live account details</p>
+                <p className="mt-0.5 text-sm text-ink-dim">Live account details</p>
               </div>
               <span className="status-pill w-fit">
                 <span className="status-dot" />
                 Live history
               </span>
             </div>
-            <dl className="grid sm:grid-cols-2">
-              {details.map(([label, value], index) => (
-                <div
-                  key={label}
-                  className={cn(
-                    "px-6 py-5",
-                    index < 2 && "border-b border-slate-200",
-                    index % 2 === 0 && "sm:border-r sm:border-slate-200",
-                  )}
-                >
-                  <dt className="text-xs font-medium uppercase tracking-[.14em] text-ink-dim">
-                    {label}
-                  </dt>
-                  <dd className="mt-2 flex items-start gap-2">
-                    <span className="min-w-0 flex-1 break-all font-mono text-sm text-ink">{value}</span>
-                    <CopyButton
-                      value={value}
-                      label={`Copy ${label}`}
-                      className="size-8"
-                    />
-                  </dd>
-                </div>
-              ))}
-            </dl>
+            <Mt5AccountDetails details={details} />
           </div>
         </Reveal>
       </div>

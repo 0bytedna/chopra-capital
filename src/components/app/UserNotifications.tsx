@@ -144,8 +144,8 @@ export function NotificationList({
               <Icon className={compact ? "size-3.5" : "size-5"} aria-hidden />
             </span>
             <div className="min-w-0">
-              <div className={compact ? "" : "flex flex-wrap items-center gap-2"}>
-                <h3 className={compact ? "line-clamp-2 min-h-10 text-sm font-semibold leading-5 text-ink sm:text-base" : "font-semibold text-ink"}>
+              <div className={compact ? "flex min-h-20 flex-col justify-evenly" : "flex flex-wrap items-center gap-2"}>
+                <h3 className={compact ? "line-clamp-2 text-sm font-semibold leading-5 text-ink sm:text-base" : "font-semibold text-ink"}>
                   {item.title}
                 </h3>
                 {item.isUnread && !compact && (
@@ -156,7 +156,7 @@ export function NotificationList({
                 {item.occurredAt && (
                   <time
                     dateTime={item.occurredAt.toISOString()}
-                    className={compact ? "mt-1 block whitespace-nowrap text-xs font-medium text-slate-600" : "text-xs font-medium text-slate-600"}
+                    className={compact ? "block whitespace-nowrap text-xs font-medium text-slate-600" : "text-xs font-medium text-slate-600"}
                   >
                     {compact
                       ? formatCompactNotificationTime(item.occurredAt)
@@ -185,7 +185,7 @@ export function NotificationList({
               />
               <div
                 className={compact
-                  ? "pointer-events-none relative z-20 grid min-h-20 grid-cols-[1.75rem_minmax(0,1fr)_4rem] items-center gap-2.5 p-2.5 sm:grid-cols-[1.75rem_minmax(0,1fr)_6rem]"
+                  ? "pointer-events-none relative z-20 grid min-h-20 grid-cols-[1.75rem_minmax(0,1fr)_4rem] items-center gap-2.5 px-2.5 sm:grid-cols-[1.75rem_minmax(0,1fr)_6rem]"
                   : "pointer-events-none relative z-20 flex flex-col gap-4 p-4 sm:flex-row sm:items-center"}
               >
                 {information}
@@ -203,7 +203,7 @@ export function NotificationList({
         return (
           <article
             key={item.id}
-            className={`rounded-xl border ${compact ? "grid min-h-20 grid-cols-[1.75rem_minmax(0,1fr)_4rem] items-center gap-2.5 p-2.5 sm:grid-cols-[1.75rem_minmax(0,1fr)_6rem]" : "flex flex-col gap-4 p-4 sm:flex-row sm:items-center"} ${surfaceClass} ${item.isUnread ? "ring-2 ring-blue-200 shadow-sm" : ""}`}
+            className={`rounded-xl border ${compact ? "grid min-h-20 grid-cols-[1.75rem_minmax(0,1fr)_4rem] items-center gap-2.5 px-2.5 sm:grid-cols-[1.75rem_minmax(0,1fr)_6rem]" : "flex flex-col gap-4 p-4 sm:flex-row sm:items-center"} ${surfaceClass} ${item.isUnread ? "ring-2 ring-blue-200 shadow-sm" : ""}`}
           >
             {information}
             <Link

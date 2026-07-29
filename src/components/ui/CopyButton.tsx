@@ -4,7 +4,17 @@ import { useState } from "react";
 import { Check, Copy } from "lucide-react";
 import { cn } from "@/lib/cn";
 
-export function CopyButton({ value, label = "Copy", className }: { value: string; label?: string; className?: string }) {
+export function CopyButton({
+  value,
+  label = "Copy",
+  compact = false,
+  className,
+}: {
+  value: string;
+  label?: string;
+  compact?: boolean;
+  className?: string;
+}) {
   const [copied, setCopied] = useState(false);
 
   async function copy() {
@@ -24,7 +34,8 @@ export function CopyButton({ value, label = "Copy", className }: { value: string
       aria-label={copied ? "Copied" : label}
       title={copied ? "Copied" : label}
       className={cn(
-        "inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-gold-600/25 text-ink-dim transition-colors hover:border-gold-500/50 hover:text-ink",
+        "inline-flex shrink-0 items-center justify-center rounded-md border border-gold-600/25 text-ink-dim transition-colors hover:border-gold-500/50 hover:text-ink",
+        compact ? "size-7" : "size-9",
         className,
       )}
     >

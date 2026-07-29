@@ -6,7 +6,7 @@ import { getUserNotificationCenter } from "@/lib/userNotifications";
 import { AccountMetricCards } from "@/components/app/AccountMetricCards";
 import { PortfolioChart } from "@/components/app/PortfolioChart";
 import { AttentionPanel } from "@/components/app/UserNotifications";
-import { CopyButton } from "@/components/ui/CopyButton";
+import { Mt5AccountDetails, type Mt5Detail } from "@/components/mt5/Mt5AccountDetails";
 import { mt5InvestorAccount } from "@/lib/mt5";
 
 export const metadata: Metadata = { title: "Dashboard" };
@@ -20,7 +20,7 @@ export default async function DashboardPage() {
   ]);
   const balance = metrics.units.mul(metrics.nav);
   const mt5 = mt5InvestorAccount();
-  const accountDetails = [
+  const accountDetails: Mt5Detail[] = [
     ["Broker Name", mt5.brokerName],
     ["Server", mt5.server],
     ["MT5 ID", mt5.accountId],
@@ -47,35 +47,13 @@ export default async function DashboardPage() {
         className="glass-card overflow-hidden rounded-2xl"
         aria-labelledby="trading-account-title"
       >
-        <div className="border-b border-gold-600/15 px-5 py-4 sm:px-6">
+        <div className="border-b border-slate-200 px-4 py-3">
           <p className="eyebrow">Company trading account</p>
-          <h2 id="trading-account-title" className="mt-1 font-serif text-xl text-ink">
+          <h2 id="trading-account-title" className="mt-0.5 font-serif text-lg text-ink">
             MT5 live account details
           </h2>
-          <p className="mt-1 text-xs text-ink-faint">
-            Read-only investor access for reviewing the company account history.
-          </p>
         </div>
-        <dl className="grid sm:grid-cols-2">
-          {accountDetails.map(([label, value], index) => (
-            <div
-              key={label}
-              className={`px-5 py-4 sm:px-6 ${
-                index < 2 ? "border-b border-gold-600/10" : ""
-              } ${index % 2 === 0 ? "sm:border-r sm:border-gold-600/10" : ""}`}
-            >
-              <dt className="text-xs uppercase tracking-[.15em] text-ink-faint">{label}</dt>
-              <dd className="mt-1 flex items-start gap-2">
-                <span className="min-w-0 flex-1 break-all font-mono text-sm text-ink">{value}</span>
-                <CopyButton
-                  value={value}
-                  label={`Copy ${label}`}
-                  className="size-8"
-                />
-              </dd>
-            </div>
-          ))}
-        </dl>
+        <Mt5AccountDetails details={accountDetails} />
       </section>
     </div>
   );
