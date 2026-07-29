@@ -102,6 +102,15 @@ function formatNotificationTime(value: Date): string {
   }).format(value);
 }
 
+
+function formatCompactNotificationTime(value: Date): string {
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(value);
+}
 export function NotificationList({
   items,
   openNotification,
@@ -128,16 +137,18 @@ export function NotificationList({
           : "border-blue-300 bg-white text-blue-700 group-hover:border-blue-500 group-hover:bg-blue-50";
 
         const information = (
-          <div className={`flex min-w-0 flex-1 gap-3 ${compact ? "items-center" : "items-start"}`}>
+          <div className={compact ? "contents" : "flex min-w-0 flex-1 items-start gap-3"}>
             <span
               className={`flex shrink-0 items-center justify-center rounded-full ${compact ? "size-8" : "size-10"} ${iconClass}`}
             >
               <Icon className={compact ? "size-4" : "size-5"} aria-hidden />
             </span>
             <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <h3 className="font-semibold text-ink">{item.title}</h3>
-                {item.isUnread && (
+              <div className={compact ? "" : "flex flex-wrap items-center gap-2"}>
+                <h3 className={compact ? "line-clamp-2 min-h-10 text-sm font-semibold leading-5 text-ink sm:text-base" : "font-semibold text-ink"}>
+                  {item.title}
+                </h3>
+                {item.isUnread && !compact && (
                   <span className="rounded-full bg-blue-600 px-2.5 py-0.5 text-xs font-bold text-white">
                     New
                   </span>
@@ -145,9 +156,11 @@ export function NotificationList({
                 {item.occurredAt && (
                   <time
                     dateTime={item.occurredAt.toISOString()}
-                    className="text-xs font-medium text-slate-600"
+                    className={compact ? "mt-1 block whitespace-nowrap text-xs font-medium text-slate-600" : "text-xs font-medium text-slate-600"}
                   >
-                    {formatNotificationTime(item.occurredAt)}
+                    {compact
+                      ? formatCompactNotificationTime(item.occurredAt)
+                      : formatNotificationTime(item.occurredAt)}
                   </time>
                 )}
               </div>
@@ -170,12 +183,16 @@ export function NotificationList({
                 aria-label={`${item.actionLabel}: ${item.title}`}
                 className="absolute inset-0 z-10 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
               />
-              <div className={`pointer-events-none relative z-20 flex gap-3 ${compact ? "items-center p-3" : "flex-col p-4 sm:flex-row sm:items-center"}`}>
+              <div
+                className={compact
+                  ? "pointer-events-none relative z-20 grid min-h-28 grid-cols-[2rem_minmax(0,1fr)_5rem] items-center gap-3 p-3 sm:grid-cols-[2rem_minmax(0,1fr)_7rem]"
+                  : "pointer-events-none relative z-20 flex flex-col gap-4 p-4 sm:flex-row sm:items-center"}
+              >
                 {information}
                 <span
-                  className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-full border font-semibold transition-colors ${compact ? "px-3 py-2 text-xs" : "px-4 py-2 text-sm"} ${actionClass}`}
+                  className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-full border font-semibold transition-colors ${compact ? "w-20 px-2 py-2 text-xs sm:w-28 sm:text-sm" : "px-4 py-2 text-sm"} ${actionClass}`}
                 >
-                  {item.actionLabel}
+                  {compact ? "View" : item.actionLabel}
                   <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
                 </span>
               </div>
@@ -186,14 +203,14 @@ export function NotificationList({
         return (
           <article
             key={item.id}
-            className={`flex rounded-xl border ${compact ? "items-center gap-3 p-3" : "flex-col gap-4 p-4 sm:flex-row sm:items-center"} ${surfaceClass} ${item.isUnread ? "ring-2 ring-blue-200 shadow-sm" : ""}`}
+            className={`rounded-xl border ${compact ? "grid min-h-28 grid-cols-[2rem_minmax(0,1fr)_5rem] items-center gap-3 p-3 sm:grid-cols-[2rem_minmax(0,1fr)_7rem]" : "flex flex-col gap-4 p-4 sm:flex-row sm:items-center"} ${surfaceClass} ${item.isUnread ? "ring-2 ring-blue-200 shadow-sm" : ""}`}
           >
             {information}
             <Link
               href={item.href}
-              className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-blue-300 bg-white font-semibold text-blue-700 transition-colors hover:border-blue-500 hover:bg-blue-50 ${compact ? "px-3 py-2 text-xs" : "px-4 py-2 text-sm"}`}
+              className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-blue-300 bg-white font-semibold text-blue-700 transition-colors hover:border-blue-500 hover:bg-blue-50 ${compact ? "w-20 px-2 py-2 text-xs sm:w-28 sm:text-sm" : "px-4 py-2 text-sm"}`}
             >
-              {item.actionLabel}
+              {compact ? "View" : item.actionLabel}
               <ArrowRight className="size-4" aria-hidden />
             </Link>
           </article>
