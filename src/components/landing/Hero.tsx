@@ -4,13 +4,7 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
-  Bot,
   Check,
-  CircleDollarSign,
-  Clock3,
-  Eye,
-  LineChart,
-  ShieldCheck,
   Sparkles,
 } from "lucide-react";
 
@@ -62,105 +56,6 @@ export function Hero() {
           </div>
         </motion.div>
 
-        <motion.div
-          initial={reduceMotion ? false : { opacity: 0, y: 28, scale: 0.985 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.85, delay: 0.15 }}
-          className="relative mx-auto mt-10 max-w-6xl sm:mt-12"
-        >
-          <div className="absolute -inset-10 -z-10 rounded-[3rem] bg-gold-500/8 blur-3xl" aria-hidden />
-          <div className="product-window overflow-hidden">
-            <div className="flex items-center justify-between border-b border-slate-200/80 px-4 py-3.5 sm:px-6">
-              <div className="flex items-center gap-3">
-                <div className="flex gap-1.5" aria-hidden>
-                  <span className="size-2 rounded-full bg-ink-faint/50" />
-                  <span className="size-2 rounded-full bg-ink-faint/30" />
-                  <span className="size-2 rounded-full bg-ink-faint/20" />
-                </div>
-                <span className="hidden text-xs text-ink-faint sm:inline">Chopra Capital · Strategy overview</span>
-              </div>
-              <span className="status-pill"><span className="status-dot" /> Monitored</span>
-            </div>
-
-            <div className="grid lg:grid-cols-[1.1fr_.9fr]">
-              <div className="border-b border-slate-200/80 p-5 sm:p-7 lg:border-b-0 lg:border-r">
-                <div className="flex items-end justify-between gap-4">
-                  <div>
-                    <p className="eyebrow">Gold strategy</p>
-                    <h2 className="mt-2 font-serif text-2xl text-ink sm:text-3xl">Automated trading with human oversight</h2>
-                  </div>
-                  <LineChart className="hidden size-6 text-gold-400 sm:block" aria-hidden />
-                </div>
-                <div className="mt-7 grid gap-3 sm:grid-cols-3">
-                  {[
-                    ["Gold", "Focused market", CircleDollarSign],
-                    ["Automated", "Trade execution", ShieldCheck],
-                    ["Weekly", "Withdrawal requests", Clock3],
-                  ].map(([value, label, Icon]) => {
-                    const ItemIcon = Icon as typeof CircleDollarSign;
-                    return (
-                      <div key={String(label)} className="metric-tile">
-                        <ItemIcon className="size-4 text-gold-400" aria-hidden />
-                        <p className="mt-5 font-serif text-2xl text-ink">{String(value)}</p>
-                        <p className="mt-1 text-xs uppercase tracking-[0.14em] text-ink-faint">{String(label)}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="mt-4 rounded-2xl border border-slate-200/80 bg-slate-50/90 p-4 sm:p-5">
-                  <div className="flex items-center justify-between text-xs uppercase tracking-[0.16em] text-ink-faint">
-                    <span>Gold market activity</span>
-                    <span>Illustrative view</span>
-                  </div>
-                  <div className="mt-5 flex h-24 items-end gap-1.5" aria-hidden>
-                    {[30, 37, 34, 48, 45, 58, 54, 67, 63, 76, 72, 86, 82, 94].map((height, index) => (
-                      <span key={index} className="flex-1 rounded-t bg-gradient-to-t from-gold-700/25 to-gold-300/85" style={{ height: `${height}%` }} />
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-5 sm:p-7">
-                <p className="eyebrow">What supports the strategy</p>
-                <div className="mt-5 space-y-3">
-                  {[
-                    [Eye, "Market monitoring", "Systems watch gold markets throughout active trading hours."],
-                    [Bot, "Automated execution", "Rules respond consistently without emotion or delay."],
-                    [ShieldCheck, "Human oversight", "Experienced operators supervise trading and risk controls."],
-                  ].map(([Icon, title, copy], index) => {
-                    const ItemIcon = Icon as typeof Eye;
-                    return (
-                      <div key={String(title)} className="group flex gap-4 rounded-2xl border border-slate-200/80 bg-white/80 p-4 transition hover:border-gold-500/25 hover:bg-gold-500/[0.04]">
-                        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-gold-500/20 bg-gold-500/8">
-                          <ItemIcon className="size-4 text-gold-400" aria-hidden />
-                        </span>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2"><span className="font-mono text-xs text-gold-600">0{index + 1}</span><p className="text-sm font-medium text-ink">{String(title)}</p></div>
-                          <p className="mt-1 text-xs leading-5 text-ink-faint">{String(copy)}</p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                <p className="mt-5 text-xs leading-5 text-ink-faint">Performance objectives are not guarantees. Trading involves risk and capital can be lost.</p>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        <div className="mx-auto mt-8 grid max-w-6xl grid-cols-2 divide-x divide-y divide-slate-200/80 overflow-hidden rounded-2xl border border-slate-200/80 bg-white/80 sm:grid-cols-4 sm:divide-y-0">
-          {[
-            ["Gold", "Focused market"],
-            ["24/5", "Market monitoring"],
-            ["No lock-in", "Flexible access"],
-            ["Monday", "Withdrawal processing"],
-          ].map(([value, label]) => (
-            <div key={label} className="px-4 py-5 text-center">
-              <p className="font-serif text-xl text-gold-300">{value}</p>
-              <p className="mt-1 text-xs uppercase tracking-[0.16em] text-ink-faint">{label}</p>
-            </div>
-          ))}
-        </div>
       </div>
     </section>
   );

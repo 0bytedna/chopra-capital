@@ -1,5 +1,5 @@
 import path from "node:path";
-import { readFile } from "node:fs/promises";
+import { readRuntimeFile } from "@/lib/runtimeFiles";
 import { NextResponse } from "next/server";
 import { getFullSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -36,7 +36,7 @@ export async function GET(request: Request, context: RouteContext<"/api/ticket-a
 
   let bytes: Buffer;
   try {
-    bytes = await readFile(resolved);
+    bytes = await readRuntimeFile(resolved);
   } catch {
     return NextResponse.json({ error: "File missing on disk" }, { status: 404 });
   }
