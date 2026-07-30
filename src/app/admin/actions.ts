@@ -48,6 +48,7 @@ export async function adminRecordTradingAdjustment(_prev: AdminFormState, formDa
       adminId: admin.id,
     });
     revalidatePath("/admin");
+    revalidatePath("/admin/trading");
     revalidatePath("/app");
     return { success: "Trading account adjustment recorded." };
   } catch (error) {
@@ -286,6 +287,7 @@ export async function adminAllocateDeposits(
     const result = await allocateDepositBatch(method, depositIds, totalUsdt, admin.id);
     revalidatePath("/admin/deposits");
     revalidatePath("/admin");
+    revalidatePath("/admin/trading");
     revalidatePath("/app");
     revalidatePath("/app/deposit");
   revalidatePath("/app/history");
@@ -319,6 +321,7 @@ export async function adminInvestQueuedDeposits(
     const transferFee = result.totalQueuedUsdt.sub(result.totalReceivedUsdt);
     revalidatePath("/admin/deposits");
     revalidatePath("/admin");
+    revalidatePath("/admin/trading");
     revalidatePath("/app");
     revalidatePath("/app/deposit");
   revalidatePath("/app/history");

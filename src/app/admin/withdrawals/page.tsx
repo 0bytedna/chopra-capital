@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { formatInr, formatUsdt, type Dec } from "@/lib/money";
-import { cn } from "@/lib/cn";
 import { AdminActionForm } from "@/components/admin/AdminActionForm";
 import { BulkBrokerWithdrawalForm } from "@/components/admin/BulkBrokerWithdrawalForm";
 import { WithdrawalReviewActions } from "@/components/admin/ReviewDecisionButtons";
@@ -245,36 +244,6 @@ export default async function AdminWithdrawalsPage() {
         </h1>
 
       </header>
-
-      <section className="flex gap-2 overflow-x-auto pb-1" aria-label="Withdrawal work queue">
-        {[
-          { label: "Approval", count: requested.length },
-          { label: "Broker", count: approved.length },
-          { label: "Convert / send", count: brokerReceived.length },
-          { label: "Payout", count: inrReady.length + payoutCorrections.length },
-        ].map((item) => (
-          <div
-            key={item.label}
-            className="glass-card flex min-w-32 flex-1 items-center justify-between gap-2 rounded-xl px-3 py-3"
-          >
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-ink">{item.label}</p>
-
-            </div>
-            <span
-              className={cn(
-                "flex size-8 shrink-0 items-center justify-center rounded-full border font-mono text-sm font-semibold",
-                item.count > 0
-                  ? "border-gold-600 bg-gold-600 text-white"
-                  : "border-slate-200 bg-slate-100 text-ink-faint",
-              )}
-              aria-label={`${item.count} pending tasks`}
-            >
-              {item.count}
-            </span>
-          </div>
-        ))}
-      </section>
 
       <section className="space-y-3">
         <div>

@@ -110,6 +110,12 @@ export type CryptoWalletInitial = {
   usdtNetwork: string;
 };
 
+type CryptoNetwork = "TRC20" | "ERC20" | "BEP20";
+
+function cryptoNetwork(value: string): CryptoNetwork {
+  return value === "ERC20" || value === "BEP20" ? value : "TRC20";
+}
+
 export function BankingForm({
   initial,
   twoFactorEnabled = false,
@@ -159,13 +165,37 @@ export function BankingForm({
 }
 
 export function CryptoWalletForm({ initial }: { initial: CryptoWalletInitial }) {
-  const [state, action] = useActionState<FinancialDetailsFormState, FormData>(updateCryptoWallet, {});
+  const [state, action] = useActionState<FinancialDetailsFormState, FormData>(
+    updateCryptoWallet,
+    {},
+  );
+  const initialNetwork = cryptoNetwork(initial.usdtNetwork);
+  const savedNetwork = state.wallet
+    ? state.wallet.usdtNetwork
+      ? cryptoNetwork(state.wallet.usdtNetwork)
+      : ""
+    : initial.usdtAddress
+      ? initialNetwork
+      : "";
+  const savedAddress = state.wallet?.usdtAddress ?? initial.usdtAddress;
+  const [selectedNetwork, setSelectedNetwork] =
+    useState<CryptoNetwork>(initialNetwork);
+  const [address, setAddress] = useState(initial.usdtAddress);
 
   return (
     <form action={action} className="space-y-4">
       {state.error && <Alert tone="error">{state.error}</Alert>}
       {state.success && <Alert tone="success">{state.success}</Alert>}
-      <SelectField label="Network" name="usdtNetwork" defaultValue={initial.usdtNetwork || "TRC20"}>
+      <SelectField
+        label="Network"
+        name="usdtNetwork"
+        value={selectedNetwork}
+        onChange={(event) => {
+          const nextNetwork = cryptoNetwork(event.currentTarget.value);
+          setSelectedNetwork(nextNetwork);
+          setAddress(nextNetwork === savedNetwork ? savedAddress : "");
+        }}
+      >
         <option value="TRC20">USDT · TRC20 (Tron)</option>
         <option value="ERC20">USDT · ERC20 (Ethereum)</option>
         <option value="BEP20">USDT · BEP20 (BNB Chain)</option>
@@ -173,7 +203,8 @@ export function CryptoWalletForm({ initial }: { initial: CryptoWalletInitial }) 
       <Field
         label="USDT wallet address"
         name="usdtAddress"
-        defaultValue={initial.usdtAddress}
+        value={address}
+        onChange={(event) => setAddress(event.currentTarget.value)}
         placeholder="Paste your USDT address"
       />
       <SubmitButton size="sm" pendingLabel="Saving…">
@@ -182,7 +213,6 @@ export function CryptoWalletForm({ initial }: { initial: CryptoWalletInitial }) 
     </form>
   );
 }
-
 export function TotpSection({ enabled }: { enabled: boolean }) {
   const [enrol, setEnrol] = useState<TotpEnrolState | null>(null);
   const [starting, startTransition] = useTransition();

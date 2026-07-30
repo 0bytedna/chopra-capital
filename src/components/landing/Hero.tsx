@@ -14,7 +14,7 @@ export function Hero() {
   const reduceMotion = useReducedMotion();
 
   return (
-    <section className="relative isolate overflow-hidden pb-12 pt-28 sm:pb-16 sm:pt-36">
+    <section className="relative isolate overflow-hidden pb-8 pt-28 sm:pb-12 sm:pt-36">
       <div className="absolute inset-0 -z-20 landing-mesh" aria-hidden />
       <div className="absolute inset-0 -z-10 landing-grid" aria-hidden />
       <div className="absolute inset-0 -z-10 grain" aria-hidden />

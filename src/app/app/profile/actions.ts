@@ -48,7 +48,14 @@ export async function updateProfile(_prev: ProfileFormState, formData: FormData)
 
 // --- Banking / financial details -------------------------------------------
 
-export type FinancialDetailsFormState = { error?: string; success?: string };
+export type FinancialDetailsFormState = {
+  error?: string;
+  success?: string;
+  wallet?: {
+    usdtAddress: string;
+    usdtNetwork: "TRC20" | "ERC20" | "BEP20" | "";
+  };
+};
 
 export async function updateBanking(
   _prev: FinancialDetailsFormState,
@@ -162,7 +169,13 @@ export async function updateCryptoWallet(
   });
   revalidatePath("/app/profile");
   revalidatePath("/app", "layout");
-  return { success: "Crypto wallet saved." };
+  return {
+    success: "Crypto wallet saved.",
+    wallet: {
+      usdtAddress: parsed.data.usdtAddress || "",
+      usdtNetwork: parsed.data.usdtAddress ? parsed.data.usdtNetwork : "",
+    },
+  };
 }
 
 // --- KYC upload -------------------------------------------------------------

@@ -15,12 +15,14 @@ import {
   X,
   ArrowLeftRight,
   ShieldCheck,
+  Activity,
 } from "lucide-react";
 import { signout } from "@/app/(auth)/actions";
 import { cn } from "@/lib/cn";
 
 const items = [
   { href: "/admin", label: "Overview", Icon: Gauge },
+  { href: "/admin/trading", label: "Trading", Icon: Activity },
   { href: "/admin/deposits", label: "Deposits", Icon: ArrowDownToLine },
   { href: "/admin/withdrawals", label: "Withdrawals", Icon: ArrowUpFromLine },
   { href: "/admin/kyc", label: "KYC review", Icon: BadgeCheck },

@@ -69,7 +69,7 @@ function SectionHeading({
 
 function StrategyOverview() {
   return (
-    <section id="strategy" className="scroll-mt-24 px-4 py-14 sm:px-6 sm:py-20">
+    <section id="strategy" className="scroll-mt-24 px-4 py-8 sm:px-6 sm:py-14">
       <div className="mx-auto max-w-7xl">
         <SectionHeading
           centered={false}
@@ -107,8 +107,8 @@ const tradingSteps = [
 
 function TradingProcess() {
   return (
-    <section id="how-it-works" className="scroll-mt-24 px-4 py-6 sm:px-6 sm:py-8">
-      <div className="mx-auto max-w-7xl py-12 sm:py-16">
+    <section id="how-it-works" className="scroll-mt-24 px-4 py-4 sm:px-6 sm:py-6">
+      <div className="mx-auto max-w-7xl py-8 sm:py-12">
         <SectionHeading
           eyebrow="How it works"
           title="How It Works?"
@@ -185,7 +185,7 @@ const features = [
 
 function KeyFeatures() {
   return (
-    <section id="features" className="scroll-mt-24 px-4 py-14 sm:px-6 sm:py-20">
+    <section id="features" className="scroll-mt-24 px-4 py-8 sm:px-6 sm:py-14">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-10 lg:grid-cols-[.8fr_1.2fr]">
           <div className="lg:sticky lg:top-28 lg:h-fit">
@@ -279,8 +279,8 @@ const investorSteps = [
 
 function InvestorJourney() {
   return (
-    <section id="getting-started" className="scroll-mt-24 px-4 py-6 sm:px-6 sm:py-8">
-      <div className="section-shell mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16 lg:px-12">
+    <section id="getting-started" className="scroll-mt-24 px-4 py-4 sm:px-6 sm:py-6">
+      <div className="section-shell mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-12 lg:px-12">
         <SectionHeading
           eyebrow="How it works"
           title="From account opening to withdrawal in five clear steps."
@@ -322,8 +322,8 @@ function InvestorExperience() {
   ];
 
   return (
-    <section id="visibility" className="scroll-mt-24 px-4 py-6 sm:px-6 sm:py-8">
-      <div className="section-shell mx-auto grid max-w-7xl gap-10 px-5 py-12 sm:px-8 sm:py-16 lg:grid-cols-[.9fr_1.1fr] lg:items-center lg:px-12">
+    <section id="visibility" className="scroll-mt-24 px-4 py-4 sm:px-6 sm:py-6">
+      <div className="section-shell mx-auto grid max-w-7xl gap-10 px-5 py-10 sm:px-8 sm:py-12 lg:grid-cols-[.9fr_1.1fr] lg:items-center lg:px-12">
         <div>
           <SectionHeading
             centered={false}
@@ -414,7 +414,7 @@ function LiveHistory({ mt5 }: { mt5: LandingMt5Details }) {
   ];
 
   return (
-    <section id="backtesting" className="scroll-mt-24 px-4 py-10 sm:px-6 sm:py-14">
+    <section id="backtesting" className="scroll-mt-24 px-4 py-8 sm:px-6 sm:py-12">
       <div className="mx-auto max-w-7xl">
         <SectionHeading
           eyebrow="Live account history"
@@ -452,8 +452,8 @@ const terms = [
 
 function Terms() {
   return (
-    <section id="terms" className="scroll-mt-24 px-4 py-6 sm:px-6 sm:py-8">
-      <div className="section-shell mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16 lg:px-12">
+    <section id="terms" className="scroll-mt-24 px-4 py-4 sm:px-6 sm:py-6">
+      <div className="section-shell mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-12 lg:px-12">
         <SectionHeading
           eyebrow="Terms and schedule"
           title="Simple terms and a clear weekly schedule."
@@ -516,7 +516,7 @@ function Faq() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <section id="faq" className="scroll-mt-24 px-4 py-14 sm:px-6 sm:py-20">
+    <section id="faq" className="scroll-mt-24 px-4 py-8 sm:px-6 sm:py-14">
       <div className="mx-auto max-w-4xl">
         <SectionHeading
           eyebrow="Common questions"
@@ -570,9 +570,9 @@ function Faq() {
 
 function FinalCta() {
   return (
-    <section className="px-4 pb-14 sm:px-6 sm:pb-20">
+    <section className="px-4 pb-10 sm:px-6 sm:pb-14">
       <Reveal>
-        <div className="section-shell relative mx-auto max-w-7xl overflow-hidden px-5 py-14 text-center sm:px-8 sm:py-20">
+        <div className="section-shell relative mx-auto max-w-7xl overflow-hidden px-5 py-12 text-center sm:px-8 sm:py-16">
           <div className="absolute inset-0 -z-10 gold-aura" aria-hidden />
           <div className="absolute inset-0 -z-10 landing-grid opacity-50" aria-hidden />
           <p className="eyebrow">Get started</p>

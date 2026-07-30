@@ -1,11 +1,4 @@
 import type { Metadata } from "next";
-import {
-  BadgeCheck,
-  Clock3,
-  Landmark,
-  Users,
-  type LucideIcon,
-} from "lucide-react";
 import { InvestorDirectory } from "@/components/admin/InvestorDirectory";
 import { D, formatUsdt, toNumber } from "@/lib/money";
 import { getCurrentNav } from "@/lib/nav";
@@ -13,29 +6,15 @@ import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = { title: "Admin · Investors" };
 
-function SummaryCard({
-  label,
-  value,
-  detail,
-  Icon,
-}: {
-  label: string;
-  value: string;
-  detail: string;
-  Icon: LucideIcon;
-}) {
+function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
-    <article className="glass-card rounded-xl p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">{label}</p>
-          <p className="currency-value mt-2 truncate text-xl text-ink">{value}</p>
-        </div>
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-gold-600/15 bg-gold-600/8 text-gold-400">
-          <Icon className="size-4" aria-hidden />
-        </span>
-      </div>
-      <p className="mt-2 text-xs text-ink-faint">{detail}</p>
+    <article className="glass-card flex aspect-square flex-col items-center justify-center rounded-2xl p-3 text-center sm:p-5">
+      <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">
+        {label}
+      </p>
+      <p className="currency-value mt-3 max-w-full break-words text-lg text-ink sm:text-xl">
+        {value}
+      </p>
     </article>
   );
 }
@@ -53,37 +32,68 @@ export default async function AdminInvestorsPage() {
         kycStatus: true,
         isCompanyAccount: true,
         wallet: { select: { units: true, queued: true } },
-        _count: { select: { ledger: true, deposits: true, withdrawals: true, tickets: true, internalTransfersSent: true, internalTransfersReceived: true, profitShareAllocations: true } },
+        _count: {
+          select: {
+            ledger: true,
+            deposits: true,
+            withdrawals: true,
+            tickets: true,
+            internalTransfersSent: true,
+            internalTransfersReceived: true,
+            profitShareAllocations: true,
+          },
+        },
       },
     }),
     getCurrentNav(),
   ]);
 
   const totalUnitsNumber = toNumber(totalUnits);
-  const rows = users.map((user) => {
-    const units = D(user.wallet?.units ?? 0);
-    const queued = D(user.wallet?.queued ?? 0);
-    const balance = units.mul(nav).add(queued);
-    const share = totalUnitsNumber > 0 ? (toNumber(units) / totalUnitsNumber) * 100 : 0;
+  const rows = users
+    .map((user) => {
+      const units = D(user.wallet?.units ?? 0);
+      const queued = D(user.wallet?.queued ?? 0);
+      const balance = units.mul(nav).add(queued);
+      const share =
+        totalUnitsNumber > 0
+          ? (toNumber(units) / totalUnitsNumber) * 100
+          : 0;
 
-    return {
-      id: user.id,
-      name: user.fullName ?? "Unnamed investor",
-      email: user.email,
-      mobile: user.mobile ?? "Not provided",
-      kyc: user.kycStatus,
-      queued: toNumber(queued),
-      balance: toNumber(balance),
-      share,
-      isCompanyAccount: user.isCompanyAccount,
-      canDelete: !user.isCompanyAccount && user._count.ledger === 0 && user._count.deposits === 0 && user._count.withdrawals === 0 && user._count.tickets === 0 && user._count.internalTransfersSent === 0 && user._count.internalTransfersReceived === 0 && user._count.profitShareAllocations === 0,
-    };
-  }).sort((a, b) => Number(b.isCompanyAccount) - Number(a.isCompanyAccount));
+      return {
+        id: user.id,
+        name: user.fullName ?? "Unnamed investor",
+        email: user.email,
+        mobile: user.mobile ?? "Not provided",
+        kyc: user.kycStatus,
+        queued: toNumber(queued),
+        balance: toNumber(balance),
+        share,
+        isCompanyAccount: user.isCompanyAccount,
+        canDelete:
+          !user.isCompanyAccount &&
+          user._count.ledger === 0 &&
+          user._count.deposits === 0 &&
+          user._count.withdrawals === 0 &&
+          user._count.tickets === 0 &&
+          user._count.internalTransfersSent === 0 &&
+          user._count.internalTransfersReceived === 0 &&
+          user._count.profitShareAllocations === 0,
+      };
+    })
+    .sort((a, b) => Number(b.isCompanyAccount) - Number(a.isCompanyAccount));
 
   const investorRows = rows.filter((row) => !row.isCompanyAccount);
-  const verifiedCount = investorRows.filter((row) => row.kyc === "APPROVED").length;
-  const totalBalance = investorRows.reduce((sum, row) => sum + row.balance, 0);
-  const totalQueued = investorRows.reduce((sum, row) => sum + row.queued, 0);
+  const verifiedCount = investorRows.filter(
+    (row) => row.kyc === "APPROVED",
+  ).length;
+  const totalBalance = investorRows.reduce(
+    (sum, row) => sum + row.balance,
+    0,
+  );
+  const totalQueued = investorRows.reduce(
+    (sum, row) => sum + row.queued,
+    0,
+  );
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 sm:space-y-8">
@@ -92,33 +102,27 @@ export default async function AdminInvestorsPage() {
         <h1 className="mt-2 font-serif text-3xl text-ink">
           Investor <em className="gold-text italic">directory</em>
         </h1>
-
       </header>
 
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Investor summary">
+      <section
+        className="mx-auto grid w-full max-w-xl grid-cols-2 gap-3 sm:gap-4"
+        aria-label="Investor summary"
+      >
         <SummaryCard
           label="Investors"
           value={investorRows.length.toLocaleString("en-IN")}
-          detail="Registered investor accounts"
-          Icon={Users}
         />
         <SummaryCard
           label="KYC verified"
           value={`${verifiedCount}/${investorRows.length}`}
-          detail="Approved investor accounts"
-          Icon={BadgeCheck}
         />
         <SummaryCard
           label="Total balance"
           value={`${formatUsdt(totalBalance)} USD`}
-          detail="Combined invested and queued value"
-          Icon={Landmark}
         />
         <SummaryCard
           label="In queue"
           value={`${formatUsdt(totalQueued)} USD`}
-          detail="Confirmed funds awaiting investment"
-          Icon={Clock3}
         />
       </section>
 

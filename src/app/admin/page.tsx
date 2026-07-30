@@ -1,125 +1,125 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowDownToLine, ArrowUpFromLine, BadgeCheck, LifeBuoy } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { getCurrentNav } from "@/lib/nav";
-import { D, toNumber, formatUsdt } from "@/lib/money";
+import { toNumber, formatUsdt } from "@/lib/money";
 import { cn } from "@/lib/cn";
-import { AdminActionForm } from "@/components/admin/AdminActionForm";
-import { adminRecordTradingAdjustment } from "./actions";
 
 export const metadata: Metadata = { title: "Admin · Overview" };
 
-const reasonLabels: Record<string, string> = {
-  TRADING_PROFIT: "Trading profit",
-  TRADING_LOSS: "Trading loss",
-  SERVER_FEE: "Server or operating fee",
-  ADMIN_SHARE: "Company's profit share",
-  OTHER_INCREASE: "Other increase",
-  OTHER_DECREASE: "Other decrease",
-  MANUAL_SNAPSHOT: "Manual balance snapshot",
-  USER_DEPOSIT: "Verified deposit batch",
-  USER_WITHDRAWAL: "Verified withdrawal batch",
-};
-
 export default async function AdminOverviewPage() {
-  const [poolNav, walletAgg, pendingDeposits, activeWithdrawals, pendingKyc, openTickets, entries] = await Promise.all([
+  const [
+    poolNav,
+    walletAgg,
+    pendingDeposits,
+    activeWithdrawals,
+    pendingKyc,
+    openTickets,
+  ] = await Promise.all([
     getCurrentNav(),
-    prisma.wallet.aggregate({ _sum: { units: true, queued: true } }),
-    prisma.deposit.count({ where: { status: { in: ["PENDING", "NEEDS_CORRECTION", "RECEIVED", "QUEUED"] } } }),
-    prisma.withdrawal.count({ where: { status: { in: ["REQUESTED", "APPROVED", "BROKER_RECEIVED", "INR_READY", "PAYOUT_DETAILS_REQUIRED", "PAYOUT_DETAILS_REVIEW"] } } }),
-    prisma.user.count({ where: { role: "USER", kycStatus: "PENDING", isCompanyAccount: false } }),
+    prisma.wallet.aggregate({ _sum: { queued: true } }),
+    prisma.deposit.count({
+      where: {
+        status: {
+          in: ["PENDING", "NEEDS_CORRECTION", "RECEIVED", "QUEUED"],
+        },
+      },
+    }),
+    prisma.withdrawal.count({
+      where: {
+        status: {
+          in: [
+            "REQUESTED",
+            "APPROVED",
+            "BROKER_RECEIVED",
+            "INR_READY",
+            "PAYOUT_DETAILS_REQUIRED",
+            "PAYOUT_DETAILS_REVIEW",
+          ],
+        },
+      },
+    }),
+    prisma.user.count({
+      where: {
+        role: "USER",
+        kycStatus: "PENDING",
+        isCompanyAccount: false,
+      },
+    }),
     prisma.ticket.count({ where: { status: "OPEN" } }),
-    prisma.tradingAccountEntry.findMany({ orderBy: { createdAt: "desc" }, take: 12, include: { admin: { select: { fullName: true, email: true } } } }),
   ]);
 
-  const investorUnits = D(walletAgg._sum.units ?? 0);
   const queuedTotal = toNumber(walletAgg._sum.queued ?? 0);
-  const unitsDrift = toNumber(D(poolNav.totalUnits).sub(investorUnits));
   const queues = [
-    { href: "/admin/deposits", label: "Deposit work queue", count: pendingDeposits, Icon: ArrowDownToLine },
-    { href: "/admin/withdrawals", label: "Withdrawals to review", count: activeWithdrawals, Icon: ArrowUpFromLine },
-    { href: "/admin/kyc", label: "KYC in review", count: pendingKyc, Icon: BadgeCheck },
-    { href: "/admin/tickets", label: "Open tickets", count: openTickets, Icon: LifeBuoy },
+    { href: "/admin/deposits", label: "Deposits", count: pendingDeposits },
+    { href: "/admin/withdrawals", label: "Withdrawals", count: activeWithdrawals },
+    { href: "/admin/kyc", label: "KYCs", count: pendingKyc },
+    { href: "/admin/tickets", label: "Tickets", count: openTickets },
   ];
 
-  return <div className="mx-auto max-w-7xl space-y-8">
-    <header><p className="eyebrow">Operations</p><h1 className="mt-2 font-serif text-3xl text-ink">Pool <em className="gold-text italic">overview</em></h1></header>
+  return (
+    <div className="mx-auto max-w-7xl space-y-8">
+      <header>
+        <p className="eyebrow">Operations</p>
+        <h1 className="mt-2 font-serif text-3xl text-ink">
+          Pool <em className="gold-text italic">overview</em>
+        </h1>
+      </header>
 
-    <section className="grid grid-cols-2 gap-4 lg:grid-cols-4" aria-label="Pool snapshot">
-      {[
-        { label: "Trading balance", value: `${formatUsdt(poolNav.balance)} USD` },
-        { label: "Issued units", value: formatUsdt(poolNav.totalUnits, 6) },
-        { label: "NAV / unit", value: formatUsdt(poolNav.nav) },
-        { label: "In queue", value: `${formatUsdt(queuedTotal)} USD` },
-      ].map((item) => <div key={item.label} className="glass-card rounded-xl p-3 sm:p-4"><p className="text-xs uppercase tracking-[0.14em] text-ink-faint">{item.label}</p><p className="currency-value mt-1 text-lg text-ink">{item.value}</p></div>)}
-    </section>
-
-    <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Pending administration tasks">{queues.map((q) => <Link key={q.href} href={q.href} className="glass-card glass-card-hover flex min-h-44 items-center justify-between gap-4 rounded-2xl p-5 sm:p-6"><div className="min-w-0 self-stretch py-1"><span className="flex size-10 items-center justify-center rounded-xl border border-gold-500/20 bg-gold-500/8"><q.Icon className="size-5 text-gold-500" aria-hidden/></span><p className="mt-5 text-base font-medium leading-snug text-ink">{q.label}</p><p className="mt-1 text-xs text-ink-faint">{q.count > 0 ? "Requires attention" : "Nothing pending"}</p></div><span className={cn("flex size-20 shrink-0 items-center justify-center rounded-full border font-mono text-3xl font-semibold shadow-lg sm:size-24 sm:text-4xl", q.count > 0 ? "border-gold-600 bg-gold-600 text-white shadow-gold-600/20" : "border-slate-200 bg-slate-100 text-ink-faint shadow-slate-200/40")} aria-label={`${q.count} pending`}>{q.count}</span></Link>)}</section>
-    <section aria-labelledby="balance-change-heading">
-      <AdminActionForm
-        action={adminRecordTradingAdjustment}
-        submitLabel="Record adjustment"
-        pendingLabel="Recording…"
-        className="glass-card rounded-2xl p-5 sm:p-6"
-        confirmMessage="Apply this adjustment to the trading balance?"
+      <section
+        className="grid auto-rows-fr grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4"
+        aria-label="Pool snapshot"
       >
-        <p className="eyebrow">Profit, loss & movements</p>
-        <h2 id="balance-change-heading" className="mt-2 font-serif text-xl text-ink">
-          Record a balance change
-        </h2>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <label className="space-y-1.5 text-xs text-ink-faint">
-            Reason
-            <select
-              name="type"
-              required
-              className="h-10 w-full rounded-lg border border-gold-600/20 bg-vault-950/65 px-3 text-sm text-ink"
-            >
-              {Object.entries(reasonLabels)
-                .filter(([key]) =>
-                  [
-                    "TRADING_PROFIT",
-                    "TRADING_LOSS",
-                    "SERVER_FEE",
-                    "ADMIN_SHARE",
-                    "OTHER_INCREASE",
-                    "OTHER_DECREASE",
-                  ].includes(key),
-                )
-                .map(([key, label]) => (
-                  <option key={key} value={key}>
-                    {label}
-                  </option>
-                ))}
-            </select>
-          </label>
-          <label className="space-y-1.5 text-xs text-ink-faint">
-            Amount (USD)
-            <input
-              name="amount"
-              type="number"
-              min="0.01"
-              step="0.01"
-              required
-              placeholder="0.00"
-              className="h-10 w-full rounded-lg border border-gold-600/20 bg-vault-950/65 px-3 text-sm text-ink"
-            />
-          </label>
-        </div>
-        <label className="mt-3 block space-y-1.5 text-xs text-ink-faint">
-          Audit note
-          <input
-            name="note"
-            maxLength={240}
-            required
-            placeholder="Trading session, invoice, or another supporting reference"
-            className="h-10 w-full rounded-lg border border-gold-600/20 bg-vault-950/65 px-3 text-sm text-ink"
-          />
-        </label>
-      </AdminActionForm>
-    </section>
+        {[
+          { label: "Balance", value: `${formatUsdt(poolNav.balance)} USD` },
+          {
+            label: "Issued units",
+            value: formatUsdt(poolNav.totalUnits, 6),
+          },
+          { label: "NAV / unit", value: formatUsdt(poolNav.nav) },
+          { label: "In queue", value: `${formatUsdt(queuedTotal)} USD` },
+        ].map((item) => (
+          <div
+            key={item.label}
+            className="glass-card flex h-28 flex-col justify-center rounded-xl p-4 sm:h-32 sm:p-5"
+          >
+            <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">
+              {item.label}
+            </p>
+            <p className="currency-value mt-2 break-words text-lg text-ink sm:text-xl">
+              {item.value}
+            </p>
+          </div>
+        ))}
+      </section>
 
-    <section className="glass-card overflow-hidden rounded-2xl"><div className="flex items-center justify-between px-5 py-4"><div><p className="eyebrow">Audit trail</p><h2 className="mt-1 font-serif text-xl text-ink">Recent account changes</h2></div><span className={cn("font-mono text-xs", Math.abs(unitsDrift) < 0.0001 ? "text-positive" : "text-negative")}>unit drift {unitsDrift.toFixed(6)}</span></div><div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left text-xs"><thead className="border-y border-gold-600/15 bg-slate-50 text-ink-faint"><tr><th className="px-5 py-3">Time</th><th className="px-5 py-3">Reason</th><th className="px-5 py-3">Change</th><th className="px-5 py-3">Balance after</th><th className="px-5 py-3">Note</th></tr></thead><tbody className="divide-y divide-gold-600/10">{entries.map((entry) => <tr key={entry.id}><td className="px-5 py-3 text-ink-faint">{entry.createdAt.toLocaleString("en-IN")}</td><td className="px-5 py-3 text-ink">{reasonLabels[entry.type]}</td><td className={cn("currency-value px-5 py-3", D(entry.amount).gte(0) ? "text-positive" : "text-negative")}>{D(entry.amount).gte(0) ? "+" : ""}{formatUsdt(entry.amount)} USD</td><td className="currency-value px-5 py-3 text-ink">{formatUsdt(entry.balanceAfter)}</td><td className="max-w-xs px-5 py-3 text-ink-dim">{entry.note}</td></tr>)}{entries.length === 0 && <tr><td colSpan={5} className="px-5 py-10 text-center text-ink-faint">No manual account changes yet.</td></tr>}</tbody></table></div></section>
-  </div>;
+      <section
+        className="mx-auto grid w-full max-w-xl grid-cols-2 gap-3 sm:gap-4"
+        aria-label="Pending administration tasks"
+      >
+        {queues.map((queue) => (
+          <Link
+            key={queue.href}
+            href={queue.href}
+            className="glass-card glass-card-hover flex aspect-square flex-col items-center justify-center rounded-2xl p-4 text-center sm:p-6"
+          >
+            <span
+              className={cn(
+                "flex size-16 shrink-0 items-center justify-center rounded-full border font-mono text-2xl font-semibold shadow-lg sm:size-20 sm:text-3xl",
+                queue.count > 0
+                  ? "border-gold-600 bg-gold-600 text-white shadow-gold-600/20"
+                  : "border-slate-200 bg-slate-100 text-ink-faint shadow-slate-200/40",
+              )}
+              aria-label={`${queue.count} pending`}
+            >
+              {queue.count}
+            </span>
+            <p className="mt-4 text-base font-semibold leading-tight text-ink sm:text-lg">
+              {queue.label}
+            </p>
+          </Link>
+        ))}
+      </section>
+    </div>
+  );
 }
