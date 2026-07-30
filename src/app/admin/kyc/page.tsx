@@ -29,9 +29,7 @@ export default async function AdminKycPage() {
         <h1 className="mt-2 font-serif text-3xl text-ink">
           KYC <em className="gold-text italic">review</em>
         </h1>
-        <p className="mt-2 text-sm text-ink-dim">
-          Verify each identity before approving — investors cannot deposit until KYC is approved.
-        </p>
+
       </header>
 
       <section

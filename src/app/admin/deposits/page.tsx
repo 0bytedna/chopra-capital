@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Layers3, WalletCards } from "lucide-react";
+import { Layers3, WalletCards } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatInr, formatUsdt } from "@/lib/money";
 import { cn } from "@/lib/cn";
@@ -12,9 +12,9 @@ import { adminConfirmDeposit, adminRejectDeposit, adminRequestDepositCorrection 
 export const metadata: Metadata = { title: "Admin · Deposits" };
 
 const methods = [
-  { value: "BANK", label: "Bank transfer", source: "INR received" },
-  { value: "CRYPTO", label: "Crypto", source: "USDT received" },
-  { value: "CASH", label: "Cash", source: "INR received" },
+  { value: "BANK", label: "Bank transfer", navLabel: "Bank", source: "INR received" },
+  { value: "CRYPTO", label: "Crypto", navLabel: "Crypto", source: "USDT received" },
+  { value: "CASH", label: "Cash", navLabel: "Cash", source: "INR received" },
 ] as const;
 
 const historyFilters = [
@@ -141,18 +141,16 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
   const conversionReady = activeDeposits.filter((deposit) => deposit.status === "RECEIVED");
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
+    <div className="mx-auto max-w-6xl space-y-6">
       <header>
         <p className="eyebrow">Money in</p>
         <h1 className="mt-2 font-serif text-3xl text-ink">
           Deposit <em className="gold-text italic">operations</em>
         </h1>
-        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink-dim">
-          Confirm payments first. INR deposits enter the queue only after conversion to USDT; confirmed crypto enters immediately. On weekends, transfer the company-wallet queue to the broker and invest the net amount received.
-        </p>
+
       </header>
 
-      <nav className="grid gap-3 sm:grid-cols-3" aria-label="Deposit method sections">
+      <nav className="grid grid-cols-3 gap-2" aria-label="Deposit method sections">
         {methods.map((method) => {
           const count = methodCounts.find((item) => item.method === method.value)?.count ?? 0;
           return (
@@ -160,7 +158,7 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
               key={method.value}
               href={`/admin/deposits?method=${method.value}`}
               className={cn(
-                "flex min-h-40 items-center justify-between gap-4 rounded-2xl border px-5 py-5 transition-colors",
+                "flex min-w-0 items-center justify-between gap-2 rounded-xl border px-3 py-3 transition-colors",
                 selectedMethod === method.value
                   ? "border-gold-500/55 bg-gold-600/12"
                   : "border-gold-600/15 bg-vault-900/45 hover:border-gold-600/35",
@@ -168,11 +166,9 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
               aria-current={selectedMethod === method.value ? "page" : undefined}
             >
               <span className="min-w-0">
-                <span className="block font-serif text-xl text-ink">{method.label}</span>
-                <span className="mt-2 block text-xs text-ink-faint">{method.source} · active work</span>
-                <span className="mt-2 block text-xs font-medium text-ink-dim">{count > 0 ? "Requires attention" : "Nothing pending"}</span>
+                <span className="block truncate text-xs font-medium text-ink sm:text-sm">{method.navLabel}</span>
               </span>
-              <span className={cn("flex size-20 shrink-0 items-center justify-center rounded-full border font-mono text-3xl font-semibold shadow-lg", count > 0 ? "border-gold-600 bg-gold-600 text-white shadow-gold-600/20" : "border-slate-200 bg-slate-100 text-ink-faint shadow-slate-200/40")} aria-label={`${count} active requests`}>
+              <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-full border font-mono text-sm font-semibold", count > 0 ? "border-gold-600 bg-gold-600 text-white" : "border-slate-200 bg-slate-100 text-ink-faint")} aria-label={`${count} active requests`}>
                 {count}
               </span>
             </Link>
@@ -180,7 +176,7 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
         })}
       </nav>
 
-      <section className="glass-card rounded-2xl p-5 sm:p-7">
+      <section className="glass-card rounded-2xl p-4 sm:p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
@@ -188,17 +184,13 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
               <p className="eyebrow">Receipt verification</p>
             </div>
             <h2 className="mt-2 font-serif text-xl text-ink">Confirm {methodMeta.source}</h2>
-            <p className="mt-1 text-sm text-ink-dim">
-              {selectedMethod === "CRYPTO"
-                ? "Once the company wallet receipt is verified, the USDT moves directly into the queue."
-                : "Confirm only that the INR was received. It still needs to be converted before entering the USDT queue."}
-            </p>
+
           </div>
-          <div className="text-center"><span className={cn("flex size-16 items-center justify-center rounded-full border font-mono text-2xl font-semibold", pending.length > 0 ? "border-gold-600 bg-gold-600 text-white" : "border-slate-200 bg-slate-100 text-ink-faint")}>{pending.length}</span><span className="mt-1 block text-xs text-ink-faint">pending</span></div>
+          <span className={cn("flex size-10 items-center justify-center rounded-full border font-mono text-lg font-semibold", pending.length > 0 ? "border-gold-600 bg-gold-600 text-white" : "border-slate-200 bg-slate-100 text-ink-faint")}>{pending.length}</span>
         </div>
 
         {pending.length === 0 ? (
-          <p className="mt-5 rounded-xl border border-dashed border-gold-600/20 px-4 py-9 text-center text-sm text-ink-faint">
+          <p className="mt-4 rounded-xl border border-dashed border-gold-600/20 px-4 py-3 text-center text-sm text-ink-faint">
             No {methodMeta.label.toLowerCase()} deposits need receipt verification.
           </p>
         ) : (
@@ -209,10 +201,8 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
 
       {selectedMethod !== "CRYPTO" && (
         <>
-          <div className="flex justify-center text-gold-500/60" aria-hidden>
-            <ArrowRight className="size-5 rotate-90" />
-          </div>
-          <section className="glass-card rounded-2xl border-gold-500/20 p-5 sm:p-7">
+
+          <section className="glass-card rounded-2xl border-gold-500/20 p-4 sm:p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
@@ -220,15 +210,13 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
                   <p className="eyebrow">INR conversion</p>
                 </div>
                 <h2 className="mt-2 font-serif text-xl text-ink">Convert confirmed INR to USDT</h2>
-                <p className="mt-1 max-w-3xl text-sm leading-relaxed text-ink-dim">
-                  Select received INR deposits and enter the total USDT bought in the company wallet. It is distributed proportionally and moved into the weekend queue.
-                </p>
+
               </div>
               <span className="rounded-full border border-positive/25 bg-positive/5 px-3 py-1 font-mono text-xs text-positive">
                 {conversionReady.length} ready
               </span>
             </div>
-            <div className="mt-5">
+            <div className="mt-4">
               <BulkDepositAllocationForm
                 key={`${selectedMethod}-${conversionReady.map((deposit) => deposit.id).join("-")}`}
                 method={selectedMethod}
@@ -247,11 +235,8 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
         </>
       )}
 
-      <div className="flex justify-center text-gold-500/60" aria-hidden>
-        <ArrowRight className="size-5 rotate-90" />
-      </div>
 
-      <section className="glass-card rounded-2xl border-gold-500/30 p-5 sm:p-7">
+      <section className="glass-card rounded-2xl border-gold-500/30 p-4 sm:p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
@@ -261,15 +246,13 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
               <p className="eyebrow">Weekend broker transfer</p>
             </div>
             <h2 className="mt-2 font-serif text-xl text-ink">Transfer the company USDT queue and invest</h2>
-            <p className="mt-1 max-w-3xl text-sm leading-relaxed text-ink-dim">
-              Select queued deposits from any method, then enter the net USDT received by the broker after transfer fees. The net amount is distributed proportionally and invested at the current NAV.
-            </p>
+
           </div>
           <span className="rounded-full border border-gold-500/30 bg-gold-600/8 px-3 py-1 font-mono text-xs text-gold-300">
             {queuedDeposits.length} queued
           </span>
         </div>
-        <div className="mt-5">
+        <div className="mt-4">
           <BrokerTransferForm
             key={queuedDeposits.map((deposit) => deposit.id).join("-")}
             deposits={queuedDeposits.map((deposit) => ({
@@ -316,7 +299,7 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
         </div>
 
         {history.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-gold-600/20 px-4 py-8 text-center text-sm text-ink-faint">
+          <p className="rounded-xl border border-dashed border-gold-600/20 px-4 py-3 text-center text-sm text-ink-faint">
             No matching deposit history.
           </p>
         ) : (
@@ -360,7 +343,7 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
             <h2 className="mt-2 font-serif text-xl text-ink">Recent INR-to-USDT batches</h2>
           </div>
           {conversionBatches.length === 0 ? (
-            <p className="rounded-xl border border-dashed border-gold-600/20 px-4 py-8 text-center text-sm text-ink-faint">
+            <p className="rounded-xl border border-dashed border-gold-600/20 px-4 py-3 text-center text-sm text-ink-faint">
               No conversion batches recorded for this method yet.
             </p>
           ) : (
@@ -392,7 +375,7 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
           <h2 className="mt-2 font-serif text-xl text-ink">Recent weekend transfers</h2>
         </div>
         {brokerBatches.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-gold-600/20 px-4 py-8 text-center text-sm text-ink-faint">
+          <p className="rounded-xl border border-dashed border-gold-600/20 px-4 py-3 text-center text-sm text-ink-faint">
             No broker transfers recorded yet.
           </p>
         ) : (
@@ -499,9 +482,7 @@ function DepositReviewTable({
           })}
         </tbody>
       </table>
-      <p className="border-t border-gold-600/10 px-4 py-2 text-right text-xs text-ink-dim">
-        ✓ confirm · ⚠ request correction · ✕ reject
-      </p>
+
     </div>
   );
 }

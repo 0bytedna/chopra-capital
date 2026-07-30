@@ -15,10 +15,7 @@ export default async function AdminSecurityPage() {
         <h1 className="mt-2 font-serif text-3xl text-ink">
           Admin <em className="gold-text italic">security</em>
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-dim">
-          Protect the administration console with a time-based code from your authenticator app.
-          When enabled, the code is mandatory after every successful administrator password login.
-        </p>
+
       </header>
 
       <section className="grid gap-4 sm:grid-cols-2" aria-label="Security status">

@@ -92,10 +92,7 @@ export default async function AdminInvestorsPage() {
         <h1 className="mt-2 font-serif text-3xl text-ink">
           Investor <em className="gold-text italic">directory</em>
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-dim">
-          Search investor accounts or select a row to open the complete profile,
-          financial details, portfolio performance and account activity.
-        </p>
+
       </header>
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Investor summary">

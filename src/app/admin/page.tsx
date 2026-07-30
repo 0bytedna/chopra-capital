@@ -44,15 +44,15 @@ export default async function AdminOverviewPage() {
   ];
 
   return <div className="mx-auto max-w-7xl space-y-8">
-    <header><p className="eyebrow">Operations</p><h1 className="mt-2 font-serif text-3xl text-ink">Pool <em className="gold-text italic">overview</em></h1><p className="mt-2 max-w-2xl text-sm text-ink-dim">The figures below are maintained by administrators. Every change creates a permanent audit entry.</p></header>
+    <header><p className="eyebrow">Operations</p><h1 className="mt-2 font-serif text-3xl text-ink">Pool <em className="gold-text italic">overview</em></h1></header>
 
     <section className="grid grid-cols-2 gap-4 lg:grid-cols-4" aria-label="Pool snapshot">
       {[
-        { label: "Trading balance", value: `${formatUsdt(poolNav.balance)} USD`, hint: "manually maintained" },
-        { label: "Issued units", value: formatUsdt(poolNav.totalUnits, 6), hint: "total pool units" },
-        { label: "NAV / unit", value: formatUsdt(poolNav.nav), hint: "balance / issued units" },
-        { label: "In queue", value: `${formatUsdt(queuedTotal)} USD`, hint: "verified, awaiting investment" },
-      ].map((item) => <div key={item.label} className="glass-card rounded-xl p-4 sm:p-5"><p className="text-xs uppercase tracking-[0.14em] text-ink-faint">{item.label}</p><p className="currency-value mt-1.5 text-lg text-ink">{item.value}</p><p className="mt-0.5 text-xs text-ink-faint">{item.hint}</p></div>)}
+        { label: "Trading balance", value: `${formatUsdt(poolNav.balance)} USD` },
+        { label: "Issued units", value: formatUsdt(poolNav.totalUnits, 6) },
+        { label: "NAV / unit", value: formatUsdt(poolNav.nav) },
+        { label: "In queue", value: `${formatUsdt(queuedTotal)} USD` },
+      ].map((item) => <div key={item.label} className="glass-card rounded-xl p-3 sm:p-4"><p className="text-xs uppercase tracking-[0.14em] text-ink-faint">{item.label}</p><p className="currency-value mt-1 text-lg text-ink">{item.value}</p></div>)}
     </section>
 
     <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Pending administration tasks">{queues.map((q) => <Link key={q.href} href={q.href} className="glass-card glass-card-hover flex min-h-44 items-center justify-between gap-4 rounded-2xl p-5 sm:p-6"><div className="min-w-0 self-stretch py-1"><span className="flex size-10 items-center justify-center rounded-xl border border-gold-500/20 bg-gold-500/8"><q.Icon className="size-5 text-gold-500" aria-hidden/></span><p className="mt-5 text-base font-medium leading-snug text-ink">{q.label}</p><p className="mt-1 text-xs text-ink-faint">{q.count > 0 ? "Requires attention" : "Nothing pending"}</p></div><span className={cn("flex size-20 shrink-0 items-center justify-center rounded-full border font-mono text-3xl font-semibold shadow-lg sm:size-24 sm:text-4xl", q.count > 0 ? "border-gold-600 bg-gold-600 text-white shadow-gold-600/20" : "border-slate-200 bg-slate-100 text-ink-faint shadow-slate-200/40")} aria-label={`${q.count} pending`}>{q.count}</span></Link>)}</section>

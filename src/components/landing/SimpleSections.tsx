@@ -70,7 +70,7 @@ function SectionHeading({
 function StrategyOverview() {
   return (
     <section id="strategy" className="scroll-mt-24 px-4 py-14 sm:px-6 sm:py-20">
-      <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.08fr_.92fr] lg:items-center">
+      <div className="mx-auto max-w-7xl">
         <SectionHeading
           centered={false}
           eyebrow="Our trading approach"
@@ -79,18 +79,6 @@ function StrategyOverview() {
           copy="Arbitrage is the holy grail of trading — risk-free profit from market inefficiencies. Chopra Capital is built to detect and exploit gold price discrepancies between the Spot and Futures markets in real time. It does this 24/7, with no fatigue, no emotions, and no room for human error. Backed by advanced algorithms and overseen by trading professionals, Chopra Capital guarantees every trade is a winning trade."
         />
 
-        <Reveal delay={0.1}>
-          <div className="mx-auto w-full max-w-[390px] overflow-hidden rounded-3xl border border-slate-200 bg-[#f6f6f6] shadow-sm">
-            <Image
-              src="/landing/zero-loss-growth.png"
-              alt="Growth chart illustration with an upward arrow"
-              width={389}
-              height={401}
-              className="h-auto w-full"
-              priority
-            />
-          </div>
-        </Reveal>
       </div>
     </section>
   );

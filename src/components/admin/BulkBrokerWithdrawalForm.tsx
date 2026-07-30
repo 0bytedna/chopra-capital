@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useMemo, useState } from "react";
-import { Check, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import {
   adminRecordBrokerWithdrawalBatch,
   type AdminFormState,
@@ -60,7 +60,7 @@ export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
   return (
     <form
       action={formAction}
-      className="space-y-5"
+      className="space-y-3"
       onSubmit={(event) => {
         if (!canSubmit) {
           event.preventDefault();
@@ -76,12 +76,9 @@ export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
       {state.success && <Alert tone="success">{state.success}</Alert>}
 
       {withdrawals.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gold-600/20 px-4 py-9 text-center">
-          <Check className="mx-auto size-5 text-positive" aria-hidden />
-          <p className="mt-2 text-sm text-ink-dim">
-            No approved withdrawals are waiting for the broker batch.
-          </p>
-        </div>
+        <p className="rounded-xl border border-dashed border-gold-600/20 px-4 py-3 text-center text-sm text-ink-faint">
+          No approved withdrawals are waiting for the broker batch.
+        </p>
       ) : (
         <>
           <div className="overflow-hidden rounded-xl border border-gold-600/15">
@@ -109,7 +106,7 @@ export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
                   <label
                     key={withdrawal.id}
                     className={cn(
-                      "grid cursor-pointer gap-2 px-4 py-3.5 transition-colors sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center",
+                      "grid cursor-pointer gap-2 px-4 py-2.5 transition-colors sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center",
                       checked ? "bg-gold-600/8" : "hover:bg-vault-950/35",
                     )}
                   >
@@ -145,7 +142,7 @@ export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
             </div>
           </div>
 
-          <div className="flex flex-col gap-4 rounded-xl border border-gold-500/25 bg-gold-600/6 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 rounded-xl border border-gold-500/25 bg-gold-600/6 p-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.14em] text-ink-dim">
                 Bulk broker withdrawal
@@ -159,7 +156,7 @@ export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
             </div>
             <Button
               type="submit"
-              size="md"
+              size="sm"
               disabled={!canSubmit || pending}
               aria-busy={pending}
               className="w-full sm:w-auto"

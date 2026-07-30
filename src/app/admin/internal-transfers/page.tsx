@@ -66,10 +66,7 @@ export default async function AdminInternalTransfersPage() {
         <h1 className="mt-2 font-serif text-3xl text-ink">
           Internal <em className="gold-text italic">transfers</em>
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-dim">
-          Move USD value between investor accounts without changing company cash,
-          broker equity or total pool units.
-        </p>
+
       </header>
 
       <section className="glass-card rounded-2xl p-5 sm:p-7" aria-labelledby="new-transfer-heading">

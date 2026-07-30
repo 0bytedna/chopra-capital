@@ -194,7 +194,7 @@ function BankDestinationCompact({
 }
 function EmptyState({ children }: { children: React.ReactNode }) {
   return (
-    <p className="rounded-xl border border-dashed border-gold-600/20 px-4 py-8 text-center text-sm text-ink-faint">
+    <p className="rounded-xl border border-dashed border-gold-600/20 px-4 py-3 text-center text-sm text-ink-faint">
       {children}
     </p>
   );
@@ -237,41 +237,36 @@ export default async function AdminWithdrawalsPage() {
     ]);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-10">
+    <div className="mx-auto max-w-6xl space-y-7">
       <header>
         <p className="eyebrow">Money out</p>
         <h1 className="mt-2 font-serif text-3xl text-ink">
           Withdrawal <em className="gold-text italic">settlement</em>
         </h1>
-        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink-dim">
-          Review requests, withdraw approved USD from the broker in bulk, then complete
-          each payout using the destination details shown at the payment stage.
-        </p>
+
       </header>
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Withdrawal work queue">
+      <section className="flex gap-2 overflow-x-auto pb-1" aria-label="Withdrawal work queue">
         {[
-          { label: "Awaiting approval", count: requested.length },
-          { label: "Broker withdrawal", count: approved.length },
-          { label: "Conversion / crypto payout", count: brokerReceived.length },
-          { label: "Payout action", count: inrReady.length + payoutCorrections.length },
+          { label: "Approval", count: requested.length },
+          { label: "Broker", count: approved.length },
+          { label: "Convert / send", count: brokerReceived.length },
+          { label: "Payout", count: inrReady.length + payoutCorrections.length },
         ].map((item) => (
           <div
             key={item.label}
-            className="glass-card flex min-h-44 items-center justify-between gap-4 rounded-2xl p-5"
+            className="glass-card flex min-w-32 flex-1 items-center justify-between gap-2 rounded-xl px-3 py-3"
           >
             <div className="min-w-0">
               <p className="text-sm font-medium text-ink">{item.label}</p>
-              <p className="mt-2 text-xs font-medium text-ink-dim">
-                {item.count > 0 ? "Requires attention" : "Nothing pending"}
-              </p>
+
             </div>
             <span
               className={cn(
-                "flex size-20 shrink-0 items-center justify-center rounded-full border font-mono text-3xl font-semibold shadow-lg sm:size-24 sm:text-4xl",
+                "flex size-8 shrink-0 items-center justify-center rounded-full border font-mono text-sm font-semibold",
                 item.count > 0
-                  ? "border-gold-600 bg-gold-600 text-white shadow-gold-600/20"
-                  : "border-slate-200 bg-slate-100 text-ink-faint shadow-slate-200/40",
+                  ? "border-gold-600 bg-gold-600 text-white"
+                  : "border-slate-200 bg-slate-100 text-ink-faint",
               )}
               aria-label={`${item.count} pending tasks`}
             >
@@ -281,7 +276,7 @@ export default async function AdminWithdrawalsPage() {
         ))}
       </section>
 
-      <section className="space-y-4">
+      <section className="space-y-3">
         <div>
           <p className="eyebrow">Step 1</p>
           <h2 className="mt-2 font-serif text-xl text-ink">
@@ -337,24 +332,18 @@ export default async function AdminWithdrawalsPage() {
                 ))}
               </tbody>
             </table>
-            <p className="border-t border-gold-600/10 px-4 py-2 text-right text-xs text-ink-dim">
-              ✓ approve · ✕ reject
-            </p>
+
           </div>
         )}
       </section>
 
-      <section className="space-y-4">
+      <section className="space-y-3">
         <div>
           <p className="eyebrow">Step 2 · Monday</p>
           <h2 className="mt-2 font-serif text-xl text-ink">
             Withdraw from broker ({approved.length})
           </h2>
-          <p className="mt-1 max-w-3xl text-sm leading-relaxed text-ink-dim">
-            Select every approved USD request included in the broker withdrawal.
-            Confirm once the USDT has reached the company wallet; the selected requests
-            then move to individual bank, cash, or wallet payout processing.
-          </p>
+
         </div>
         <BulkBrokerWithdrawalForm
           withdrawals={approved.map((withdrawal) => ({
@@ -367,17 +356,13 @@ export default async function AdminWithdrawalsPage() {
           }))}
         />
       </section>
-      <section className="space-y-4">
+      <section className="space-y-3">
         <div>
           <p className="eyebrow">Step 3</p>
           <h2 className="mt-2 font-serif text-xl text-ink">
             Convert or send funds ({brokerReceived.length})
           </h2>
-          <p className="mt-1 max-w-3xl text-sm leading-relaxed text-ink-dim">
-            Process crypto payouts individually. For bank transfer and cash,
-            select a batch and enter the total INR received after conversion;
-            the INR is distributed proportionally by each request&apos;s USD value.
-          </p>
+
         </div>
         <WithdrawalSettlementTabs
           withdrawals={brokerReceived.map((withdrawal) => ({
@@ -397,24 +382,20 @@ export default async function AdminWithdrawalsPage() {
           }))}
         />
       </section>
-      <section className="space-y-5">
+      <section className="space-y-3">
         <div>
           <p className="eyebrow">Step 4</p>
           <h2 className="mt-2 font-serif text-xl text-ink">
             Complete INR payouts ({inrReady.length + payoutCorrections.length})
           </h2>
-          <p className="mt-1 max-w-3xl text-sm leading-relaxed text-ink-dim">
-            Pay only to the approved destination snapshot. If it is wrong, block the payout and request a correction before sending any money.
-          </p>
+
         </div>
 
         {payoutCorrections.length > 0 && (
           <div className="overflow-x-auto rounded-xl border border-amber-500/25 bg-white">
             <div className="border-b border-amber-500/20 bg-amber-50 px-4 py-3">
               <h3 className="font-medium text-ink">Bank-detail corrections</h3>
-              <p className="mt-0.5 text-xs text-ink-dim">
-                These payouts are blocked and cannot be marked paid.
-              </p>
+
             </div>
             <table className="w-full min-w-[980px] border-collapse text-left">
               <thead className="bg-vault-950/45 text-xs uppercase tracking-[0.12em] text-ink-dim">
@@ -475,7 +456,7 @@ export default async function AdminWithdrawalsPage() {
                               submitLabel="Approve corrected details"
                               pendingLabel="Approving..."
                               confirmMessage="Approve this new bank destination and return the withdrawal to ready for payout?"
-                              submitClassName="min-h-11 w-full whitespace-nowrap"
+                              submitClassName="w-full whitespace-nowrap"
                             >
                               <input type="hidden" name="id" value={withdrawal.id} />
                             </AdminActionForm>
@@ -484,7 +465,7 @@ export default async function AdminWithdrawalsPage() {
                               submitLabel="Request another correction"
                               pendingLabel="Sending..."
                               variant="danger"
-                              submitClassName="min-h-11 w-full whitespace-nowrap"
+                              submitClassName="w-full whitespace-nowrap"
                             >
                               <input type="hidden" name="id" value={withdrawal.id} />
                               <input
@@ -511,15 +492,13 @@ export default async function AdminWithdrawalsPage() {
 
         <div>
           <h3 className="font-medium text-ink">Ready to pay ({inrReady.length})</h3>
-          <p className="mt-1 text-xs text-ink-dim">
-            Record the transaction reference only after the transfer or cash payment succeeds.
-          </p>
+
         </div>
         {inrReady.length === 0 ? (
           <EmptyState>No converted INR payouts are ready to be sent.</EmptyState>
         ) : (
           inrReady.map((withdrawal) => (
-            <article key={withdrawal.id} className="glass-card rounded-2xl p-5 sm:p-6">
+            <article key={withdrawal.id} className="glass-card rounded-2xl p-4 sm:p-5">
               <p className="currency-value text-lg text-ink">
                 {formatInr(withdrawal.convertedInrAmount)} INR ready · {methodLabel(withdrawal.method)}
               </p>
@@ -538,7 +517,7 @@ export default async function AdminWithdrawalsPage() {
                   accountType: withdrawal.payoutAccountType,
                 }}
               />
-              <div className={withdrawal.method === "BANK" ? "mt-5 grid gap-5 lg:grid-cols-2" : "mt-5 max-w-xl"}>
+              <div className={withdrawal.method === "BANK" ? "mt-3 grid gap-3 lg:grid-cols-2" : "mt-3 max-w-xl"}>
                 <AdminActionForm
                   action={adminCompleteWithdrawalPayout}
                   submitLabel={withdrawal.method === "BANK" ? "Mark bank / UPI transfer paid" : "Mark cash paid"}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useMemo, useState } from "react";
-import { Check, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import {
   adminCompleteWithdrawalPayout,
   adminRecordWithdrawalConversionBatch,
@@ -60,10 +60,9 @@ function formatInr(value: number): string {
 }
 function EmptyPanel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-dashed border-gold-600/20 px-4 py-9 text-center">
-      <Check className="mx-auto size-5 text-positive" aria-hidden />
-      <p className="mt-2 text-sm text-ink-dim">{children}</p>
-    </div>
+    <p className="rounded-xl border border-dashed border-gold-600/20 px-4 py-3 text-center text-sm text-ink-faint">
+      {children}
+    </p>
   );
 }
 
@@ -77,11 +76,11 @@ function CryptoPayouts({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {withdrawals.map((withdrawal) => (
         <article
           key={withdrawal.id}
-          className="glass-card rounded-2xl p-5 sm:p-6"
+          className="glass-card rounded-2xl p-4 sm:p-5"
         >
           <p className="currency-value text-lg text-ink">
             {formatUsdt(Number(withdrawal.brokerReceivedUsdt))} ready
@@ -91,7 +90,7 @@ function CryptoPayouts({
             {formatUsd(Number(withdrawal.amount))}
           </p>
 
-          <div className="mt-4 rounded-xl border border-gold-600/15 bg-vault-950/50 p-4">
+          <div className="mt-3 rounded-xl border border-gold-600/15 bg-vault-950/50 p-3">
             <p className="text-xs uppercase tracking-[0.16em] text-ink-faint">
               Wallet payout details
             </p>
@@ -116,7 +115,7 @@ function CryptoPayouts({
             submitLabel="Mark USDT sent"
             pendingLabel="Recording payout..."
             confirmMessage="Confirm that the USDT was sent to the wallet shown above?"
-            className="mt-5 max-w-xl"
+            className="mt-3 max-w-xl"
           >
             <input type="hidden" name="id" value={withdrawal.id} />
             <label
@@ -182,7 +181,7 @@ function BulkConversionForm({
   return (
     <form
       action={formAction}
-      className="space-y-5"
+      className="space-y-3"
       onSubmit={(event) => {
         if (!canSubmit) {
           event.preventDefault();
@@ -228,7 +227,7 @@ function BulkConversionForm({
               <label
                 key={withdrawal.id}
                 className={cn(
-                  "grid cursor-pointer gap-2 px-4 py-3.5 transition-colors sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center",
+                  "grid cursor-pointer gap-2 px-4 py-2.5 transition-colors sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center",
                   checked ? "bg-gold-600/8" : "hover:bg-vault-950/35",
                 )}
               >
@@ -271,7 +270,7 @@ function BulkConversionForm({
         </div>
       </div>
 
-      <div className="grid gap-4 rounded-xl border border-gold-500/25 bg-gold-600/6 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+      <div className="grid gap-3 rounded-xl border border-gold-500/25 bg-gold-600/6 p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
         <div>
           <label
             htmlFor={"bulk-inr-" + method.toLowerCase()}
@@ -305,10 +304,10 @@ function BulkConversionForm({
         </div>
         <Button
           type="submit"
-          size="md"
+          size="sm"
           disabled={!canSubmit || pending}
           aria-busy={pending}
-          className="w-full sm:mt-6 sm:w-auto"
+          className="w-full sm:mt-5 sm:w-auto"
         >
           {pending ? (
             <>
@@ -341,14 +340,14 @@ export function WithdrawalSettlementTabs({ withdrawals }: Props) {
   );
   const tabs: { id: Method; label: string }[] = [
     { id: "CRYPTO", label: "Crypto" },
-    { id: "BANK", label: "Bank transfer" },
+    { id: "BANK", label: "Bank" },
     { id: "CASH", label: "Cash" },
   ];
 
   return (
     <div>
       <div
-        className="mb-5 flex flex-wrap gap-2 rounded-xl border border-gold-600/15 bg-vault-950/45 p-2"
+        className="mb-3 grid grid-cols-3 gap-1 rounded-xl border border-gold-600/15 bg-vault-950/45 p-1"
         role="tablist"
         aria-label="Withdrawal settlement method"
       >
@@ -360,14 +359,14 @@ export function WithdrawalSettlementTabs({ withdrawals }: Props) {
             aria-selected={active === tab.id}
             onClick={() => setActive(tab.id)}
             className={cn(
-              "rounded-lg px-4 py-2.5 text-sm transition-colors",
+              "min-w-0 rounded-lg px-2 py-2 text-xs transition-colors",
               active === tab.id
                 ? "bg-gold-600/15 text-gold-300"
                 : "text-ink-dim hover:bg-vault-900/70 hover:text-ink",
             )}
           >
             {tab.label}
-            <span className="ml-2 rounded-full bg-vault-950/70 px-2 py-0.5 font-mono text-xs">
+            <span className="ml-1.5 rounded-full bg-vault-950/70 px-1.5 py-0.5 font-mono text-[11px]">
               {counts[tab.id]}
             </span>
           </button>

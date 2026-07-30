@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useMemo, useState } from "react";
-import { Check, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { adminInvestQueuedDeposits, type AdminFormState } from "@/app/admin/actions";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
@@ -53,7 +53,7 @@ export function BrokerTransferForm({ deposits }: Props) {
   return (
     <form
       action={formAction}
-      className="space-y-5"
+      className="space-y-3"
       onSubmit={(event) => {
         if (!canSubmit) {
           event.preventDefault();
@@ -68,10 +68,9 @@ export function BrokerTransferForm({ deposits }: Props) {
       {state.success && <Alert tone="success">{state.success}</Alert>}
 
       {deposits.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gold-600/20 px-4 py-9 text-center">
-          <Check className="mx-auto size-5 text-positive" aria-hidden />
-          <p className="mt-2 text-sm text-ink-dim">The company USDT wallet queue is empty.</p>
-        </div>
+        <p className="rounded-xl border border-dashed border-gold-600/20 px-4 py-3 text-center text-sm text-ink-faint">
+          The company USDT wallet queue is empty.
+        </p>
       ) : (
         <>
           <div className="overflow-hidden rounded-xl border border-gold-600/15">
@@ -99,7 +98,7 @@ export function BrokerTransferForm({ deposits }: Props) {
                   <label
                     key={deposit.id}
                     className={cn(
-                      "grid cursor-pointer gap-2 px-4 py-3.5 transition-colors sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center",
+                      "grid cursor-pointer gap-2 px-4 py-2.5 transition-colors sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center",
                       checked ? "bg-gold-600/8" : "hover:bg-vault-950/35",
                     )}
                   >
@@ -139,7 +138,7 @@ export function BrokerTransferForm({ deposits }: Props) {
             </div>
           </div>
 
-          <div className="grid gap-4 rounded-xl border border-gold-500/25 bg-gold-600/6 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+          <div className="grid gap-3 rounded-xl border border-gold-500/25 bg-gold-600/6 p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
             <div>
               <label htmlFor="broker-received-usdt" className="block text-xs uppercase tracking-[0.14em] text-ink-dim">
                 Total USDT received by broker
@@ -161,7 +160,7 @@ export function BrokerTransferForm({ deposits }: Props) {
                 {selected.length} selected · company wallet {formatUsdt(totalQueued)} · transfer fee {receivedNumber > 0 && receivedNumber <= totalQueued ? formatUsdt(totalQueued - receivedNumber) : "—"}
               </p>
             </div>
-            <Button type="submit" size="md" disabled={!canSubmit || pending} aria-busy={pending} className="w-full sm:mt-6 sm:w-auto">
+            <Button type="submit" size="sm" disabled={!canSubmit || pending} aria-busy={pending} className="w-full sm:mt-5 sm:w-auto">
               {pending ? (
                 <>
                   <Loader2 className="size-4 animate-spin" aria-hidden />
