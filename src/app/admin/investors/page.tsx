@@ -8,11 +8,11 @@ export const metadata: Metadata = { title: "Admin · Investors" };
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
-    <article className="glass-card flex aspect-square flex-col items-center justify-center rounded-2xl p-3 text-center sm:p-5">
-      <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">
+    <article className="glass-card flex aspect-square flex-col items-center justify-center rounded-2xl p-2 text-center sm:p-4">
+      <p className="text-[11px] uppercase tracking-[0.12em] text-ink-faint sm:text-xs">
         {label}
       </p>
-      <p className="currency-value mt-3 max-w-full break-words text-lg text-ink sm:text-xl">
+      <p className="currency-value mt-2 max-w-full break-words text-base text-ink sm:text-lg">
         {value}
       </p>
     </article>
@@ -105,7 +105,7 @@ export default async function AdminInvestorsPage() {
       </header>
 
       <section
-        className="mx-auto grid w-full max-w-xl grid-cols-2 gap-3 sm:gap-4"
+        className="mx-auto grid w-4/5 max-w-md grid-cols-2 gap-2 sm:gap-3"
         aria-label="Investor summary"
       >
         <SummaryCard
