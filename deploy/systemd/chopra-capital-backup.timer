@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Chopra Capital backup every day at midnight IST
+
+[Timer]
+OnCalendar=*-*-* 00:00:00 Asia/Kolkata
+Persistent=true
+AccuracySec=1min
+Unit=chopra-capital-backup.service
+
+[Install]
+WantedBy=timers.target

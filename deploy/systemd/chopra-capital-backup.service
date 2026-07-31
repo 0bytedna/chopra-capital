@@ -1,0 +1,13 @@
+[Unit]
+Description=Create Chopra Capital database and environment backup
+After=network-online.target chopra-capital.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=/var/www/chopra-capital/.env
+ExecStart=/usr/bin/curl --fail --silent --show-error --max-time 300 --request POST --header "Authorization: Bearer ${BACKUP_CRON_SECRET}" http://127.0.0.1:3000/api/internal/system-backup
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict

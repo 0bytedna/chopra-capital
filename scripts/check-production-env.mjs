@@ -1,4 +1,5 @@
 import { Buffer } from "node:buffer";
+import path from "node:path";
 import nextEnv from "@next/env";
 
 const { loadEnvConfig } = nextEnv;
@@ -52,6 +53,34 @@ if (actionKey) {
 
 if (process.env.WITHDRAWAL_WINDOW_TEST_MODE?.trim().toLowerCase() === "true") {
   errors.push("WITHDRAWAL_WINDOW_TEST_MODE must not be true in production.");
+}
+
+const backupDirectory = process.env.SERVER_BACKUP_DIR?.trim() ?? "";
+if (!backupDirectory) {
+  warnings.push(
+    "SERVER_BACKUP_DIR is empty; one-click and scheduled server backups are disabled.",
+  );
+} else if (!path.isAbsolute(backupDirectory)) {
+  errors.push("SERVER_BACKUP_DIR must be an absolute path.");
+}
+
+const backupSecret = process.env.BACKUP_CRON_SECRET?.trim() ?? "";
+if (!backupSecret) {
+  warnings.push(
+    "BACKUP_CRON_SECRET is empty; the midnight systemd backup timer is disabled.",
+  );
+} else if (backupSecret.length < 32) {
+  errors.push("BACKUP_CRON_SECRET must contain at least 32 characters.");
+}
+
+const backupRetention = process.env.SERVER_BACKUP_RETENTION?.trim() ?? "";
+if (
+  backupRetention &&
+  (!Number.isSafeInteger(Number(backupRetention)) ||
+    Number(backupRetention) < 1 ||
+    Number(backupRetention) > 365)
+) {
+  errors.push("SERVER_BACKUP_RETENTION must be an integer between 1 and 365.");
 }
 
 for (const name of ["DEPOSIT_ADDRESS_TRC20", "DEPOSIT_ADDRESS_ERC20", "DEPOSIT_ADDRESS_BEP20"]) {

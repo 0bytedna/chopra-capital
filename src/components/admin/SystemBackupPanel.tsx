@@ -23,7 +23,9 @@ export function SystemBackupPanel({
   const [code, setCode] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [restoreFile, setRestoreFile] = useState<File | null>(null);
-  const [pending, setPending] = useState<"backup" | "restore" | null>(null);
+  const [pending, setPending] = useState<
+    "backup" | "server" | "restore" | null
+  >(null);
   const [notice, setNotice] = useState<{
     kind: "success" | "error";
     message: string;
@@ -121,6 +123,38 @@ export function SystemBackupPanel({
     }
   }
 
+  async function saveServerBackup() {
+    setPending("server");
+    setNotice(null);
+    try {
+      const response = await fetch("/api/admin/system-backup/server", {
+        method: "POST",
+        credentials: "same-origin",
+        body: credentials(),
+      });
+      const result = (await response.json()) as {
+        error?: string;
+        success?: string;
+      };
+      if (!response.ok) {
+        throw new Error(result.error ?? "Server backup failed.");
+      }
+      setCode("");
+      setNotice({
+        kind: "success",
+        message: result.success ?? "Backup saved securely on the server.",
+      });
+    } catch (error) {
+      setNotice({
+        kind: "error",
+        message:
+          error instanceof Error ? error.message : "Server backup failed.",
+      });
+    } finally {
+      setPending(null);
+    }
+  }
+
   const credentialsMissing =
     password.length === 0 || (twoFactorEnabled && !/^\d{6}$/.test(code));
 
@@ -171,7 +205,7 @@ export function SystemBackupPanel({
         )}
       </div>
 
-      <div className="mt-5 grid gap-4 lg:grid-cols-2">
+      <div className="mt-5 grid gap-4 lg:grid-cols-3">
         <article className="rounded-xl border border-slate-200 bg-white p-4">
           <div className="flex items-center gap-3">
             <span className="flex size-10 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
@@ -190,6 +224,27 @@ export function SystemBackupPanel({
           >
             <Download className="size-4" aria-hidden />
             {pending === "backup" ? "Preparing…" : "Download backup"}
+          </button>
+        </article>
+
+        <article className="rounded-xl border border-slate-200 bg-white p-4">
+          <div className="flex items-center gap-3">
+            <span className="flex size-10 items-center justify-center rounded-xl bg-cyan-50 text-cyan-700">
+              <HardDriveDownload className="size-5" aria-hidden />
+            </span>
+            <div>
+              <h3 className="font-semibold text-ink">Save on server</h3>
+              <p className="text-sm text-ink-dim">Protected off-project copy</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={saveServerBackup}
+            disabled={pending !== null || credentialsMissing}
+            className="btn-gold mt-4 inline-flex w-full items-center justify-center gap-2 px-4 py-2.5 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <HardDriveDownload className="size-4" aria-hidden />
+            {pending === "server" ? "Saving…" : "Save server backup"}
           </button>
         </article>
 

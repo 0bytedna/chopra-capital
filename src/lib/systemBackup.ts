@@ -23,6 +23,8 @@ const MAX_DATABASE_BYTES = 250 * 1024 * 1024;
 const MAX_ENV_BYTES = 1024 * 1024;
 const MAX_BACKUP_BYTES = 300 * 1024 * 1024;
 const MAX_EXPANDED_BYTES = 350 * 1024 * 1024;
+const DEFAULT_SERVER_BACKUP_RETENTION = 30;
+const MAX_SERVER_BACKUP_RETENTION = 365;
 
 type BackupFile = {
   data: string;
@@ -38,6 +40,13 @@ type BackupBundle = {
     "production.db": BackupFile;
     ".env": BackupFile;
   };
+};
+
+export type StoredSystemBackup = {
+  createdAt: string;
+  filename: string;
+  pruned: number;
+  size: number;
 };
 
 export class SystemBackupError extends Error {
@@ -206,6 +215,120 @@ export async function createSystemBackup(): Promise<Buffer> {
   } finally {
     await snapshot.cleanup();
   }
+}
+
+function serverBackupDirectory(): string {
+  const configured = process.env.SERVER_BACKUP_DIR?.trim();
+  if (!configured) {
+    throw new SystemBackupError(
+      "SERVER_BACKUP_DIR is not configured on this server.",
+      503,
+    );
+  }
+  if (!path.isAbsolute(configured)) {
+    throw new SystemBackupError("SERVER_BACKUP_DIR must be an absolute path.", 500);
+  }
+
+  const resolved = path.resolve(configured);
+  const relativeToProject = path.relative(process.cwd(), resolved);
+  if (
+    relativeToProject === "" ||
+    (!relativeToProject.startsWith(`..${path.sep}`) &&
+      relativeToProject !== ".." &&
+      !path.isAbsolute(relativeToProject))
+  ) {
+    throw new SystemBackupError(
+      "SERVER_BACKUP_DIR must be outside the website directory.",
+      500,
+    );
+  }
+  return resolved;
+}
+
+function serverBackupRetention(): number {
+  const raw = process.env.SERVER_BACKUP_RETENTION?.trim();
+  if (!raw) return DEFAULT_SERVER_BACKUP_RETENTION;
+  const retention = Number(raw);
+  if (
+    !Number.isSafeInteger(retention) ||
+    retention < 1 ||
+    retention > MAX_SERVER_BACKUP_RETENTION
+  ) {
+    throw new SystemBackupError(
+      `SERVER_BACKUP_RETENTION must be between 1 and ${MAX_SERVER_BACKUP_RETENTION}.`,
+      500,
+    );
+  }
+  return retention;
+}
+
+async function ensureServerBackupDirectory(): Promise<string> {
+  const directory = serverBackupDirectory();
+  await mkdir(directory, { recursive: true, mode: 0o700 });
+  const details = await lstat(directory);
+  if (!details.isDirectory() || details.isSymbolicLink()) {
+    throw new SystemBackupError(
+      "SERVER_BACKUP_DIR must be a real directory, not a symbolic link.",
+      500,
+    );
+  }
+  await chmod(directory, 0o700);
+  return directory;
+}
+
+async function pruneServerBackups(
+  directory: string,
+  keep: number,
+): Promise<number> {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const backups = await Promise.all(
+    entries
+      .filter(
+        (entry) =>
+          entry.isFile() &&
+          /^chopra-capital-.+-(manual|scheduled)-[a-f0-9]{8}\.ccbackup$/.test(
+            entry.name,
+          ),
+      )
+      .map(async (entry) => ({
+        name: entry.name,
+        modifiedAt: (await stat(path.join(directory, entry.name))).mtimeMs,
+      })),
+  );
+  backups.sort((left, right) => right.modifiedAt - left.modifiedAt);
+
+  let pruned = 0;
+  for (const backup of backups.slice(keep)) {
+    await rm(path.join(directory, backup.name), { force: true });
+    pruned += 1;
+  }
+  return pruned;
+}
+
+export async function saveSystemBackupToServer(
+  source: "manual" | "scheduled",
+): Promise<StoredSystemBackup> {
+  const directory = await ensureServerBackupDirectory();
+  const backup = await createSystemBackup();
+  const createdAt = new Date().toISOString();
+  const timestamp = createdAt.replace(/[:.]/g, "-");
+  const token = randomUUID().replaceAll("-", "").slice(0, 8);
+  const filename = `chopra-capital-${timestamp}-${source}-${token}.ccbackup`;
+  const destination = path.join(directory, filename);
+
+  await writeDurably(destination, backup);
+  await chmod(destination, 0o600);
+  const pruned = await pruneServerBackups(
+    directory,
+    serverBackupRetention(),
+  ).catch(() => 0);
+
+  return {
+    createdAt,
+    filename,
+    pruned,
+    size: backup.length,
+  };
 }
 
 function parseFile(value: unknown, name: string, maxBytes: number): Buffer {
