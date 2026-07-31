@@ -94,18 +94,18 @@ export default async function AdminOverviewPage() {
       </section>
 
       <section
-        className="mx-auto grid w-full max-w-xl grid-cols-2 gap-3 sm:gap-4"
+        className="mx-auto grid w-full max-w-xl grid-cols-2 gap-3 sm:gap-4 lg:max-w-none lg:grid-cols-4"
         aria-label="Pending administration tasks"
       >
         {queues.map((queue) => (
           <Link
             key={queue.href}
             href={queue.href}
-            className="glass-card glass-card-hover flex aspect-square flex-col items-center justify-center rounded-2xl p-4 text-center sm:p-6"
+            className="glass-card glass-card-hover flex aspect-square flex-col items-center justify-center rounded-2xl p-4 text-center sm:p-6 lg:aspect-auto lg:min-h-32 lg:p-4"
           >
             <span
               className={cn(
-                "flex size-16 shrink-0 items-center justify-center rounded-full border font-mono text-2xl font-semibold shadow-lg sm:size-20 sm:text-3xl",
+                "flex size-16 shrink-0 items-center justify-center rounded-full border font-mono text-2xl font-semibold shadow-lg sm:size-20 sm:text-3xl lg:size-14 lg:text-2xl",
                 queue.count > 0
                   ? "border-gold-600 bg-gold-600 text-white shadow-gold-600/20"
                   : "border-slate-200 bg-slate-100 text-ink-faint shadow-slate-200/40",
@@ -114,7 +114,7 @@ export default async function AdminOverviewPage() {
             >
               {queue.count}
             </span>
-            <p className="mt-4 text-base font-semibold leading-tight text-ink sm:text-lg">
+            <p className="mt-4 text-base font-semibold leading-tight text-ink sm:text-lg lg:mt-3">
               {queue.label}
             </p>
           </Link>

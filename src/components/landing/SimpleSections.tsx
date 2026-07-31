@@ -72,7 +72,6 @@ function StrategyOverview() {
     <section id="strategy" className="scroll-mt-24 px-4 py-8 sm:px-6 sm:py-14">
       <div className="mx-auto max-w-7xl">
         <SectionHeading
-          centered={false}
           eyebrow="Our trading approach"
           title="Zero-Loss Algorithmic Trading, Finally a Reality"
           accent="Zero-Loss"

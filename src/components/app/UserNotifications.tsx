@@ -13,6 +13,7 @@ import type {
   UserNotificationCenter,
   UserNotificationKind,
 } from "@/lib/userNotifications";
+import { AccountActivityPanel } from "@/components/app/AccountActivityPanel";
 
 const notificationStyle: Record<
   UserNotificationKind,
@@ -278,51 +279,15 @@ export function AttentionPanel({ center }: { center: UserNotificationCenter }) {
   const unreadItems = center.updates.filter((item) => item.isUnread).slice(0, 3);
   if (unreadItems.length > 0) {
     return (
-      <section
-        aria-labelledby="account-activity-title"
-        className="overflow-hidden rounded-2xl border-2 border-blue-200 bg-blue-50 shadow-sm"
-      >
-        <div className="flex flex-col gap-4 border-b border-blue-200 bg-blue-100/70 px-5 py-4 sm:flex-row sm:items-center">
-          <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white shadow-sm">
-            <BellRing className="size-6" aria-hidden />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold uppercase tracking-[0.12em] text-blue-700">
-              New account activity
-            </p>
-            <h2 id="account-activity-title" className="mt-0.5 font-serif text-xl text-blue-950">
-              {center.unreadCount} new update{center.unreadCount === 1 ? "" : "s"}
-            </h2>
-          </div>
-          <Link
-            href="/app/notifications"
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700"
-          >
-            Review updates
-            <ArrowRight className="size-4" aria-hidden />
-          </Link>
-        </div>
-
-        <div className="divide-y divide-blue-200 px-5">
-          {unreadItems.map((item) => (
-            <Link
-              key={item.id}
-              href="/app/notifications"
-              className="group flex items-center gap-3 py-3.5 text-sm"
-            >
-              <Info className="size-4 shrink-0 text-blue-700" aria-hidden />
-              <span className="min-w-0 flex-1 font-medium text-blue-950">{item.title}</span>
-              <ArrowRight
-                className="size-4 shrink-0 text-blue-700 transition-transform group-hover:translate-x-0.5"
-                aria-hidden
-              />
-            </Link>
-          ))}
-        </div>
-      </section>
+      <AccountActivityPanel
+        unreadCount={center.unreadCount}
+        items={unreadItems.map((item) => ({
+          id: item.id,
+          title: item.title,
+        }))}
+      />
     );
   }
-
   const currentStep = center.journey.find(
     (step) => step.state === "CURRENT" && step.id !== "withdraw",
   );

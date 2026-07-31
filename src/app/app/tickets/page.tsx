@@ -3,7 +3,7 @@ import Link from "next/link";
 import { MessageSquare } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { NewTicketForm } from "./TicketForms";
+import { NewTicketDialog } from "./TicketForms";
 import { cn } from "@/lib/cn";
 
 export const metadata: Metadata = { title: "Support tickets" };
@@ -21,59 +21,85 @@ export default async function TicketsPage() {
     orderBy: { updatedAt: "desc" },
     include: { _count: { select: { messages: true } } },
   });
+  const openTickets = tickets.filter((ticket) => ticket.status !== "CLOSED");
+  const closedTickets = tickets.filter((ticket) => ticket.status === "CLOSED");
+
+  const ticketList = (items: typeof tickets) => (
+    <ul className="mt-4 space-y-2.5">
+      {items.map((ticket) => (
+        <li key={ticket.id}>
+          <Link
+            href={`/app/tickets/${ticket.id}`}
+            className="glass-card glass-card-hover flex items-center gap-4 rounded-xl px-4 py-3.5"
+          >
+            <MessageSquare
+              className="size-4 shrink-0 text-gold-500"
+              aria-hidden
+            />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm text-ink">
+                {ticket.subject}
+              </span>
+              <span className="block text-xs text-ink-faint">
+                {ticket._count.messages} message
+                {ticket._count.messages === 1 ? "" : "s"} · updated{" "}
+                {ticket.updatedAt.toLocaleDateString("en-US", {
+                  day: "numeric",
+                  month: "short",
+                })}
+              </span>
+            </span>
+            <span
+              className={cn(
+                "shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium",
+                statusCls[ticket.status],
+              )}
+            >
+              {ticket.status.toLowerCase()}
+            </span>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
 
   return (
-    <div className="mx-auto max-w-3xl space-y-10">
+    <div className="mx-auto max-w-3xl space-y-8">
       <header>
         <p className="eyebrow">Support</p>
         <h1 className="mt-2 font-serif text-2xl text-ink sm:text-3xl">
           We&apos;re <em className="gold-text italic">here</em>
         </h1>
         <p className="mt-2 text-sm text-ink-dim">
-          Questions about deposits, withdrawals or your account — open a ticket and the team will
-          reply here.
+          Questions about deposits, withdrawals or your account — open a ticket
+          and the team will reply here.
         </p>
       </header>
 
-      <section className="glass-card rounded-2xl p-4 sm:p-7">
-        <h2 className="font-serif text-xl text-ink">New ticket</h2>
-        <div className="mt-4">
-          <NewTicketForm />
-        </div>
-      </section>
-
       <section>
-        <p className="eyebrow">History</p>
-        <h2 className="mt-2 font-serif text-xl text-ink">Your tickets</h2>
-        {tickets.length === 0 ? (
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="eyebrow">Active support</p>
+            <h2 className="mt-2 font-serif text-xl text-ink">Open tickets</h2>
+          </div>
+          <NewTicketDialog />
+        </div>
+        {openTickets.length === 0 ? (
           <p className="mt-4 rounded-xl border border-dashed border-gold-600/20 px-4 py-8 text-center text-sm text-ink-faint">
-            No tickets yet.
+            No open tickets.
           </p>
         ) : (
-          <ul className="mt-4 space-y-2.5">
-            {tickets.map((t) => (
-              <li key={t.id}>
-                <Link
-                  href={`/app/tickets/${t.id}`}
-                  className="glass-card glass-card-hover flex items-center gap-4 rounded-xl px-4 py-3.5"
-                >
-                  <MessageSquare className="size-4 shrink-0 text-gold-500" aria-hidden />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm text-ink">{t.subject}</span>
-                    <span className="block text-xs text-ink-faint">
-                      {t._count.messages} message{t._count.messages === 1 ? "" : "s"} · updated{" "}
-                      {t.updatedAt.toLocaleDateString("en-US", { day: "numeric", month: "short" })}
-                    </span>
-                  </span>
-                  <span className={cn("shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium", statusCls[t.status])}>
-                    {t.status.toLowerCase()}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          ticketList(openTickets)
         )}
       </section>
+
+      {closedTickets.length > 0 && (
+        <section>
+          <p className="eyebrow">History</p>
+          <h2 className="mt-2 font-serif text-xl text-ink">Closed tickets</h2>
+          {ticketList(closedTickets)}
+        </section>
+      )}
     </div>
   );
 }
