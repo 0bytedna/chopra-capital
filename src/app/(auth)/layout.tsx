@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandMark } from "@/components/brand/BrandMark";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -8,12 +9,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div className="absolute inset-0 -z-10 grain" aria-hidden />
 
       <Link href="/" className="mb-8 flex items-center gap-2.5">
-        <span
-          aria-hidden
-          className="flex size-9 items-center justify-center rounded-full border border-gold-500/40 bg-gold-600/10 font-serif text-sm font-semibold text-gold-400"
-        >
-          CC
-        </span>
+        <BrandMark />
         <span className="font-serif text-xl tracking-tight text-ink">
           Chopra <span className="italic text-gold-400">Capital</span>
         </span>

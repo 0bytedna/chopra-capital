@@ -18,6 +18,7 @@ import {
   Activity,
 } from "lucide-react";
 import { signout } from "@/app/(auth)/actions";
+import { BrandMark } from "@/components/brand/BrandMark";
 import { cn } from "@/lib/cn";
 
 const items = [
@@ -67,12 +68,7 @@ export function AdminShell({ email, children }: { email: string; children: React
 
   const brand = (
     <Link href="/admin" className="flex items-center gap-2.5 px-5 py-5">
-      <span
-        aria-hidden
-        className="flex size-8 items-center justify-center rounded-full border border-gold-500/40 bg-gold-600/10 font-serif text-[13px] font-semibold text-gold-400"
-      >
-        CC
-      </span>
+      <BrandMark className="size-8" />
       <span className="font-serif text-base tracking-tight text-ink">
         Admin <span className="italic text-gold-400">console</span>
       </span>
@@ -136,7 +132,10 @@ export function AdminShell({ email, children }: { email: string; children: React
             >
               <Menu className="size-5" aria-hidden />
             </button>
-            <p className="eyebrow">Chopra Capital · Staff</p>
+            <div className="flex items-center gap-2">
+              <BrandMark className="size-7" />
+              <p className="eyebrow">Chopra Capital · Staff</p>
+            </div>
           </div>
         </header>
         <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:rounded-2xl lg:border lg:border-slate-200/80 lg:bg-vault-900/20">{children}</main>

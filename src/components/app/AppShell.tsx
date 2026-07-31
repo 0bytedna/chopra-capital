@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { signout } from "@/app/(auth)/actions";
+import { BrandMark } from "@/components/brand/BrandMark";
 import { cn } from "@/lib/cn";
 
 type KycStatus = "NOT_SUBMITTED" | "PENDING" | "APPROVED" | "REJECTED";
@@ -175,12 +176,7 @@ export function AppShell({
 
   const brand = (
     <Link href="/app" className="flex items-center gap-2.5 px-5 py-5">
-      <span
-        aria-hidden
-        className="flex size-8 items-center justify-center rounded-full border border-gold-500/40 bg-gold-600/10 font-serif text-[13px] font-semibold text-gold-400"
-      >
-        CC
-      </span>
+      <BrandMark className="size-8" />
       <span className="font-serif text-base tracking-tight text-ink">
         Chopra <span className="italic text-gold-400">Capital</span>
       </span>
@@ -242,6 +238,7 @@ export function AppShell({
             >
               <Menu className="size-5" aria-hidden />
             </button>
+            <BrandMark className="size-7 lg:hidden" />
 
             <div className="flex min-w-0 items-center gap-4 sm:gap-6">
               <div className="min-w-0">

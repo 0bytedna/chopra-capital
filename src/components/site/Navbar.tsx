@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
+import { BrandMark } from "@/components/brand/BrandMark";
 import { cn } from "@/lib/cn";
 
 const links = [
@@ -36,7 +37,7 @@ export function Navbar() {
         aria-label="Main"
       >
         <Link href="/" className="flex items-center gap-2.5 rounded-xl px-1" onClick={() => setOpen(false)}>
-          <span aria-hidden className="flex size-9 items-center justify-center rounded-xl border border-gold-500/30 bg-gradient-to-br from-gold-500/18 to-gold-700/5 font-serif text-[13px] font-semibold text-gold-300 shadow-inner">CC</span>
+          <BrandMark priority />
           <span className="font-serif text-lg tracking-tight text-ink">Chopra <span className="italic text-gold-400">Capital</span></span>
         </Link>
 
