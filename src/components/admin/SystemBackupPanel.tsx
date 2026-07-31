@@ -6,6 +6,7 @@ import {
   Download,
   FileKey,
   RotateCcw,
+  HardDriveDownload,
   ShieldAlert,
 } from "lucide-react";
 
