@@ -5,7 +5,7 @@ import { PrismaClient } from "../src/generated/prisma/index.js";
 const prisma = new PrismaClient();
 async function main() {
   await prisma.poolState.upsert({ where: { id: "pool" }, update: {}, create: { id: "pool" } });
-  await prisma.setting.upsert({ where: { key: "WITHDRAWAL_INR_PER_USD" }, update: {}, create: { key: "WITHDRAWAL_INR_PER_USD", value: "83" } });
+  await prisma.setting.upsert({ where: { key: "WITHDRAWAL_INR_PER_USD" }, update: { value: "100" }, create: { key: "WITHDRAWAL_INR_PER_USD", value: "100" } });
   console.log("Application defaults ready. No accounts were seeded.");
 }
 main().finally(() => prisma.$disconnect());

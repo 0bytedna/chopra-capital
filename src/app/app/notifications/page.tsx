@@ -7,6 +7,7 @@ import {
   AllCaughtUp,
   NotificationList,
 } from "@/components/app/UserNotifications";
+import { ExpandableActivityList } from "@/components/app/ExpandableActivityList";
 
 export const metadata: Metadata = { title: "Notifications" };
 
@@ -72,10 +73,22 @@ export default async function NotificationsPage() {
               </form>
             )}
           </div>
-          <NotificationList
-            items={center.updates}
-            openNotification={markNotificationReadAndOpen}
-            compact
+          <ExpandableActivityList
+            total={center.updates.length}
+            collapsed={
+              <NotificationList
+                items={center.updates.slice(0, 5)}
+                openNotification={markNotificationReadAndOpen}
+                compact
+              />
+            }
+            expanded={
+              <NotificationList
+                items={center.updates}
+                openNotification={markNotificationReadAndOpen}
+                compact
+              />
+            }
           />
         </section>
       )}
