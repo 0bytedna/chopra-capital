@@ -5,7 +5,10 @@ import { createHash, randomUUID } from "node:crypto";
 import {
   access,
   chmod,
+  lstat,
+  mkdir,
   open,
+  readdir,
   readFile,
   rename,
   rm,
