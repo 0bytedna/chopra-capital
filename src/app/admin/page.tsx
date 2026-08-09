@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentNav } from "@/lib/nav";
-import { toNumber, formatUsdt } from "@/lib/money";
+import { formatUsdt } from "@/lib/money";
 import { cn } from "@/lib/cn";
 
 export const metadata: Metadata = { title: "Admin · Overview" };
@@ -10,14 +10,17 @@ export const metadata: Metadata = { title: "Admin · Overview" };
 export default async function AdminOverviewPage() {
   const [
     poolNav,
-    walletAgg,
+    tradingProfitAgg,
     pendingDeposits,
     activeWithdrawals,
     pendingKyc,
     openTickets,
   ] = await Promise.all([
     getCurrentNav(),
-    prisma.wallet.aggregate({ _sum: { queued: true } }),
+    prisma.tradingAccountEntry.aggregate({
+      where: { type: { in: ["TRADING_PROFIT", "TRADING_LOSS"] } },
+      _sum: { amount: true },
+    }),
     prisma.deposit.count({
       where: {
         status: {
@@ -49,7 +52,7 @@ export default async function AdminOverviewPage() {
     prisma.ticket.count({ where: { status: "OPEN" } }),
   ]);
 
-  const queuedTotal = toNumber(walletAgg._sum.queued ?? 0);
+  const tradingProfit = tradingProfitAgg._sum.amount ?? 0;
   const queues = [
     { href: "/admin/deposits", label: "Deposits", count: pendingDeposits },
     { href: "/admin/withdrawals", label: "Withdrawals", count: activeWithdrawals },
@@ -72,12 +75,12 @@ export default async function AdminOverviewPage() {
       >
         {[
           { label: "Balance", value: `${formatUsdt(poolNav.balance)} USD` },
+          { label: "Profits", value: `${formatUsdt(tradingProfit)} USD` },
           {
             label: "Issued units",
             value: formatUsdt(poolNav.totalUnits, 6),
           },
           { label: "NAV / unit", value: formatUsdt(poolNav.nav) },
-          { label: "In queue", value: `${formatUsdt(queuedTotal)} USD` },
         ].map((item) => (
           <div
             key={item.label}

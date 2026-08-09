@@ -196,40 +196,43 @@ export function DepositHistory({ deposits }: Props) {
 
         return (
           <li key={deposit.id} className="glass-card rounded-xl px-4 py-3.5">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-              <div className="min-w-0">
-                <p className="currency-value text-sm text-ink">{reportedAmount(deposit)}</p>
-                <p className="mt-0.5 text-xs text-ink-faint">
-                  {methodLabel(deposit)} · {new Date(deposit.createdAt).toLocaleDateString("en-IN", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })}
-                  {deposit.status === "RECEIVED" ? " · awaiting conversion to USDT" : ""}
-                  {deposit.status === "QUEUED" ? ` · ${deposit.queuedUsdtAmount ?? "—"} USD in company wallet` : ""}
-                  {deposit.status === "CONFIRMED" ? ` · ${deposit.amount} USD invested` : ""}
-                  {deposit.adminNote ? ` · ${deposit.adminNote}` : ""}
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center gap-2 sm:shrink-0 sm:justify-end">
-                <span className={cn("rounded-full border px-2.5 py-1 text-xs font-medium", statusClass[deposit.status])}>
+            <div className="min-w-0">
+              <div className="flex items-start justify-between gap-3">
+                <p className="currency-value min-w-0 text-sm text-ink">{reportedAmount(deposit)}</p>
+                <span
+                  className={cn(
+                    "shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium",
+                    statusClass[deposit.status],
+                  )}
+                >
                   {statusLabel(deposit.status)}
                 </span>
-                {canEdit && !editing && !cancelling && (
-                  <>
-                    <Button type="button" variant="ghost" size="sm" onClick={() => setEditingId(deposit.id)}>
-                      <Pencil className="size-3.5" aria-hidden />
-                      {deposit.status === "NEEDS_CORRECTION" ? "Correct details" : "Edit"}
-                    </Button>
-                    {canCancel && (
-                      <Button type="button" variant="danger" size="sm" onClick={() => setCancellingId(deposit.id)}>
-                        <Ban className="size-3.5" aria-hidden />
-                        Cancel request
-                      </Button>
-                    )}
-                  </>
-                )}
               </div>
+              <p className="mt-0.5 text-xs text-ink-faint">
+                {methodLabel(deposit)} · {new Date(deposit.createdAt).toLocaleDateString("en-IN", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })}
+                {deposit.status === "RECEIVED" ? " · awaiting conversion to USDT" : ""}
+                {deposit.status === "QUEUED" ? ` · ${deposit.queuedUsdtAmount ?? "—"} USD in company wallet` : ""}
+                {deposit.status === "CONFIRMED" ? ` · ${deposit.amount} USD invested` : ""}
+                {deposit.adminNote ? ` · ${deposit.adminNote}` : ""}
+              </p>
+              {canEdit && !editing && !cancelling && (
+                <div className="mt-3 flex flex-wrap items-center gap-2 sm:justify-end">
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setEditingId(deposit.id)}>
+                    <Pencil className="size-3.5" aria-hidden />
+                    {deposit.status === "NEEDS_CORRECTION" ? "Correct details" : "Edit"}
+                  </Button>
+                  {canCancel && (
+                    <Button type="button" variant="danger" size="sm" onClick={() => setCancellingId(deposit.id)}>
+                      <Ban className="size-3.5" aria-hidden />
+                      Cancel request
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
             {editing && <DepositEditForm key={deposit.id} deposit={deposit} onCancel={() => setEditingId(null)} />}
             {cancelling && <CancelDepositForm deposit={deposit} onDismiss={() => setCancellingId(null)} />}

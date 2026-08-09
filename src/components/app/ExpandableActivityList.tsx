@@ -2,43 +2,57 @@
 
 import { useState, type ReactNode } from "react";
 import { Minus, Plus } from "lucide-react";
+import { cn } from "@/lib/cn";
 
 export function ExpandableActivityList({
-  collapsed,
-  expanded,
+  batches,
   total,
-  initialCount = 5,
+  batchSize = 5,
 }: {
-  collapsed: ReactNode;
-  expanded: ReactNode;
+  batches: ReactNode[];
   total: number;
-  initialCount?: number;
+  batchSize?: number;
 }) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const hiddenCount = Math.max(0, total - initialCount);
+  const [visibleBatches, setVisibleBatches] = useState(1);
+  const visibleCount = Math.min(total, visibleBatches * batchSize);
+  const remaining = Math.max(0, total - visibleCount);
+  const canCollapse = visibleBatches > 1;
 
-  if (hiddenCount === 0) {
-    return collapsed;
-  }
+  if (batches.length === 0) return null;
 
   return (
     <div>
-      {isExpanded ? expanded : collapsed}
-      <button
-        type="button"
-        aria-expanded={isExpanded}
-        onClick={() => setIsExpanded((current) => !current)}
-        className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700"
-      >
-        <span className="flex size-6 items-center justify-center rounded-full bg-slate-100">
-          {isExpanded ? (
-            <Minus className="size-4" aria-hidden />
-          ) : (
-            <Plus className="size-4" aria-hidden />
+      <div className="space-y-2">{batches.slice(0, visibleBatches)}</div>
+      {(remaining > 0 || canCollapse) && (
+        <div
+          className={cn(
+            "mt-3 grid gap-2",
+            remaining > 0 && canCollapse ? "grid-cols-2" : "grid-cols-1",
           )}
-        </span>
-        {isExpanded ? "Show recent 5 only" : `Show ${hiddenCount} more`}
-      </button>
+        >
+          {remaining > 0 && (
+            <button
+              type="button"
+              aria-expanded={canCollapse}
+              onClick={() => setVisibleBatches((current) => current + 1)}
+              className="flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700"
+            >
+              <Plus className="size-4" aria-hidden />
+              Show {Math.min(batchSize, remaining)} more
+            </button>
+          )}
+          {canCollapse && (
+            <button
+              type="button"
+              onClick={() => setVisibleBatches(1)}
+              className="flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700"
+            >
+              <Minus className="size-4" aria-hidden />
+              Collapse
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

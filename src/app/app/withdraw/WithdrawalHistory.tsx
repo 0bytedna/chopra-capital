@@ -7,6 +7,7 @@ import { cancelWithdrawal, editWithdrawal, type WithdrawFormState } from "./acti
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Field, SelectField } from "@/components/ui/Field";
+import { OtpField } from "@/components/ui/OtpField";
 import { SubmitButton } from "@/components/ui/SubmitButton";
 import { cn } from "@/lib/cn";
 
@@ -154,7 +155,7 @@ function WithdrawalEditForm({
         Changing the method uses the current payout details saved in Profile &amp; Security.
       </p>
       {twoFactorEnabled && (
-        <Field
+        <OtpField
           id={"edit-withdraw-" + withdrawal.id + "-code"}
           label="Authenticator code"
           name="code"
@@ -248,56 +249,56 @@ export function WithdrawalHistory({
 
         return (
           <li key={withdrawal.id} className="glass-card rounded-xl px-4 py-3.5">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-              <div className="min-w-0">
-                <p className="currency-value text-sm text-ink">
+            <div className="min-w-0">
+              <div className="flex items-start justify-between gap-3">
+                <p className="currency-value min-w-0 text-sm text-ink">
                   {withdrawal.amount} USD requested
                 </p>
-                <p className="mt-1 text-xs text-ink-faint">
-                  {methodLabel(withdrawal)} · {new Date(withdrawal.createdAt).toLocaleDateString("en-IN", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })}
-                </p>
-                {withdrawal.paidAmount && (
-                  <p className="currency-value mt-1 text-xs text-positive">
-                    Paid {withdrawal.paidAmount} USDT
-                  </p>
-                )}
-                {withdrawal.paidInrAmount && (
-                  <p className="currency-value mt-1 text-xs text-positive">
-                    Paid {withdrawal.paidInrAmount} INR
-                  </p>
-                )}
-                {withdrawal.status === "REJECTED" && withdrawal.adminNote && (
-                  <p className="mt-2 text-xs text-negative">Reason: {withdrawal.adminNote}</p>
-                )}
-                {withdrawal.status === "PAYOUT_DETAILS_REQUIRED" && (
-                  <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-                    <p>
-                      This payout is on hold{withdrawal.payoutCorrectionNote ? `: ${withdrawal.payoutCorrectionNote}` : "."}
-                    </p>
-                    <Link href="/app/profile#banking-details" className="mt-1 inline-block font-medium text-gold-600 underline underline-offset-2">
-                      Correct bank details in Profile &amp; Security
-                    </Link>
-                  </div>
-                )}
-                {withdrawal.status === "PAYOUT_DETAILS_REVIEW" && (
-                  <p className="mt-3 rounded-lg border border-amber-500/30 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-                    Your corrected bank details were submitted. The payout remains blocked until an admin approves them.
-                  </p>
-                )}
-              </div>
-              <div className="flex flex-wrap items-center gap-2 sm:shrink-0 sm:justify-end">
                 <span
                   className={cn(
-                    "rounded-full border px-2.5 py-1 text-xs font-medium",
+                    "shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium",
                     statusClass[withdrawal.status],
                   )}
                 >
                   {statusLabel(withdrawal)}
                 </span>
+              </div>
+              <p className="mt-1 text-xs text-ink-faint">
+                {methodLabel(withdrawal)} · {new Date(withdrawal.createdAt).toLocaleDateString("en-IN", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </p>
+              {withdrawal.paidAmount && (
+                <p className="currency-value mt-1 text-xs text-positive">
+                  Paid {withdrawal.paidAmount} USDT
+                </p>
+              )}
+              {withdrawal.paidInrAmount && (
+                <p className="currency-value mt-1 text-xs text-positive">
+                  Paid {withdrawal.paidInrAmount} INR
+                </p>
+              )}
+              {withdrawal.status === "REJECTED" && withdrawal.adminNote && (
+                <p className="mt-2 text-xs text-negative">Reason: {withdrawal.adminNote}</p>
+              )}
+              {withdrawal.status === "PAYOUT_DETAILS_REQUIRED" && (
+                <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                  <p>
+                    This payout is on hold{withdrawal.payoutCorrectionNote ? `: ${withdrawal.payoutCorrectionNote}` : "."}
+                  </p>
+                  <Link href="/app/profile#banking-details" className="mt-1 inline-block font-medium text-gold-600 underline underline-offset-2">
+                    Correct bank details in Profile &amp; Security
+                  </Link>
+                </div>
+              )}
+              {withdrawal.status === "PAYOUT_DETAILS_REVIEW" && (
+                <p className="mt-3 rounded-lg border border-amber-500/30 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                  Your corrected bank details were submitted. The payout remains blocked until an admin approves them.
+                </p>
+              )}
+              <div className="mt-3 flex flex-wrap items-center gap-2 sm:justify-end">
                 <button
                   type="button"
                   aria-expanded={detailsOpen}

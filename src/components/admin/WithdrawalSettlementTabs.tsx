@@ -66,7 +66,7 @@ function EmptyPanel({ children }: { children: React.ReactNode }) {
   );
 }
 
-function CryptoPayouts({
+export function CryptoPayouts({
   withdrawals,
 }: {
   withdrawals: SettlementWithdrawal[];
@@ -324,22 +324,20 @@ function BulkConversionForm({
 }
 
 export function WithdrawalSettlementTabs({ withdrawals }: Props) {
+  const conversionWithdrawals = withdrawals.filter(
+    (item) => item.method === "BANK" || item.method === "CASH",
+  );
   const counts = {
-    CRYPTO: withdrawals.filter((item) => item.method === "CRYPTO").length,
-    BANK: withdrawals.filter((item) => item.method === "BANK").length,
-    CASH: withdrawals.filter((item) => item.method === "CASH").length,
+    BANK: conversionWithdrawals.filter((item) => item.method === "BANK").length,
+    CASH: conversionWithdrawals.filter((item) => item.method === "CASH").length,
   };
-  const [active, setActive] = useState<Method>(() => {
-    if (counts.CRYPTO > 0) return "CRYPTO";
-    if (counts.BANK > 0) return "BANK";
-    if (counts.CASH > 0) return "CASH";
-    return "CRYPTO";
-  });
-  const activeWithdrawals = withdrawals.filter(
+  const [active, setActive] = useState<"BANK" | "CASH">(() =>
+    counts.BANK > 0 ? "BANK" : counts.CASH > 0 ? "CASH" : "BANK",
+  );
+  const activeWithdrawals = conversionWithdrawals.filter(
     (withdrawal) => withdrawal.method === active,
   );
-  const tabs: { id: Method; label: string }[] = [
-    { id: "CRYPTO", label: "Crypto" },
+  const tabs: Array<{ id: "BANK" | "CASH"; label: string }> = [
     { id: "BANK", label: "Bank" },
     { id: "CASH", label: "Cash" },
   ];
@@ -347,9 +345,9 @@ export function WithdrawalSettlementTabs({ withdrawals }: Props) {
   return (
     <div>
       <div
-        className="mb-3 grid grid-cols-3 gap-1 rounded-xl border border-gold-600/15 bg-vault-950/45 p-1"
+        className="mb-3 grid grid-cols-2 gap-1 rounded-xl border border-slate-200 bg-white p-1"
         role="tablist"
-        aria-label="Withdrawal settlement method"
+        aria-label="INR conversion method"
       >
         {tabs.map((tab) => (
           <button
@@ -359,14 +357,14 @@ export function WithdrawalSettlementTabs({ withdrawals }: Props) {
             aria-selected={active === tab.id}
             onClick={() => setActive(tab.id)}
             className={cn(
-              "min-w-0 rounded-lg px-2 py-2 text-xs transition-colors",
+              "min-w-0 rounded-lg px-2 py-2 text-xs transition-colors sm:text-sm",
               active === tab.id
-                ? "bg-gold-600/15 text-gold-300"
-                : "text-ink-dim hover:bg-vault-900/70 hover:text-ink",
+                ? "bg-blue-100 text-blue-700"
+                : "text-ink-dim hover:bg-slate-50 hover:text-ink",
             )}
           >
             {tab.label}
-            <span className="ml-1.5 rounded-full bg-vault-950/70 px-1.5 py-0.5 font-mono text-[11px]">
+            <span className="ml-1.5 rounded-full bg-white/75 px-1.5 py-0.5 font-mono text-[11px]">
               {counts[tab.id]}
             </span>
           </button>
@@ -374,15 +372,11 @@ export function WithdrawalSettlementTabs({ withdrawals }: Props) {
       </div>
 
       <div role="tabpanel">
-        {active === "CRYPTO" ? (
-          <CryptoPayouts withdrawals={activeWithdrawals} />
-        ) : (
-          <BulkConversionForm
-            key={active}
-            method={active}
-            withdrawals={activeWithdrawals}
-          />
-        )}
+        <BulkConversionForm
+          key={active}
+          method={active}
+          withdrawals={activeWithdrawals}
+        />
       </div>
     </div>
   );

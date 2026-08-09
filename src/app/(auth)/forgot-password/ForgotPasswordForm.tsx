@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { Alert } from "@/components/ui/Alert";
 import { Field } from "@/components/ui/Field";
+import { OtpField } from "@/components/ui/OtpField";
 import { SubmitButton } from "@/components/ui/SubmitButton";
 import {
   beginPasswordRecovery,
@@ -24,7 +25,7 @@ export function ForgotPasswordForm() {
       {resetState.error && <Alert tone="error">{resetState.error}</Alert>}
       <Alert>Two-factor authentication is enabled. Enter the current code from your authenticator app to reset your password.</Alert>
       <input type="hidden" name="email" value={beginState.email} />
-      <Field label="Authenticator code" name="code" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} autoComplete="one-time-code" required placeholder="000000" />
+      <OtpField label="Authenticator code" name="code" required placeholder="000000" />
       <Field label="New password" name="password" type="password" minLength={8} maxLength={200} autoComplete="new-password" required />
       <Field label="Confirm new password" name="confirmPassword" type="password" minLength={8} maxLength={200} autoComplete="new-password" required />
       <SubmitButton className="w-full" pendingLabel="Resetting password…">Reset password</SubmitButton>

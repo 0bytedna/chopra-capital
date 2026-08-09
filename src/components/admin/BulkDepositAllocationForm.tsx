@@ -12,11 +12,7 @@ type Method = "CRYPTO" | "BANK" | "CASH";
 type ReadyDeposit = {
   id: string;
   investor: string;
-  email: string;
   sourceAmount: string;
-  reference: string | null;
-  network: string | null;
-  receivedAt: string;
 };
 
 type Props = {
@@ -88,23 +84,19 @@ export function BulkDepositAllocationForm({ method, deposits }: Props) {
                 onChange={(event) => setSelectedIds(event.target.checked ? deposits.map((deposit) => deposit.id) : [])}
                 className="size-4 accent-amber-500"
               />
-              Select all {deposits.length} confirmed INR deposit{deposits.length === 1 ? "" : "s"}
+              Select all {deposits.length} deposit{deposits.length === 1 ? "" : "s"}
             </label>
 
             <div className="divide-y divide-gold-600/10">
               {deposits.map((deposit) => {
                 const checked = selectedIds.includes(deposit.id);
                 const source = Number(deposit.sourceAmount);
-                const allocation =
-                  checked && totalSource > 0 && totalUsdtNumber > 0
-                    ? (totalUsdtNumber * source) / totalSource
-                    : null;
 
                 return (
                   <label
                     key={deposit.id}
                     className={cn(
-                      "grid cursor-pointer gap-2 px-4 py-2.5 transition-colors sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center",
+                      "grid cursor-pointer grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 transition-colors",
                       checked ? "bg-gold-600/8" : "hover:bg-vault-950/35",
                     )}
                   >
@@ -120,21 +112,13 @@ export function BulkDepositAllocationForm({ method, deposits }: Props) {
                             : current.filter((id) => id !== deposit.id),
                         )
                       }
-                      className="mt-0.5 size-4 accent-amber-500 sm:mt-0"
+                      className="size-4 accent-amber-500"
                     />
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm text-ink">{deposit.investor}</span>
-                      <span className="mt-0.5 block truncate text-xs text-ink-faint">
-                        {deposit.email}
-                        {deposit.reference ? ` · ${deposit.reference}` : ""}
-                        {deposit.network ? ` · ${deposit.network}` : ""}
-                      </span>
+                    <span className="min-w-0 truncate text-sm font-medium text-ink">
+                      {deposit.investor}
                     </span>
-                    <span className="pl-7 text-left sm:pl-0 sm:text-right">
-                      <span className="currency-value block text-sm text-ink-dim">{formatSource(method, source)}</span>
-                      {allocation !== null && (
-                        <span className="currency-value mt-0.5 block text-xs text-positive">→ {formatUsdt(allocation)}</span>
-                      )}
+                    <span className="currency-value whitespace-nowrap text-right text-sm text-ink">
+                      {formatSource(method, source)}
                     </span>
                   </label>
                 );

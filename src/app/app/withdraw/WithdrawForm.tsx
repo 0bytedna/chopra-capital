@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import { requestWithdrawal, type WithdrawFormState } from "./actions";
 import { Field, SelectField } from "@/components/ui/Field";
+import { OtpField } from "@/components/ui/OtpField";
 import { Alert } from "@/components/ui/Alert";
 import { SubmitButton } from "@/components/ui/SubmitButton";
 import type { FinancialRestriction } from "@/lib/financialEligibility";
@@ -205,7 +206,7 @@ function WithdrawalDetailsForm({ method, available, referenceRate, twoFactorEnab
         </div>
       )}
       {twoFactorEnabled && (
-        <Field
+        <OtpField
           id={`withdraw-${method.toLowerCase()}-code`}
           label="Authenticator code"
           name="code"

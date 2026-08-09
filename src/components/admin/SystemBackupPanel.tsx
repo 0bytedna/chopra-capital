@@ -6,9 +6,9 @@ import {
   Download,
   FileKey,
   RotateCcw,
-  HardDriveDownload,
   ShieldAlert,
 } from "lucide-react";
+import { OtpField } from "@/components/ui/OtpField";
 
 const inputClass =
   "mt-2 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-ink outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
@@ -188,21 +188,18 @@ export function SystemBackupPanel({
           />
         </label>
         {twoFactorEnabled && (
-          <label className="block">
-            <span className={labelClass}>Authenticator code</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              maxLength={6}
-              value={code}
-              onChange={(event) =>
-                setCode(event.target.value.replace(/\D/g, "").slice(0, 6))
-              }
-              className={inputClass}
-              placeholder="6-digit code"
-            />
-          </label>
+          <OtpField
+            label="Authenticator code"
+            name="code"
+            tone="light"
+            value={code}
+            onChange={(event) =>
+              setCode(event.target.value.replace(/\D/g, "").slice(0, 6))
+            }
+            onPasteValue={setCode}
+            placeholder="6-digit code"
+            required
+          />
         )}
       </div>
 
@@ -231,7 +228,7 @@ export function SystemBackupPanel({
         <article className="rounded-xl border border-slate-200 bg-white p-4">
           <div className="flex items-center gap-3">
             <span className="flex size-10 items-center justify-center rounded-xl bg-cyan-50 text-cyan-700">
-              <HardDriveDownload className="size-5" aria-hidden />
+              <DatabaseBackup className="size-5" aria-hidden />
             </span>
             <div>
               <h3 className="font-semibold text-ink">Save on server</h3>
@@ -244,7 +241,7 @@ export function SystemBackupPanel({
             disabled={pending !== null || credentialsMissing}
             className="btn-gold mt-4 inline-flex w-full items-center justify-center gap-2 px-4 py-2.5 text-sm disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <HardDriveDownload className="size-4" aria-hidden />
+            <DatabaseBackup className="size-4" aria-hidden />
             {pending === "server" ? "Saving…" : "Save server backup"}
           </button>
         </article>

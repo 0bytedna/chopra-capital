@@ -17,23 +17,12 @@ const methods = [
   { value: "CASH", label: "Cash", navLabel: "Cash", source: "INR received" },
 ] as const;
 
-const historyFilters = [
-  { value: "ALL", label: "All history" },
-  { value: "NEEDS_CORRECTION", label: "Action needed" },
-  { value: "CANCELLED", label: "Cancelled" },
-  { value: "REJECTED", label: "Rejected" },
-  { value: "CONFIRMED", label: "Invested" },
-] as const;
+
 
 type DepositMethod = (typeof methods)[number]["value"];
-type HistoryFilter = (typeof historyFilters)[number]["value"];
 
 function isMethod(value: string | undefined): value is DepositMethod {
   return methods.some((method) => method.value === value);
-}
-
-function isHistoryFilter(value: string | undefined): value is HistoryFilter {
-  return historyFilters.some((filter) => filter.value === value);
 }
 
 function sourceAmount(deposit: {
@@ -53,35 +42,17 @@ function sourceAmountLabel(deposit: Parameters<typeof sourceAmount>[0]): string 
     ? formatUsdt(amount) + " USDT"
     : formatInr(amount) + " INR";
 }
-function depositMethodLabel(deposit: {
-  method: DepositMethod;
-  network: string | null;
-  reference: string | null;
-}): string {
-  if (deposit.method === "CRYPTO") return `Crypto${deposit.network ? ` · ${deposit.network}` : ""}`;
-  if (deposit.method === "BANK") return `Bank transfer${deposit.reference ? ` · UTR ${deposit.reference}` : ""}`;
-  return "Cash";
-}
-
-function historyStatusLabel(status: string): string {
-  if (status === "NEEDS_CORRECTION") return "action needed";
-  if (status === "CONFIRMED") return "invested";
-  return status.toLowerCase();
-}
-
 type Props = {
-  searchParams: Promise<{ method?: string | string[]; history?: string | string[] }>;
+  searchParams: Promise<{ method?: string | string[] }>;
 };
 
 export default async function AdminDepositsPage({ searchParams }: Props) {
   const query = await searchParams;
   const requestedMethod = typeof query.method === "string" ? query.method : undefined;
-  const requestedHistory = typeof query.history === "string" ? query.history : undefined;
   const selectedMethod: DepositMethod = isMethod(requestedMethod) ? requestedMethod : "BANK";
-  const selectedHistory: HistoryFilter = isHistoryFilter(requestedHistory) ? requestedHistory : "ALL";
   const methodMeta = methods.find((method) => method.value === selectedMethod) ?? methods[0];
 
-  const [methodCounts, activeDeposits, queuedDeposits, history, conversionBatches, brokerBatches] =
+  const [methodCounts, activeDeposits, queuedDeposits, conversionBatches, brokerBatches] =
     await Promise.all([
       Promise.all(
         methods.map(async (method) => ({
@@ -103,18 +74,6 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
         where: { status: "QUEUED" },
         orderBy: { createdAt: "asc" },
         include: { user: { select: { email: true, fullName: true } } },
-      }),
-      prisma.deposit.findMany({
-        where: {
-          method: selectedMethod,
-          status:
-            selectedHistory === "ALL"
-              ? { in: ["NEEDS_CORRECTION", "CANCELLED", "REJECTED", "CONFIRMED"] }
-              : selectedHistory,
-        },
-        orderBy: { createdAt: "desc" },
-        take: 50,
-        include: { user: { select: { email: true, fullName: true, kycStatus: true } } },
       }),
       selectedMethod === "CRYPTO"
         ? Promise.resolve([])
@@ -183,8 +142,6 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
               <span className="flex size-7 items-center justify-center rounded-full border border-gold-500/35 bg-gold-600/10 font-mono text-xs text-gold-300">1</span>
               <p className="eyebrow">Receipt verification</p>
             </div>
-            <h2 className="mt-2 font-serif text-xl text-ink">Confirm {methodMeta.source}</h2>
-
           </div>
           <span className={cn("flex size-10 items-center justify-center rounded-full border font-mono text-lg font-semibold", pending.length > 0 ? "border-gold-600 bg-gold-600 text-white" : "border-slate-200 bg-slate-100 text-ink-faint")}>{pending.length}</span>
         </div>
@@ -209,8 +166,6 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
                   <span className="flex size-7 items-center justify-center rounded-full border border-gold-500/35 bg-gold-600/10 font-mono text-xs text-gold-300">2</span>
                   <p className="eyebrow">INR conversion</p>
                 </div>
-                <h2 className="mt-2 font-serif text-xl text-ink">Convert confirmed INR to USDT</h2>
-
               </div>
               <span className="rounded-full border border-positive/25 bg-positive/5 px-3 py-1 font-mono text-xs text-positive">
                 {conversionReady.length} ready
@@ -223,11 +178,7 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
                 deposits={conversionReady.map((deposit) => ({
                   id: deposit.id,
                   investor: deposit.user.fullName ?? "Unnamed investor",
-                  email: deposit.user.email,
                   sourceAmount: String(sourceAmount(deposit)),
-                  reference: deposit.method === "BANK" && deposit.reference ? `UTR ${deposit.reference}` : deposit.reference,
-                  network: null,
-                  receivedAt: (deposit.receivedAt ?? deposit.createdAt).toISOString(),
                 }))}
               />
             </div>
@@ -245,8 +196,6 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
               </span>
               <p className="eyebrow">Weekend broker transfer</p>
             </div>
-            <h2 className="mt-2 font-serif text-xl text-ink">Transfer the company USDT queue and invest</h2>
-
           </div>
           <span className="rounded-full border border-gold-500/30 bg-gold-600/8 px-3 py-1 font-mono text-xs text-gold-300">
             {queuedDeposits.length} queued
@@ -272,68 +221,6 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
             }))}
           />
         </div>
-      </section>
-
-      <section className="space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="eyebrow">Requests</p>
-            <h2 className="mt-2 font-serif text-xl text-ink">{methodMeta.label} history</h2>
-          </div>
-          <nav className="flex flex-wrap gap-2" aria-label="Deposit history filters">
-            {historyFilters.map((filter) => (
-              <Link
-                key={filter.value}
-                href={`/admin/deposits?method=${selectedMethod}&history=${filter.value}`}
-                className={cn(
-                  "rounded-full border px-3 py-1.5 text-xs transition-colors",
-                  selectedHistory === filter.value
-                    ? "border-gold-500/50 bg-gold-600/12 text-gold-300"
-                    : "border-gold-600/15 text-ink-faint hover:text-ink",
-                )}
-              >
-                {filter.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
-
-        {history.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-gold-600/20 px-4 py-3 text-center text-sm text-ink-faint">
-            No matching deposit history.
-          </p>
-        ) : (
-          <ul className="space-y-2">
-            {history.map((deposit) => (
-              <li key={deposit.id} className="rounded-xl border border-gold-600/10 bg-vault-900/30 px-4 py-3 text-sm">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="min-w-0">
-                    <p className="truncate text-ink-dim">
-                      <span className="currency-value text-ink">{sourceAmountLabel(deposit)}</span> · {deposit.user.fullName ?? deposit.user.email} · {depositMethodLabel(deposit)}
-                    </p>
-                    <p className="mt-1 text-xs text-ink-faint">
-                      {deposit.createdAt.toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
-                      {deposit.status === "CONFIRMED" ? ` · ${formatUsdt(deposit.amount)} USDT invested` : ""}
-                      {deposit.adminNote ? ` · ${deposit.adminNote}` : ""}
-                    </p>
-                  </div>
-                  <span
-                    className={cn(
-                      "shrink-0 text-xs",
-                      deposit.status === "CONFIRMED"
-                        ? "text-positive"
-                        : deposit.status === "CANCELLED"
-                          ? "text-ink-faint"
-                          : "text-negative",
-                    )}
-                  >
-                    {historyStatusLabel(deposit.status)}
-                  </span>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
       </section>
 
       {selectedMethod !== "CRYPTO" && (

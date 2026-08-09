@@ -15,7 +15,8 @@ import {
   type FinancialDetailsFormState,
   type TotpEnrolState,
 } from "./actions";
-import { Field, SelectField, TextareaField } from "@/components/ui/Field";
+import { Field, SelectField } from "@/components/ui/Field";
+import { OtpField } from "@/components/ui/OtpField";
 import { Alert } from "@/components/ui/Alert";
 import { SubmitButton } from "@/components/ui/SubmitButton";
 import { Button } from "@/components/ui/Button";
@@ -25,18 +26,10 @@ export function ProfileDetailsForm({
   fullName,
   mobile,
   email,
-  address,
-  city,
-  stateField,
-  country,
 }: {
   fullName: string;
   mobile: string;
   email: string;
-  address: string;
-  city: string;
-  stateField: string;
-  country: string;
 }) {
   const [state, action] = useActionState<ProfileFormState, FormData>(updateProfile, {});
 
@@ -48,17 +41,6 @@ export function ProfileDetailsForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Mobile" name="mobile" defaultValue={mobile} placeholder="+91 98765 43210" />
         <Field label="Email address" name="email" defaultValue={email} type="email" disabled readOnly />
-      </div>
-      <TextareaField
-        label="Permanent residential address"
-        name="address"
-        defaultValue={address}
-        placeholder="House / flat, street, area"
-      />
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Field label="City" name="city" defaultValue={city} placeholder="Mumbai" />
-        <Field label="State" name="state" defaultValue={stateField} placeholder="Maharashtra" />
-        <Field label="Country" name="country" defaultValue={country} placeholder="India" />
       </div>
       <SubmitButton size="sm" pendingLabel="Saving…">
         Save details
@@ -145,7 +127,7 @@ export function BankingForm({
       </div>
       <Field label="UPI ID" name="upiId" defaultValue={initial.upiId} placeholder="name@bank" />
       {twoFactorEnabled && (
-        <Field
+        <OtpField
           label="Authenticator code"
           name="code"
           inputMode="numeric"
@@ -225,7 +207,7 @@ export function TotpSection({ enabled }: { enabled: boolean }) {
         <Alert tone="success">Two-factor authentication is enabled on your account.</Alert>
         <form action={disableAction} className="space-y-3">
           {disableState.error && <Alert tone="error">{disableState.error}</Alert>}
-          <Field
+          <OtpField
             label="Enter a current code to disable"
             name="code"
             inputMode="numeric"
@@ -291,7 +273,7 @@ export function TotpSection({ enabled }: { enabled: boolean }) {
       </div>
       <form action={enableAction} className="space-y-3">
         {enableState.error && <Alert tone="error">{enableState.error}</Alert>}
-        <Field
+        <OtpField
           label="6-digit code"
           name="code"
           inputMode="numeric"

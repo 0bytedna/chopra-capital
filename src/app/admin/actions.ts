@@ -24,7 +24,13 @@ import {
   rejectWithdrawal,
   createInternalTransfer,
 } from "@/lib/wallet";
-import { recordTradingAdjustment } from "@/lib/tradingAccount";
+import {
+  deleteTradingAdjustment,
+  editTradingAdjustment,
+  EDITABLE_TRADING_TYPES,
+  recordTradingAdjustment,
+  type EditableTradingAdjustmentType,
+} from "@/lib/tradingAccount";
 import { stageRequiredBankPayoutCorrections } from "@/lib/payoutDetails";
 
 export type AdminFormState = { error?: string; success?: string };
@@ -51,6 +57,61 @@ export async function adminRecordTradingAdjustment(_prev: AdminFormState, formDa
     revalidatePath("/admin/trading");
     revalidatePath("/app");
     return { success: "Trading account adjustment recorded." };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+function parseEditableTradingType(value: FormDataEntryValue | null) {
+  const type = String(value ?? "");
+  if (
+    !EDITABLE_TRADING_TYPES.includes(
+      type as EditableTradingAdjustmentType,
+    )
+  ) {
+    throw new Error("Choose a valid reason.");
+  }
+  return type as EditableTradingAdjustmentType;
+}
+
+function revalidateTradingAdjustmentPaths() {
+  revalidatePath("/admin");
+  revalidatePath("/admin/trading");
+  revalidatePath("/app");
+}
+
+export async function adminEditTradingAdjustment(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  const admin = await requireAdmin();
+  try {
+    await editTradingAdjustment({
+      id: String(formData.get("id") ?? ""),
+      type: parseEditableTradingType(formData.get("type")),
+      amount: D(String(formData.get("amount") ?? "")),
+      note: String(formData.get("note") ?? ""),
+      adminId: admin.id,
+    });
+    revalidateTradingAdjustmentPaths();
+    return { success: "Audit entry updated and later balances recalculated." };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+export async function adminDeleteTradingAdjustment(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  const admin = await requireAdmin();
+  try {
+    await deleteTradingAdjustment({
+      id: String(formData.get("id") ?? ""),
+      adminId: admin.id,
+    });
+    revalidateTradingAdjustmentPaths();
+    return { success: "Audit entry deleted and later balances recalculated." };
   } catch (error) {
     return fail(error);
   }
@@ -120,7 +181,7 @@ export async function adminUpdateInvestorProfile(_prev: AdminFormState, formData
     });
     revalidatePath(`/admin/investors/${userId}`);
     revalidatePath("/admin/investors");
-    revalidatePath("/admin/withdrawals");
+    revalidatePath("/admin/withdrawals"); revalidatePath("/admin/transactions");
     revalidatePath("/app/profile");
     revalidatePath("/app/history");
     revalidatePath("/app");
@@ -249,7 +310,7 @@ export async function adminConfirmDeposit(_prev: AdminFormState, formData: FormD
   } catch (err) {
     return fail(err);
   }
-  revalidatePath("/admin/deposits");
+  revalidatePath("/admin/deposits"); revalidatePath("/admin/transactions");
   revalidatePath("/admin");
   revalidatePath("/app/deposit");
   revalidatePath("/app/history");
@@ -285,7 +346,7 @@ export async function adminAllocateDeposits(
 
   try {
     const result = await allocateDepositBatch(method, depositIds, totalUsdt, admin.id);
-    revalidatePath("/admin/deposits");
+    revalidatePath("/admin/deposits"); revalidatePath("/admin/transactions");
     revalidatePath("/admin");
     revalidatePath("/admin/trading");
     revalidatePath("/app");
@@ -319,7 +380,7 @@ export async function adminInvestQueuedDeposits(
   try {
     const result = await investQueuedDepositBatch(depositIds, totalReceivedUsdt, admin.id);
     const transferFee = result.totalQueuedUsdt.sub(result.totalReceivedUsdt);
-    revalidatePath("/admin/deposits");
+    revalidatePath("/admin/deposits"); revalidatePath("/admin/transactions");
     revalidatePath("/admin");
     revalidatePath("/admin/trading");
     revalidatePath("/app");
@@ -341,7 +402,7 @@ export async function adminRejectDeposit(_prev: AdminFormState, formData: FormDa
   } catch (err) {
     return fail(err);
   }
-  revalidatePath("/admin/deposits");
+  revalidatePath("/admin/deposits"); revalidatePath("/admin/transactions");
   revalidatePath("/admin");
   return { success: "Deposit rejected." };
 }
@@ -368,7 +429,7 @@ export async function adminRequestDepositCorrection(
 
   revalidatePath("/app/deposit");
   revalidatePath("/app/history");
-  revalidatePath("/admin/deposits");
+  revalidatePath("/admin/deposits"); revalidatePath("/admin/transactions");
   revalidatePath("/admin");
   revalidatePath("/app", "layout");
   return { success: "Correction requested. The deposit cannot be credited until the investor resubmits the details." };
@@ -385,7 +446,7 @@ export async function adminEditDepositRecord(_prev: AdminFormState, formData: Fo
     const amount = D(String(formData.get("amount") ?? ""));
     if (amount.lt(0)) return { error: "Deposit amount cannot be negative." };
     await prisma.deposit.update({ where: { id, userId }, data: { amount, status: status as (typeof statuses)[number], reference: String(formData.get("reference") ?? "").trim() || null, txHash: String(formData.get("txHash") ?? "").trim() || null, adminNote: String(formData.get("adminNote") ?? "").trim() || null } });
-    revalidatePath(`/admin/investors/${userId}`); revalidatePath("/admin/deposits"); revalidatePath("/app/history");
+    revalidatePath(`/admin/investors/${userId}`); revalidatePath("/admin/deposits"); revalidatePath("/admin/transactions"); revalidatePath("/app/history");
     return { success: "Deposit record updated. Correct the investor balance separately if this changes credited value." };
   } catch (error) { return fail(error); }
 }
@@ -401,7 +462,7 @@ export async function adminEditWithdrawalRecord(_prev: AdminFormState, formData:
     const amount = D(String(formData.get("amount") ?? ""));
     if (amount.lt(0)) return { error: "Withdrawal amount cannot be negative." };
     await prisma.withdrawal.update({ where: { id, userId }, data: { amount, status: status as (typeof statuses)[number], txHash: String(formData.get("reference") ?? "").trim() || null, adminNote: String(formData.get("adminNote") ?? "").trim() || null } });
-    revalidatePath(`/admin/investors/${userId}`); revalidatePath("/admin/withdrawals"); revalidatePath("/app/history");
+    revalidatePath(`/admin/investors/${userId}`); revalidatePath("/admin/withdrawals"); revalidatePath("/admin/transactions"); revalidatePath("/app/history");
     return { success: "Withdrawal record updated. Correct the investor balance separately if this changes debited value." };
   } catch (error) { return fail(error); }
 }
@@ -441,7 +502,7 @@ export async function adminApproveWithdrawal(_prev: AdminFormState, formData: Fo
   } catch (err) {
     return fail(err);
   }
-  revalidatePath("/admin/withdrawals");
+  revalidatePath("/admin/withdrawals"); revalidatePath("/admin/transactions");
   revalidatePath("/admin");
   revalidatePath("/app/withdraw");
   revalidatePath("/app/history");
@@ -468,7 +529,7 @@ export async function adminRecordBrokerWithdrawalBatch(
     return fail(err);
   }
 
-  revalidatePath("/admin/withdrawals");
+  revalidatePath("/admin/withdrawals"); revalidatePath("/admin/transactions");
   revalidatePath("/admin");
   revalidatePath("/app");
   revalidatePath("/app/withdraw");
@@ -505,7 +566,7 @@ export async function adminRecordWithdrawalConversionBatch(
     return fail(err);
   }
 
-  revalidatePath("/admin/withdrawals");
+  revalidatePath("/admin/withdrawals"); revalidatePath("/admin/transactions");
   revalidatePath("/admin");
   revalidatePath("/app/withdraw");
   revalidatePath("/app/history");
@@ -563,7 +624,7 @@ export async function adminRequestWithdrawalPayoutCorrection(
     return fail(error);
   }
 
-  revalidatePath("/admin/withdrawals");
+  revalidatePath("/admin/withdrawals"); revalidatePath("/admin/transactions");
   revalidatePath("/admin");
   revalidatePath("/app/profile");
   revalidatePath("/app/history");
@@ -629,7 +690,7 @@ export async function adminApproveWithdrawalPayoutDetails(
     return fail(error);
   }
 
-  revalidatePath("/admin/withdrawals");
+  revalidatePath("/admin/withdrawals"); revalidatePath("/admin/transactions");
   revalidatePath("/admin");
   revalidatePath("/app/profile");
   revalidatePath("/app/history");
@@ -685,7 +746,7 @@ export async function adminRejectWithdrawalPayoutDetails(
     return fail(error);
   }
 
-  revalidatePath("/admin/withdrawals");
+  revalidatePath("/admin/withdrawals"); revalidatePath("/admin/transactions");
   revalidatePath("/admin");
   revalidatePath("/app/profile");
   revalidatePath("/app/history");
@@ -705,7 +766,7 @@ export async function adminCompleteWithdrawalPayout(
   } catch (err) {
     return fail(err);
   }
-  revalidatePath("/admin/withdrawals");
+  revalidatePath("/admin/withdrawals"); revalidatePath("/admin/transactions");
   revalidatePath("/admin");
   revalidatePath("/app/withdraw");
   revalidatePath("/app/history");
@@ -720,7 +781,7 @@ export async function adminRejectWithdrawal(_prev: AdminFormState, formData: For
   } catch (err) {
     return fail(err);
   }
-  revalidatePath("/admin/withdrawals");
+  revalidatePath("/admin/withdrawals"); revalidatePath("/admin/transactions");
   revalidatePath("/admin");
   revalidatePath("/app/withdraw");
   revalidatePath("/app/history");

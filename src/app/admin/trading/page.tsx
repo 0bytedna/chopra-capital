@@ -4,6 +4,12 @@ import { getCurrentNav } from "@/lib/nav";
 import { D, toNumber, formatUsdt } from "@/lib/money";
 import { cn } from "@/lib/cn";
 import { AdminActionForm } from "@/components/admin/AdminActionForm";
+import { TradingAdjustmentFields } from "@/components/admin/TradingAdjustmentFields";
+import { TradingEntryActions } from "@/components/admin/TradingEntryActions";
+import {
+  EDITABLE_TRADING_TYPES,
+  type EditableTradingAdjustmentType,
+} from "@/lib/tradingAccount";
 import { adminRecordTradingAdjustment } from "../actions";
 
 export const metadata: Metadata = { title: "Admin · Trading" };
@@ -19,6 +25,8 @@ const reasonLabels: Record<string, string> = {
   USER_DEPOSIT: "Verified deposit batch",
   USER_WITHDRAWAL: "Verified withdrawal batch",
 };
+
+const editableTradingTypes = new Set<string>(EDITABLE_TRADING_TYPES);
 
 export default async function AdminTradingPage() {
   const [poolNav, walletAgg, entries] = await Promise.all([
@@ -64,45 +72,7 @@ export default async function AdminTradingPage() {
           >
             Record a balance change
           </h2>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <label className="space-y-1.5 text-xs text-ink-faint">
-              Reason
-              <select
-                name="type"
-                required
-                className="h-10 w-full rounded-lg border border-gold-600/20 bg-vault-950/65 px-3 text-sm text-ink"
-              >
-                {Object.entries(reasonLabels)
-                  .filter(([key]) =>
-                    [
-                      "TRADING_PROFIT",
-                      "TRADING_LOSS",
-                      "SERVER_FEE",
-                      "ADMIN_SHARE",
-                      "OTHER_INCREASE",
-                      "OTHER_DECREASE",
-                    ].includes(key),
-                  )
-                  .map(([key, label]) => (
-                    <option key={key} value={key}>
-                      {label}
-                    </option>
-                  ))}
-              </select>
-            </label>
-            <label className="space-y-1.5 text-xs text-ink-faint">
-              Amount (USD)
-              <input
-                name="amount"
-                type="number"
-                min="0.01"
-                step="0.01"
-                required
-                placeholder="0.00"
-                className="h-10 w-full rounded-lg border border-gold-600/20 bg-vault-950/65 px-3 text-sm text-ink"
-              />
-            </label>
-          </div>
+          <TradingAdjustmentFields key={poolNav.balance.toString()} currentBalance={toNumber(poolNav.balance)} />
           <label className="mt-3 block space-y-1.5 text-xs text-ink-faint">
             Audit note
             <input
@@ -136,7 +106,7 @@ export default async function AdminTradingPage() {
           </span>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] text-left text-xs">
+          <table className="w-full min-w-[900px] text-left text-xs">
             <thead className="border-y border-gold-600/15 bg-slate-50 text-ink-faint">
               <tr>
                 <th className="px-5 py-3">Time</th>
@@ -144,6 +114,7 @@ export default async function AdminTradingPage() {
                 <th className="px-5 py-3">Change</th>
                 <th className="px-5 py-3">Balance after</th>
                 <th className="px-5 py-3">Note</th>
+                <th className="px-5 py-3">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gold-600/10">
@@ -172,12 +143,25 @@ export default async function AdminTradingPage() {
                   <td className="max-w-xs px-5 py-3 text-ink-dim">
                     {entry.note}
                   </td>
+                  <td className="px-5 py-3">
+                    {editableTradingTypes.has(entry.type) &&
+                    !entry.note.startsWith("Investor correction:") ? (
+                      <TradingEntryActions
+                        id={entry.id}
+                        type={entry.type as EditableTradingAdjustmentType}
+                        amount={D(entry.amount).abs().toString()}
+                        note={entry.note}
+                      />
+                    ) : (
+                      <span className="text-[11px] text-ink-faint">Protected</span>
+                    )}
+                  </td>
                 </tr>
               ))}
               {entries.length === 0 && (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="px-5 py-10 text-center text-ink-faint"
                   >
                     No account changes yet.

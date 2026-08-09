@@ -56,10 +56,6 @@ export const replySchema = z.object({
 export const profileSchema = z.object({
   fullName: z.string().trim().min(2, "Please enter your full name").max(100),
   mobile: z.string().trim().max(30).optional().or(z.literal("")),
-  country: z.string().trim().max(60).optional().or(z.literal("")),
-  address: z.string().trim().max(300).optional().or(z.literal("")),
-  city: z.string().trim().max(100).optional().or(z.literal("")),
-  state: z.string().trim().max(100).optional().or(z.literal("")),
 });
 
 export const bankingDetailsSchema = z

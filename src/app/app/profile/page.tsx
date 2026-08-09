@@ -51,10 +51,6 @@ export default async function ProfilePage() {
             fullName={user.fullName ?? ""}
             mobile={user.mobile ?? ""}
             email={user.email}
-            address={user.address ?? ""}
-            city={user.city ?? ""}
-            stateField={user.state ?? ""}
-            country={user.country ?? ""}
           />
         </div>
       </section>

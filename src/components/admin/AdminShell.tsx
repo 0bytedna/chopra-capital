@@ -16,6 +16,7 @@ import {
   ArrowLeftRight,
   ShieldCheck,
   Activity,
+  ReceiptText,
 } from "lucide-react";
 import { signout } from "@/app/(auth)/actions";
 import { BrandMark } from "@/components/brand/BrandMark";
@@ -26,6 +27,7 @@ const items = [
   { href: "/admin/trading", label: "Trading", Icon: Activity },
   { href: "/admin/deposits", label: "Deposits", Icon: ArrowDownToLine },
   { href: "/admin/withdrawals", label: "Withdrawals", Icon: ArrowUpFromLine },
+  { href: "/admin/transactions", label: "Transactions", Icon: ReceiptText },
   { href: "/admin/kyc", label: "KYC review", Icon: BadgeCheck },
   { href: "/admin/tickets", label: "Tickets", Icon: LifeBuoy },
   { href: "/admin/investors", label: "Investors", Icon: Users },

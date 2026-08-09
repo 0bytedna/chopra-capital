@@ -247,9 +247,9 @@ function GraphCard({
           ))}
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          <label className="space-y-1.5 text-xs font-medium uppercase tracking-[0.14em] text-ink-dim">
-            <span className="block">From</span>
+        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
+          <label className="min-w-0">
+            <span className="sr-only">From date</span>
             <input
               type="date"
               value={from}
@@ -259,8 +259,11 @@ function GraphCard({
               className="w-full min-w-0 rounded-lg border border-gold-600/20 bg-vault-900/80 px-3 py-2 font-mono text-xs text-ink [color-scheme:light] focus:border-gold-500/50 focus:outline-none focus:ring-2 focus:ring-gold-500/25"
             />
           </label>
-          <label className="space-y-1.5 text-xs font-medium uppercase tracking-[0.14em] text-ink-dim">
-            <span className="block">To</span>
+          <span className="text-sm font-semibold text-ink-dim" aria-hidden>
+            -
+          </span>
+          <label className="min-w-0">
+            <span className="sr-only">To date</span>
             <input
               type="date"
               value={to}
@@ -330,34 +333,76 @@ export function PortfolioChart({
   firstActivityDate,
   endpoint = "/api/portfolio",
 }: Props) {
+  const [activeGraph, setActiveGraph] = useState<GraphKey>("profit");
+  const showingProfit = activeGraph === "profit";
+
   return (
-    <section className="grid gap-4 xl:grid-cols-2" aria-label="Account history graphs">
-      <GraphCard
-        eyebrow="Trading result"
-        title="Profits"
-        caption="Deposits and withdrawals are excluded from this calculation."
-        summaryLabel="Selected period"
-        dataKey="profit"
-        initialSeries={initialSeries}
-        firstActivityDate={firstActivityDate}
-        stroke="#38bdf8"
-        gradientId="profitGoldFill"
-        endpoint={endpoint}
-        signed
-        emphasizeSummary
-      />
-      <GraphCard
-        eyebrow="Total account value"
-        title="Balance over time"
-        caption="Includes deposits, withdrawals, queued funds, profits and losses."
-        summaryLabel="Ending balance"
-        dataKey="value"
-        initialSeries={initialSeries}
-        firstActivityDate={firstActivityDate}
-        stroke="#2563eb"
-        gradientId="balanceGreenFill"
-        endpoint={endpoint}
-      />
+    <section className="min-w-0 space-y-3" aria-label="Account history graphs">
+      <div
+        className="grid grid-cols-2 rounded-xl border border-slate-200 bg-white p-1 shadow-sm"
+        role="tablist"
+        aria-label="Select account graph"
+      >
+        <button
+          id="portfolio-profit-tab"
+          type="button"
+          role="tab"
+          aria-selected={showingProfit}
+          aria-controls="portfolio-graph-panel"
+          onClick={() => setActiveGraph("profit")}
+          className={cn(
+            "rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors",
+            showingProfit
+              ? "bg-blue-600 text-white shadow-sm"
+              : "text-ink-dim hover:bg-blue-50 hover:text-blue-700",
+          )}
+        >
+          Profits
+        </button>
+        <button
+          id="portfolio-balance-tab"
+          type="button"
+          role="tab"
+          aria-selected={!showingProfit}
+          aria-controls="portfolio-graph-panel"
+          onClick={() => setActiveGraph("value")}
+          className={cn(
+            "rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors",
+            !showingProfit
+              ? "bg-blue-600 text-white shadow-sm"
+              : "text-ink-dim hover:bg-blue-50 hover:text-blue-700",
+          )}
+        >
+          Balance
+        </button>
+      </div>
+
+      <div
+        id="portfolio-graph-panel"
+        role="tabpanel"
+        aria-labelledby={
+          showingProfit ? "portfolio-profit-tab" : "portfolio-balance-tab"
+        }
+      >
+        <GraphCard
+          eyebrow={showingProfit ? "Trading result" : "Total account value"}
+          title={showingProfit ? "Profits" : "Balance"}
+          caption={
+            showingProfit
+              ? "Deposits and withdrawals are excluded from this calculation."
+              : "Includes deposits, withdrawals, queued funds, profits and losses."
+          }
+          summaryLabel={showingProfit ? "Selected period" : "Ending balance"}
+          dataKey={activeGraph}
+          initialSeries={initialSeries}
+          firstActivityDate={firstActivityDate}
+          stroke={showingProfit ? "#38bdf8" : "#2563eb"}
+          gradientId={showingProfit ? "profitGoldFill" : "balanceGreenFill"}
+          endpoint={endpoint}
+          signed={showingProfit}
+          emphasizeSummary={showingProfit}
+        />
+      </div>
     </section>
   );
 }

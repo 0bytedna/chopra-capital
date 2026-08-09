@@ -22,10 +22,6 @@ export async function updateProfile(_prev: ProfileFormState, formData: FormData)
   const parsed = profileSchema.safeParse({
     fullName: formData.get("fullName"),
     mobile: formData.get("mobile"),
-    country: formData.get("country"),
-    address: formData.get("address"),
-    city: formData.get("city"),
-    state: formData.get("state"),
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Please check the form" };
@@ -36,10 +32,6 @@ export async function updateProfile(_prev: ProfileFormState, formData: FormData)
     data: {
       fullName: parsed.data.fullName,
       mobile: parsed.data.mobile || null,
-      country: parsed.data.country || null,
-      address: parsed.data.address || null,
-      city: parsed.data.city || null,
-      state: parsed.data.state || null,
     },
   });
   revalidatePath("/app/profile");
