@@ -85,11 +85,8 @@ export function BulkDepositAllocationForm({ method, deposits }: Props) {
       <input type="hidden" name="method" value={method} />
 
       {state.error && <Alert tone="error">{state.error}</Alert>}
-      {state.success && <Alert tone="success">{state.success}</Alert>}
       {undoState.error && <Alert tone="error">{undoState.error}</Alert>}
-      {undoState.success && <Alert tone="success">{undoState.success}</Alert>}
       {rejectState.error && <Alert tone="error">{rejectState.error}</Alert>}
-      {rejectState.success && <Alert tone="success">{rejectState.success}</Alert>}
 
       {deposits.length === 0 ? (
         <p className="rounded-xl border border-dashed border-gold-600/20 px-4 py-3 text-center text-sm text-ink-faint">
@@ -117,7 +114,7 @@ export function BulkDepositAllocationForm({ method, deposits }: Props) {
                   <div
                     key={deposit.id}
                     className={cn(
-                      "grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-2 px-3 py-2.5 transition-colors",
+                      "grid grid-cols-[1rem_minmax(0,1fr)_max-content_max-content] items-center gap-1.5 px-3 py-2.5 transition-colors",
                       checked ? "bg-gold-600/8" : "hover:bg-vault-950/35",
                     )}
                   >
@@ -136,13 +133,13 @@ export function BulkDepositAllocationForm({ method, deposits }: Props) {
                       }
                       className="size-4 accent-amber-500"
                     />
-                    <span className="min-w-0 truncate text-sm font-medium text-ink">
+                    <span className="min-w-0 truncate whitespace-nowrap text-[clamp(0.7rem,3.2vw,0.875rem)] font-medium text-ink">
                       {deposit.investor}
                     </span>
-                    <span className="currency-value whitespace-nowrap text-right text-sm text-ink">
+                    <span className="currency-value col-start-4 justify-self-end whitespace-nowrap text-right text-[clamp(0.68rem,3vw,0.875rem)] text-ink">
                       {formatSource(method, source)}
                     </span>
-                    <span className="flex gap-1">
+                    <span className="col-start-3 flex gap-1">
                       <button
                         type="submit"
                         formAction={undoAction}
@@ -153,16 +150,18 @@ export function BulkDepositAllocationForm({ method, deposits }: Props) {
                         aria-label={"Undo confirmation for " + deposit.investor}
                         title="Undo confirmation"
                         onClick={(event) => {
+                          event.preventDefault();
+                          const button = event.currentTarget;
                           const reason = window.prompt("Why are you undoing this deposit confirmation?")?.trim();
                           if (!reason || !window.confirm("Return this deposit to pending verification?")) {
-                            event.preventDefault();
                             return;
                           }
                           if (reasonRef.current) reasonRef.current.value = reason;
+                          window.setTimeout(() => button.form?.requestSubmit(button), 0);
                         }}
-                        className="flex size-8 items-center justify-center rounded-full border border-slate-300 bg-white text-ink-dim hover:border-blue-400 hover:text-blue-700"
+                        className="flex size-7 items-center justify-center rounded-full border border-slate-300 bg-white text-ink-dim hover:border-blue-400 hover:text-blue-700"
                       >
-                        <Undo2 className="size-4" aria-hidden />
+                        <Undo2 className="size-3.5" aria-hidden />
                       </button>
                       <button
                         type="submit"
@@ -174,16 +173,18 @@ export function BulkDepositAllocationForm({ method, deposits }: Props) {
                         aria-label={"Reject " + deposit.investor + " deposit"}
                         title="Reject deposit"
                         onClick={(event) => {
+                          event.preventDefault();
+                          const button = event.currentTarget;
                           const reason = window.prompt("Why is this confirmed deposit being rejected?")?.trim();
                           if (!reason || !window.confirm("Reject this deposit before conversion?")) {
-                            event.preventDefault();
                             return;
                           }
                           if (reasonRef.current) reasonRef.current.value = reason;
+                          window.setTimeout(() => button.form?.requestSubmit(button), 0);
                         }}
-                        className="flex size-8 items-center justify-center rounded-full border border-rose-300 bg-white text-rose-700 hover:bg-rose-50"
+                        className="flex size-7 items-center justify-center rounded-full border border-rose-300 bg-white text-rose-700 hover:bg-rose-50"
                       >
-                        <X className="size-4" aria-hidden />
+                        <X className="size-3.5" aria-hidden />
                       </button>
                     </span>
                   </div>

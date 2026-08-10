@@ -18,7 +18,6 @@ import { cn } from "@/lib/cn";
 type Method = "CRYPTO" | "BANK" | "CASH";
 
 type Investor = {
-  email: string;
   fullName: string | null;
   mobile: string | null;
   bankingDetail: {
@@ -55,7 +54,7 @@ export type PayoutCorrectionWithdrawal = {
   proposedIfsc: string | null;
   proposedUpiId: string | null;
   proposedAccountType: string | null;
-  user: Pick<Investor, "email" | "fullName">;
+  user: Pick<Investor, "fullName">;
 };
 
 type Props = {
@@ -105,6 +104,7 @@ function ConversionEditForm({
       </summary>
       <AdminActionForm
         action={adminEditWithdrawalInrConversion}
+        showSuccess={false}
         submitLabel="Save conversion"
         pendingLabel="Saving..."
         confirmMessage="Save this corrected INR conversion value?"
@@ -231,6 +231,7 @@ function BankCorrections({
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 <AdminActionForm
                   action={adminApproveWithdrawalPayoutDetails}
+                  showSuccess={false}
                   submitLabel="Approve corrected details"
                   pendingLabel="Approving..."
                   confirmMessage="Approve this new bank destination and return the withdrawal to ready for payout?"
@@ -240,6 +241,7 @@ function BankCorrections({
                 </AdminActionForm>
                 <AdminActionForm
                   action={adminRejectWithdrawalPayoutDetails}
+                  showSuccess={false}
                   submitLabel="Request another correction"
                   pendingLabel="Sending..."
                   variant="danger"
@@ -284,13 +286,14 @@ function PayoutCards({
           key={withdrawal.id}
           className="glass-card rounded-2xl p-4 sm:p-5"
         >
-          <p className="currency-value text-lg text-ink">
-            {formatInr(withdrawal.convertedInrAmount)} ready
-          </p>
-          <p className="mt-1 text-xs text-ink-dim">
-            {withdrawal.user.fullName ?? "Unnamed investor"} ·{" "}
-            {withdrawal.user.email}
-          </p>
+          <div className="flex min-w-0 items-center justify-between gap-3">
+            <p className="currency-value whitespace-nowrap text-lg text-ink">
+              {formatInr(withdrawal.convertedInrAmount)} ready
+            </p>
+            <p className="min-w-0 truncate text-right text-[clamp(0.7rem,3.2vw,0.875rem)] font-medium text-ink">
+              {withdrawal.user.fullName ?? "Unnamed investor"}
+            </p>
+          </div>
 
           {method === "BANK" ? (
             <dl className="mt-3 grid gap-3 rounded-xl border border-slate-200 bg-white p-4 text-xs sm:grid-cols-2">
@@ -344,6 +347,7 @@ function PayoutCards({
           >
             <AdminActionForm
               action={adminCompleteWithdrawalPayout}
+              showSuccess={false}
               submitLabel={
                 method === "BANK"
                   ? "Mark bank / UPI transfer paid"
@@ -373,6 +377,7 @@ function PayoutCards({
             {method === "BANK" && (
               <AdminActionForm
                 action={adminRequestWithdrawalPayoutCorrection}
+                showSuccess={false}
                 submitLabel="Bank details are incorrect"
                 pendingLabel="Blocking payout..."
                 variant="danger"

@@ -15,10 +15,7 @@ import { cn } from "@/lib/cn";
 type BrokerWithdrawal = {
   id: string;
   investor: string;
-  email: string;
-  method: "CRYPTO" | "BANK" | "CASH";
   amount: string;
-  weekKey: string;
 };
 
 type Props = {
@@ -33,11 +30,6 @@ function formatUsd(value: number): string {
   })} USD`;
 }
 
-function methodLabel(method: BrokerWithdrawal["method"]): string {
-  if (method === "CRYPTO") return "USDT wallet payout";
-  if (method === "BANK") return "Bank payout";
-  return "Cash payout";
-}
 
 export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
   const [state, formAction, pending] = useActionState<AdminFormState, FormData>(
@@ -87,11 +79,8 @@ export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
     >
       <input ref={reasonRef} type="hidden" name="reason" />
       {state.error && <Alert tone="error">{state.error}</Alert>}
-      {state.success && <Alert tone="success">{state.success}</Alert>}
       {undoState.error && <Alert tone="error">{undoState.error}</Alert>}
-      {undoState.success && <Alert tone="success">{undoState.success}</Alert>}
       {rejectState.error && <Alert tone="error">{rejectState.error}</Alert>}
-      {rejectState.success && <Alert tone="success">{rejectState.success}</Alert>}
 
       {withdrawals.length === 0 ? (
         <p className="rounded-xl border border-dashed border-gold-600/20 px-4 py-3 text-center text-sm text-ink-faint">
@@ -124,7 +113,7 @@ export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
                   <div
                     key={withdrawal.id}
                     className={cn(
-                      "grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-2 px-3 py-2.5 transition-colors",
+                      "grid grid-cols-[1rem_minmax(0,1fr)_max-content_max-content] items-center gap-1.5 px-3 py-2.5 transition-colors",
                       checked ? "bg-gold-600/8" : "hover:bg-vault-950/35",
                     )}
                   >
@@ -143,18 +132,13 @@ export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
                       }
                       className="size-4 accent-amber-500"
                     />
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm text-ink">
-                        {withdrawal.investor}
-                      </span>
-                      <span className="mt-0.5 block truncate text-xs text-ink-faint">
-                        {methodLabel(withdrawal.method)} · week {withdrawal.weekKey}
-                      </span>
+                    <span className="min-w-0 truncate whitespace-nowrap text-[clamp(0.7rem,3.2vw,0.875rem)] font-medium text-ink">
+                      {withdrawal.investor}
                     </span>
-                    <span className="currency-value whitespace-nowrap text-right text-sm text-ink">
+                    <span className="currency-value col-start-4 justify-self-end whitespace-nowrap text-right text-[clamp(0.68rem,3vw,0.875rem)] text-ink">
                       {formatUsd(Number(withdrawal.amount))}
                     </span>
-                    <span className="flex gap-1">
+                    <span className="col-start-3 flex gap-1">
                       <button
                         type="submit"
                         formAction={undoAction}
@@ -165,16 +149,18 @@ export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
                         aria-label={"Undo approval for " + withdrawal.investor}
                         title="Undo approval"
                         onClick={(event) => {
+                          event.preventDefault();
+                          const button = event.currentTarget;
                           const reason = window.prompt("Why are you undoing this withdrawal approval?")?.trim();
                           if (!reason || !window.confirm("Return this withdrawal to approval review?")) {
-                            event.preventDefault();
                             return;
                           }
                           if (reasonRef.current) reasonRef.current.value = reason;
+                          window.setTimeout(() => button.form?.requestSubmit(button), 0);
                         }}
-                        className="flex size-8 items-center justify-center rounded-full border border-slate-300 bg-white text-ink-dim hover:border-blue-400 hover:text-blue-700"
+                        className="flex size-7 items-center justify-center rounded-full border border-slate-300 bg-white text-ink-dim hover:border-blue-400 hover:text-blue-700"
                       >
-                        <Undo2 className="size-4" aria-hidden />
+                        <Undo2 className="size-3.5" aria-hidden />
                       </button>
                       <button
                         type="submit"
@@ -186,16 +172,18 @@ export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
                         aria-label={"Reject " + withdrawal.investor + " withdrawal"}
                         title="Reject withdrawal"
                         onClick={(event) => {
+                          event.preventDefault();
+                          const button = event.currentTarget;
                           const reason = window.prompt("Why is this approved withdrawal being rejected?")?.trim();
                           if (!reason || !window.confirm("Reject this withdrawal before the broker batch?")) {
-                            event.preventDefault();
                             return;
                           }
                           if (reasonRef.current) reasonRef.current.value = reason;
+                          window.setTimeout(() => button.form?.requestSubmit(button), 0);
                         }}
-                        className="flex size-8 items-center justify-center rounded-full border border-rose-300 bg-white text-rose-700 hover:bg-rose-50"
+                        className="flex size-7 items-center justify-center rounded-full border border-rose-300 bg-white text-rose-700 hover:bg-rose-50"
                       >
-                        <X className="size-4" aria-hidden />
+                        <X className="size-3.5" aria-hidden />
                       </button>
                     </span>
                   </div>

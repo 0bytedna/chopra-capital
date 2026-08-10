@@ -18,7 +18,6 @@ export type SettlementWithdrawal = {
   id: string;
   method: Method;
   investor: string;
-  email: string;
   amount: string;
   brokerReceivedUsdt: string;
   network: string;
@@ -82,13 +81,14 @@ export function CryptoPayouts({
           key={withdrawal.id}
           className="glass-card rounded-2xl p-4 sm:p-5"
         >
-          <p className="currency-value text-lg text-ink">
-            {formatUsdt(Number(withdrawal.brokerReceivedUsdt))} ready
-          </p>
-          <p className="mt-1 text-xs text-ink-faint">
-            {withdrawal.investor} · {withdrawal.email} · requested{" "}
-            {formatUsd(Number(withdrawal.amount))}
-          </p>
+          <div className="flex min-w-0 items-center justify-between gap-3">
+            <p className="currency-value whitespace-nowrap text-lg text-ink">
+              {formatUsdt(Number(withdrawal.brokerReceivedUsdt))} ready
+            </p>
+            <p className="min-w-0 truncate text-right text-[clamp(0.7rem,3.2vw,0.875rem)] font-medium text-ink">
+              {withdrawal.investor}
+            </p>
+          </div>
 
           <div className="mt-3 rounded-xl border border-gold-600/15 bg-vault-950/50 p-3">
             <p className="text-xs uppercase tracking-[0.16em] text-ink-faint">
@@ -112,6 +112,7 @@ export function CryptoPayouts({
 
           <AdminActionForm
             action={adminCompleteWithdrawalPayout}
+            showSuccess={false}
             submitLabel="Mark USDT sent"
             pendingLabel="Recording payout..."
             confirmMessage="Confirm that the USDT was sent to the wallet shown above?"
@@ -194,7 +195,6 @@ function BulkConversionForm({
       }}
     >
       {state.error && <Alert tone="error">{state.error}</Alert>}
-      {state.success && <Alert tone="success">{state.success}</Alert>}
 
       <div className="overflow-hidden rounded-xl border border-gold-600/15">
         <label className="flex cursor-pointer items-center gap-3 border-b border-gold-600/15 bg-vault-950/55 px-4 py-3 text-xs text-ink-dim">
@@ -227,7 +227,7 @@ function BulkConversionForm({
               <label
                 key={withdrawal.id}
                 className={cn(
-                  "grid cursor-pointer gap-2 px-4 py-2.5 transition-colors sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center",
+                  "grid cursor-pointer grid-cols-[1rem_minmax(0,1fr)_max-content] items-center gap-1.5 px-3 py-2.5 transition-colors",
                   checked ? "bg-gold-600/8" : "hover:bg-vault-950/35",
                 )}
               >
@@ -243,19 +243,13 @@ function BulkConversionForm({
                         : current.filter((id) => id !== withdrawal.id),
                     )
                   }
-                  className="mt-0.5 size-4 accent-amber-500 sm:mt-0"
+                  className="size-4 accent-amber-500"
                 />
-                <span className="min-w-0">
-                  <span className="block truncate text-sm text-ink">
-                    {withdrawal.investor}
-                  </span>
-                  <span className="mt-0.5 block truncate text-xs text-ink-faint">
-                    {withdrawal.email}
-
-                  </span>
+                <span className="min-w-0 truncate whitespace-nowrap text-[clamp(0.7rem,3.2vw,0.875rem)] font-medium text-ink">
+                  {withdrawal.investor}
                 </span>
-                <span className="pl-7 text-left sm:pl-0 sm:text-right">
-                  <span className="currency-value block text-sm text-ink">
+                <span className="text-right">
+                  <span className="currency-value block whitespace-nowrap text-[clamp(0.68rem,3vw,0.875rem)] text-ink">
                     {formatUsd(usd)}
                   </span>
                   {inrShare !== null && (

@@ -31,6 +31,10 @@ import {
   createInternalTransfer,
 } from "@/lib/wallet";
 import {
+  editBrokerTransferBatch,
+  editDepositAllocationBatch,
+} from "@/lib/depositBatchCorrections";
+import {
   deleteTradingAdjustment,
   editTradingAdjustment,
   EDITABLE_TRADING_TYPES,
@@ -540,6 +544,66 @@ export async function adminEditQueuedDepositConversion(
     return {
       success: "Conversion updated from " + result.previousAmount.toFixed(2) +
         " to " + result.newUsdtAmount.toFixed(2) + " USDT.",
+    };
+  } catch (err) {
+    return fail(err);
+  }
+}
+export async function adminEditDepositAllocationBatch(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  const admin = await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const amountRaw = String(formData.get("totalUsdt") ?? "").trim();
+  const reason = String(formData.get("reason") ?? "").trim();
+  if (!id || !amountRaw || !reason) {
+    return { error: "Enter the corrected conversion total and an audit reason." };
+  }
+
+  try {
+    const result = await editDepositAllocationBatch(id, D(amountRaw), admin.id, reason);
+    revalidatePath("/admin/deposits");
+    revalidatePath("/admin/transactions");
+    revalidatePath("/admin");
+    revalidatePath("/app");
+    revalidatePath("/app/deposit");
+    revalidatePath("/app/history");
+    revalidatePath("/app/notifications");
+    return {
+      success: "Conversion batch updated from " + result.previousTotal.toFixed(2) +
+        " to " + result.newTotalUsdt.toFixed(2) + " USDT.",
+    };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function adminEditBrokerTransferBatch(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  const admin = await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const amountRaw = String(formData.get("totalReceivedUsdt") ?? "").trim();
+  const reason = String(formData.get("reason") ?? "").trim();
+  if (!id || !amountRaw || !reason) {
+    return { error: "Enter the corrected broker total and an audit reason." };
+  }
+
+  try {
+    const result = await editBrokerTransferBatch(id, D(amountRaw), admin.id, reason);
+    revalidatePath("/admin/deposits");
+    revalidatePath("/admin/transactions");
+    revalidatePath("/admin/trading");
+    revalidatePath("/admin");
+    revalidatePath("/app");
+    revalidatePath("/app/deposit");
+    revalidatePath("/app/history");
+    revalidatePath("/app/notifications");
+    return {
+      success: "Broker transfer updated from " + result.previousTotal.toFixed(2) +
+        " to " + result.newTotalReceivedUsdt.toFixed(2) + " USDT.",
     };
   } catch (err) {
     return fail(err);

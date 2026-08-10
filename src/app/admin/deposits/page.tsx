@@ -67,12 +67,12 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
       prisma.deposit.findMany({
         where: { method: selectedMethod, status: { in: ["PENDING", "RECEIVED"] } },
         orderBy: { createdAt: "asc" },
-        include: { user: { select: { email: true, fullName: true, kycStatus: true } } },
+        include: { user: { select: { fullName: true, kycStatus: true } } },
       }),
       prisma.deposit.findMany({
         where: { status: "QUEUED" },
         orderBy: { createdAt: "asc" },
-        include: { user: { select: { email: true, fullName: true } } },
+        include: { user: { select: { fullName: true } } },
       }),
     ]);
 
@@ -187,16 +187,7 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
             deposits={queuedDeposits.map((deposit) => ({
               id: deposit.id,
               investor: deposit.user.fullName ?? "Unnamed investor",
-              email: deposit.user.email,
               method: deposit.method,
-              detail:
-                deposit.method === "BANK"
-                  ? deposit.reference
-                    ? `UTR ${deposit.reference}`
-                    : null
-                  : deposit.method === "CRYPTO"
-                    ? deposit.network
-                    : null,
               queuedAmount: String(deposit.queuedUsdtAmount ?? 0),
             }))}
           />
@@ -219,19 +210,17 @@ function DepositReviewTable({
     network: string | null;
     txHash: string | null;
     reference: string | null;
-    createdAt: Date;
-    user: { email: string; fullName: string | null };
+    user: { fullName: string | null };
   }>;
 }) {
   return (
     <div className="mt-5 overflow-x-auto rounded-xl border border-gold-600/15 bg-white">
-      <table className="w-full min-w-[780px] border-collapse text-left">
+      <table className="w-full min-w-[600px] border-collapse text-left">
         <thead className="bg-vault-950/45 text-xs uppercase tracking-[0.12em] text-ink-dim">
           <tr>
             <th scope="col" className="px-4 py-3 font-medium">Investor</th>
             <th scope="col" className="px-4 py-3 text-right font-medium">Amount</th>
             <th scope="col" className="px-4 py-3 font-medium">Payment reference</th>
-            <th scope="col" className="px-4 py-3 font-medium">Submitted</th>
             <th scope="col" className="px-4 py-3 text-right font-medium">Decision</th>
           </tr>
         </thead>
@@ -251,12 +240,11 @@ function DepositReviewTable({
             return (
               <tr key={deposit.id} className="hover:bg-vault-950/25">
                 <td className="px-4 py-3">
-                  <p className="font-medium text-ink">
+                  <p className="whitespace-nowrap text-[clamp(0.72rem,3.2vw,0.875rem)] font-medium text-ink">
                     {deposit.user.fullName ?? "Unnamed investor"}
                   </p>
-                  <p className="mt-0.5 text-xs text-ink-dim">{deposit.user.email}</p>
                 </td>
-                <td className="currency-value whitespace-nowrap px-4 py-3 text-right text-sm text-ink">
+                <td className="currency-value whitespace-nowrap px-4 py-3 text-right text-[clamp(0.7rem,3vw,0.875rem)] text-ink">
                   {sourceAmountLabel(deposit)}
                 </td>
                 <td className="max-w-64 px-4 py-3">
@@ -264,14 +252,7 @@ function DepositReviewTable({
                     {reference}
                   </p>
                 </td>
-                <td className="whitespace-nowrap px-4 py-3 text-sm text-ink-dim">
-                  {deposit.createdAt.toLocaleString("en-IN", {
-                    day: "numeric",
-                    month: "short",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </td>
+
                 <td className="px-4 py-3">
                   <DepositReviewActions
                     id={deposit.id}

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/cn";
 import { formatInr, formatUsdt } from "@/lib/money";
+import { TransactionBatchEditAction } from "@/components/admin/TransactionBatchEditAction";
 
 export const metadata: Metadata = { title: "Admin · Transactions" };
 
@@ -460,9 +461,16 @@ export default async function AdminTransactionsPage({ searchParams }: Props) {
                           <span className="currency-value text-base text-ink">
                             {formatUsdt(batch.totalUsdt)} USDT queued
                           </span>
-                          <span className="shrink-0 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs text-blue-700">
-                            {methodLabel(batch.method)}
-                          </span>
+                          <div className="flex shrink-0 items-center gap-2">
+                            <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs text-blue-700">
+                              {methodLabel(batch.method)}
+                            </span>
+                            <TransactionBatchEditAction
+                              kind="CONVERSION"
+                              id={batch.id}
+                              currentTotal={batch.totalUsdt.toString()}
+                            />
+                          </div>
                         </div>
                         <p className="mt-1 text-sm text-ink-dim">
                           {formatInr(batch.totalSourceAmount)} INR · {batch._count.deposits} deposit{batch._count.deposits === 1 ? "" : "s"}
@@ -491,9 +499,17 @@ export default async function AdminTransactionsPage({ searchParams }: Props) {
                 <ul className="divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 bg-white">
                   {group.items.map((batch) => (
                     <li key={batch.id} className="px-3 py-3 sm:px-4">
-                      <p className="currency-value text-base text-ink">
-                        {formatUsdt(batch.totalReceivedUsdt)} USDT invested
-                      </p>
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="currency-value text-base text-ink">
+                          {formatUsdt(batch.totalReceivedUsdt)} USDT invested
+                        </p>
+                        <TransactionBatchEditAction
+                          kind="BROKER"
+                          id={batch.id}
+                          currentTotal={batch.totalReceivedUsdt.toString()}
+                          maximumTotal={batch.totalQueuedUsdt.toString()}
+                        />
+                      </div>
                       <p className="mt-1 text-sm text-ink-dim">
                         {formatUsdt(batch.totalQueuedUsdt)} queued · fee {formatUsdt(batch.totalQueuedUsdt.sub(batch.totalReceivedUsdt))} · {batch._count.deposits} deposit{batch._count.deposits === 1 ? "" : "s"}
                       </p>

@@ -19,15 +19,9 @@ import {
 
 export const metadata: Metadata = { title: "Admin · Withdrawals" };
 
-type WithdrawalMethod = "CRYPTO" | "BANK" | "CASH";
-
 const investorSelect = {
-  email: true,
   fullName: true,
   mobile: true,
-  address: true,
-  city: true,
-  state: true,
   bankingDetail: {
     select: {
       accountNumber: true,
@@ -39,12 +33,6 @@ const investorSelect = {
     },
   },
 } as const;
-
-function methodShortLabel(method: WithdrawalMethod): string {
-  if (method === "CRYPTO") return "Crypto";
-  if (method === "BANK") return "Bank transfer";
-  return "Cash";
-}
 
 function requestedAmountLabel(usdAmount: Dec): string {
   return formatUsdt(usdAmount) + " USD";
@@ -108,6 +96,7 @@ export default async function AdminWithdrawalsPage() {
         </summary>
         <AdminActionForm
           action={adminUpdateWithdrawalSchedule}
+          showSuccess={false}
           submitLabel="Save schedule"
           pendingLabel="Saving…"
           className="mt-4 border-t border-slate-200 pt-4"
@@ -160,13 +149,11 @@ export default async function AdminWithdrawalsPage() {
           <EmptyState>No new withdrawal requests.</EmptyState>
         ) : (
           <div className="overflow-x-auto rounded-2xl border border-gold-600/15 bg-white">
-            <table className="w-full min-w-[760px] border-collapse text-left">
+            <table className="w-full min-w-[460px] border-collapse text-left">
               <thead className="bg-vault-950/45 text-xs uppercase tracking-[0.12em] text-ink-dim">
                 <tr>
                   <th scope="col" className="px-4 py-3 font-medium">Investor</th>
-                  <th scope="col" className="px-4 py-3 font-medium">Method</th>
                   <th scope="col" className="px-4 py-3 text-right font-medium">USD requested</th>
-                  <th scope="col" className="px-4 py-3 font-medium">Requested</th>
                   <th scope="col" className="px-4 py-3 text-right font-medium">Decision</th>
                 </tr>
               </thead>
@@ -174,24 +161,12 @@ export default async function AdminWithdrawalsPage() {
                 {requested.map((withdrawal) => (
                   <tr key={withdrawal.id} className="hover:bg-vault-950/25">
                     <td className="px-4 py-3">
-                      <p className="font-medium text-ink">
+                      <p className="whitespace-nowrap text-[clamp(0.72rem,3.2vw,0.875rem)] font-medium text-ink">
                         {withdrawal.user.fullName ?? "Unnamed investor"}
                       </p>
-                      <p className="mt-0.5 text-xs text-ink-dim">{withdrawal.user.email}</p>
                     </td>
-                    <td className="px-4 py-3 text-sm text-ink">
-                      {methodShortLabel(withdrawal.method)}
-                    </td>
-                    <td className="currency-value whitespace-nowrap px-4 py-3 text-right text-sm text-ink">
+                    <td className="currency-value whitespace-nowrap px-4 py-3 text-right text-[clamp(0.7rem,3vw,0.875rem)] text-ink">
                       {requestedAmountLabel(withdrawal.amount)}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-sm text-ink-dim">
-                      {withdrawal.createdAt.toLocaleString("en-IN", {
-                        day: "numeric",
-                        month: "short",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
                     </td>
                     <td className="px-4 py-3">
                       <WithdrawalReviewActions
@@ -218,10 +193,7 @@ export default async function AdminWithdrawalsPage() {
           withdrawals={approved.map((withdrawal) => ({
             id: withdrawal.id,
             investor: withdrawal.user.fullName ?? "Unnamed investor",
-            email: withdrawal.user.email,
-            method: withdrawal.method,
             amount: withdrawal.amount.toString(),
-            weekKey: withdrawal.weekKey,
           }))}
         />
       </section>
@@ -234,7 +206,6 @@ export default async function AdminWithdrawalsPage() {
             id: withdrawal.id,
             method: withdrawal.method,
             investor: withdrawal.user.fullName ?? "Unnamed investor",
-            email: withdrawal.user.email,
             amount: withdrawal.amount.toString(),
             brokerReceivedUsdt:
               withdrawal.brokerReceivedUsdt?.toString() ?? "0",
@@ -258,7 +229,6 @@ export default async function AdminWithdrawalsPage() {
               id: withdrawal.id,
               method: "CRYPTO",
               investor: withdrawal.user.fullName ?? "Unnamed investor",
-              email: withdrawal.user.email,
               amount: withdrawal.amount.toString(),
               brokerReceivedUsdt:
                 withdrawal.brokerReceivedUsdt?.toString() ?? "0",
@@ -279,7 +249,6 @@ export default async function AdminWithdrawalsPage() {
             payoutUpiId: withdrawal.payoutUpiId,
             payoutAccountType: withdrawal.payoutAccountType,
             user: {
-              email: withdrawal.user.email,
               fullName: withdrawal.user.fullName,
               mobile: withdrawal.user.mobile,
               bankingDetail: withdrawal.user.bankingDetail,
@@ -302,7 +271,6 @@ export default async function AdminWithdrawalsPage() {
             proposedUpiId: withdrawal.proposedUpiId,
             proposedAccountType: withdrawal.proposedAccountType,
             user: {
-              email: withdrawal.user.email,
               fullName: withdrawal.user.fullName,
             },
           }))}

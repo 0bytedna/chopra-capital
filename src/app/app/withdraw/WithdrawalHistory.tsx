@@ -298,7 +298,14 @@ export function WithdrawalHistory({
                   Your corrected bank details were submitted. The payout remains blocked until an admin approves them.
                 </p>
               )}
-              <div className="mt-3 flex flex-wrap items-center gap-2 sm:justify-end">
+              <div
+                className={cn(
+                  "flex flex-wrap items-center gap-2 sm:justify-end",
+                  withdrawal.paidAmount || withdrawal.paidInrAmount
+                    ? "-mt-6 justify-end"
+                    : "mt-3",
+                )}
+              >
                 <button
                   type="button"
                   aria-expanded={detailsOpen}

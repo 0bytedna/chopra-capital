@@ -17,6 +17,7 @@ type Props = {
   variant?: "gold" | "ghost" | "danger";
   confirmMessage?: string;
   resetOnSuccess?: boolean;
+  showSuccess?: boolean;
   className?: string;
   submitClassName?: string;
   children?: ReactNode;
@@ -29,6 +30,7 @@ export function AdminActionForm({
   variant = "gold",
   confirmMessage,
   resetOnSuccess = false,
+  showSuccess = true,
   className,
   submitClassName,
   children,
@@ -50,7 +52,9 @@ export function AdminActionForm({
       }}
     >
       {state.error && <Alert tone="error">{state.error}</Alert>}
-      {state.success && <Alert tone="success">{state.success}</Alert>}
+      {showSuccess && state.success && (
+        <Alert tone="success">{state.success}</Alert>
+      )}
       {children}
       <SubmitButton size="sm" variant={variant} pendingLabel={pendingLabel} className={submitClassName}>
         {submitLabel}
