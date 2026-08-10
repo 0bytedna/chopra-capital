@@ -11,6 +11,7 @@ import type { LedgerEntry } from "@/generated/prisma";
 
 export type PortfolioMetrics = {
   queued: Dec;
+  pendingInr: Dec;
   units: Dec;
   nav: Dec;
   navLive: boolean;
@@ -119,9 +120,17 @@ function applyEntry(s: WalkState, e: LedgerEntry): void {
   }
 }
 export async function getPortfolioMetrics(userId: string): Promise<PortfolioMetrics> {
-  const [entries, { nav, live }] = await Promise.all([
+  const [entries, { nav, live }, pendingInr] = await Promise.all([
     prisma.ledgerEntry.findMany({ where: { userId }, orderBy: { createdAt: "asc" } }),
     getCurrentNav().then((r) => ({ nav: r.nav, live: r.live })),
+    prisma.deposit.aggregate({
+      where: {
+        userId,
+        method: { in: ["BANK", "CASH"] },
+        status: { in: ["PENDING", "NEEDS_CORRECTION", "RECEIVED"] },
+      },
+      _sum: { inrAmount: true },
+    }),
   ]);
 
   const s = freshState();
@@ -130,6 +139,7 @@ export async function getPortfolioMetrics(userId: string): Promise<PortfolioMetr
   const poolValue = s.units.mul(nav);
   return {
     queued: s.queued,
+    pendingInr: D(pendingInr._sum.inrAmount ?? 0),
     units: s.units,
     nav,
     navLive: live,

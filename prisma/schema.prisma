@@ -381,7 +381,7 @@ model BrokerTransferBatch {
 }
 
 // ---------------------------------------------------------------------------
-// Withdrawals (USDT out) — requested Sunday morning, processed Monday
+// Withdrawals (USDT out) — requested during the configured weekly window, processed Monday
 // ---------------------------------------------------------------------------
 
 enum WithdrawalStatus {

@@ -1,27 +1,38 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/cn";
 import { formatInr, formatUsdt } from "@/lib/money";
 
 export const metadata: Metadata = { title: "Admin · Transactions" };
 
-const transactionTypes = ["DEPOSITS", "WITHDRAWALS"] as const;
+const transactionTypes = [
+  "DEPOSITS",
+  "WITHDRAWALS",
+  "CONVERSIONS",
+  "BROKER",
+] as const;
 const methods = ["ALL", "BANK", "CRYPTO", "CASH"] as const;
 const depositStatuses = [
-  { value: "ALL", label: "All" },
+  { value: "ALL", label: "All statuses" },
   { value: "NEEDS_CORRECTION", label: "Action needed" },
   { value: "CANCELLED", label: "Cancelled" },
   { value: "REJECTED", label: "Rejected" },
   { value: "CONFIRMED", label: "Invested" },
 ] as const;
 const withdrawalStatuses = [
-  { value: "ALL", label: "All" },
+  { value: "ALL", label: "All statuses" },
   { value: "PROCESSED", label: "Paid" },
   { value: "CANCELLED", label: "Cancelled" },
   { value: "REJECTED", label: "Rejected" },
 ] as const;
+
+const typeLabels = {
+  DEPOSITS: "Deposits",
+  WITHDRAWALS: "Withdrawals",
+  CONVERSIONS: "Conversions",
+  BROKER: "Broker",
+} as const;
 
 type TransactionType = (typeof transactionTypes)[number];
 type Method = (typeof methods)[number];
@@ -58,9 +69,8 @@ function isWithdrawalStatus(
   return withdrawalStatuses.some((item) => item.value === value);
 }
 
-function href(type: TransactionType, method: Method, status: string) {
-  const params = new URLSearchParams({ type, method, status });
-  return `/admin/transactions?${params.toString()}`;
+function typeHref(type: TransactionType) {
+  return `/admin/transactions?type=${type}`;
 }
 
 function methodLabel(method: Exclude<Method, "ALL">) {
@@ -96,6 +106,27 @@ function dateLabel(value: Date) {
   });
 }
 
+function groupByMonth<T>(items: T[], getDate: (item: T) => Date) {
+  const groups = new Map<string, { label: string; items: T[] }>();
+  for (const item of items) {
+    const date = getDate(item);
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+    const current = groups.get(key);
+    if (current) {
+      current.items.push(item);
+    } else {
+      groups.set(key, {
+        label: date.toLocaleDateString("en-IN", {
+          month: "long",
+          year: "numeric",
+        }),
+        items: [item],
+      });
+    }
+  }
+  return Array.from(groups.entries()).map(([key, group]) => ({ key, ...group }));
+}
+
 export default async function AdminTransactionsPage({ searchParams }: Props) {
   const query = await searchParams;
   const requestedType = one(query.type);
@@ -107,6 +138,10 @@ export default async function AdminTransactionsPage({ searchParams }: Props) {
   const selectedMethod: Method = isMethod(requestedMethod)
     ? requestedMethod
     : "ALL";
+  const conversionMethod =
+    selectedMethod === "BANK" || selectedMethod === "CASH"
+      ? selectedMethod
+      : "ALL";
   const selectedDepositStatus: DepositHistoryStatus = isDepositStatus(
     requestedStatus,
   )
@@ -118,224 +153,360 @@ export default async function AdminTransactionsPage({ searchParams }: Props) {
     ? requestedStatus
     : "ALL";
 
-  const deposits =
-    selectedType === "DEPOSITS"
-      ? await prisma.deposit.findMany({
-          where: {
-            method: selectedMethod === "ALL" ? undefined : selectedMethod,
-            status:
-              selectedDepositStatus === "ALL"
-                ? {
-                    in: [
-                      "NEEDS_CORRECTION",
-                      "CANCELLED",
-                      "REJECTED",
-                      "CONFIRMED",
-                    ],
-                  }
-                : selectedDepositStatus,
-          },
-          orderBy: { createdAt: "desc" },
-          take: 100,
-          include: { user: { select: { email: true, fullName: true } } },
-        })
-      : [];
+  const [deposits, withdrawals, conversionBatches, brokerBatches] =
+    await Promise.all([
+      selectedType === "DEPOSITS"
+        ? prisma.deposit.findMany({
+            where: {
+              method: selectedMethod === "ALL" ? undefined : selectedMethod,
+              status:
+                selectedDepositStatus === "ALL"
+                  ? {
+                      in: [
+                        "NEEDS_CORRECTION",
+                        "CANCELLED",
+                        "REJECTED",
+                        "CONFIRMED",
+                      ],
+                    }
+                  : selectedDepositStatus,
+            },
+            orderBy: { createdAt: "desc" },
+            take: 100,
+            include: { user: { select: { email: true, fullName: true } } },
+          })
+        : Promise.resolve([]),
+      selectedType === "WITHDRAWALS"
+        ? prisma.withdrawal.findMany({
+            where: {
+              method: selectedMethod === "ALL" ? undefined : selectedMethod,
+              status:
+                selectedWithdrawalStatus === "ALL"
+                  ? { in: ["PROCESSED", "REJECTED", "CANCELLED"] }
+                  : selectedWithdrawalStatus,
+            },
+            orderBy: { createdAt: "desc" },
+            take: 100,
+            include: { user: { select: { email: true, fullName: true } } },
+          })
+        : Promise.resolve([]),
+      selectedType === "CONVERSIONS"
+        ? prisma.depositAllocationBatch.findMany({
+            where: {
+              method:
+                conversionMethod === "ALL"
+                  ? { in: ["BANK", "CASH"] }
+                  : conversionMethod,
+            },
+            orderBy: { createdAt: "desc" },
+            take: 100,
+            include: {
+              admin: { select: { fullName: true, email: true } },
+              _count: { select: { deposits: true } },
+            },
+          })
+        : Promise.resolve([]),
+      selectedType === "BROKER"
+        ? prisma.brokerTransferBatch.findMany({
+            orderBy: { createdAt: "desc" },
+            take: 100,
+            include: {
+              admin: { select: { fullName: true, email: true } },
+              _count: { select: { deposits: true } },
+            },
+          })
+        : Promise.resolve([]),
+    ]);
 
-  const withdrawals =
-    selectedType === "WITHDRAWALS"
-      ? await prisma.withdrawal.findMany({
-          where: {
-            method: selectedMethod === "ALL" ? undefined : selectedMethod,
-            status:
-              selectedWithdrawalStatus === "ALL"
-                ? { in: ["PROCESSED", "REJECTED", "CANCELLED"] }
-                : selectedWithdrawalStatus,
-          },
-          orderBy: { createdAt: "desc" },
-          take: 100,
-          include: { user: { select: { email: true, fullName: true } } },
-        })
-      : [];
-
-  const activeStatus =
+  const selectedStatus =
     selectedType === "DEPOSITS"
       ? selectedDepositStatus
       : selectedWithdrawalStatus;
   const statusFilters =
     selectedType === "DEPOSITS" ? depositStatuses : withdrawalStatuses;
+  const activeMethod =
+    selectedType === "CONVERSIONS" ? conversionMethod : selectedMethod;
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-5">
       <header>
-        <p className="eyebrow">Account activity</p>
-        <h1 className="mt-2 font-serif text-3xl text-ink">
+        <h1 className="font-serif text-3xl text-ink">
           <em className="gold-text italic">Transactions</em>
         </h1>
       </header>
 
       <nav
-        className="grid grid-cols-2 overflow-hidden rounded-xl border border-slate-200 bg-white p-1"
-        aria-label="Transaction type"
+        className="grid grid-cols-4 gap-1 rounded-xl border border-slate-200 bg-white p-1"
+        aria-label="Transaction history category"
       >
-        <Link
-          href={href("DEPOSITS", selectedMethod, "ALL")}
-          className={cn(
-            "flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-            selectedType === "DEPOSITS"
-              ? "bg-blue-100 text-blue-700"
-              : "text-ink-dim hover:bg-slate-50",
-          )}
-          aria-current={selectedType === "DEPOSITS" ? "page" : undefined}
-        >
-          <ArrowDownToLine className="size-4" aria-hidden />
-          Deposits
-        </Link>
-        <Link
-          href={href("WITHDRAWALS", selectedMethod, "ALL")}
-          className={cn(
-            "flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-            selectedType === "WITHDRAWALS"
-              ? "bg-blue-100 text-blue-700"
-              : "text-ink-dim hover:bg-slate-50",
-          )}
-          aria-current={selectedType === "WITHDRAWALS" ? "page" : undefined}
-        >
-          <ArrowUpFromLine className="size-4" aria-hidden />
-          Withdrawals
-        </Link>
+        {transactionTypes.map((type) => (
+          <Link
+            key={type}
+            href={typeHref(type)}
+            className={cn(
+              "min-w-0 truncate rounded-lg px-1.5 py-2.5 text-center text-[11px] font-medium transition-colors sm:px-3 sm:text-sm",
+              selectedType === type
+                ? "bg-blue-100 text-blue-700"
+                : "text-ink-dim hover:bg-slate-50",
+            )}
+            aria-current={selectedType === type ? "page" : undefined}
+            title={typeLabels[type]}
+          >
+            {typeLabels[type]}
+          </Link>
+        ))}
       </nav>
 
-      <section className="glass-card space-y-3 rounded-2xl p-3 sm:p-4">
-        <nav className="grid grid-cols-4 gap-1.5" aria-label="Transaction method">
-          {methods.map((method) => (
-            <Link
-              key={method}
-              href={href(selectedType, method, activeStatus)}
-              className={cn(
-                "min-w-0 truncate rounded-lg border px-2 py-2 text-center text-xs transition-colors sm:text-sm",
-                selectedMethod === method
-                  ? "border-blue-300 bg-blue-50 text-blue-700"
-                  : "border-slate-200 bg-white text-ink-dim",
-              )}
-              aria-current={selectedMethod === method ? "page" : undefined}
-            >
-              {method === "ALL" ? "All methods" : methodLabel(method)}
-            </Link>
-          ))}
-        </nav>
-
-        <nav
-          className="flex gap-2 overflow-x-auto pb-1"
-          aria-label="Transaction status"
+      {selectedType !== "BROKER" && (
+        <form
+          action="/admin/transactions"
+          method="get"
+          className={cn(
+            "grid gap-2 rounded-xl border border-slate-200 bg-white p-2",
+            selectedType === "CONVERSIONS"
+              ? "grid-cols-[minmax(0,1fr)_auto]"
+              : "grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]",
+          )}
         >
-          {statusFilters.map((filter) => (
-            <Link
-              key={filter.value}
-              href={href(selectedType, selectedMethod, filter.value)}
-              className={cn(
-                "shrink-0 rounded-full border px-3 py-1.5 text-xs transition-colors",
-                activeStatus === filter.value
-                  ? "border-blue-300 bg-blue-50 text-blue-700"
-                  : "border-slate-200 bg-white text-ink-dim",
-              )}
+          <input type="hidden" name="type" value={selectedType} />
+          <select
+            name="method"
+            defaultValue={activeMethod}
+            aria-label="Payment method"
+            className="min-w-0 rounded-lg border border-slate-200 bg-white px-2 py-2 text-xs text-ink outline-none focus:border-blue-300 sm:text-sm"
+          >
+            <option value="ALL">All methods</option>
+            <option value="BANK">Bank</option>
+            {selectedType !== "CONVERSIONS" && (
+              <option value="CRYPTO">Crypto</option>
+            )}
+            <option value="CASH">Cash</option>
+          </select>
+
+          {selectedType !== "CONVERSIONS" && (
+            <select
+              name="status"
+              defaultValue={selectedStatus}
+              aria-label="Transaction status"
+              className="min-w-0 rounded-lg border border-slate-200 bg-white px-2 py-2 text-xs text-ink outline-none focus:border-blue-300 sm:text-sm"
             >
-              {filter.label}
-            </Link>
-          ))}
-        </nav>
-      </section>
+              {statusFilters.map((status) => (
+                <option key={status.value} value={status.value}>
+                  {status.label}
+                </option>
+              ))}
+            </select>
+          )}
+
+          <button
+            type="submit"
+            className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-blue-700 sm:text-sm"
+          >
+            Apply
+          </button>
+        </form>
+      )}
 
       {selectedType === "DEPOSITS" ? (
         deposits.length === 0 ? (
           <EmptyState>No matching deposit transactions.</EmptyState>
         ) : (
-          <ul className="space-y-2">
-            {deposits.map((deposit) => {
-              const sourceAmount =
-                deposit.method === "CRYPTO"
-                  ? `${formatUsdt(deposit.reportedUsdtAmount ?? deposit.amount)} USDT`
-                  : `${formatInr(deposit.inrAmount ?? 0)} INR`;
-              const detail =
-                deposit.method === "BANK" && deposit.reference
-                  ? ` · UTR ${deposit.reference}`
-                  : deposit.method === "CRYPTO" && deposit.network
-                    ? ` · ${deposit.network}`
-                    : "";
-              return (
-                <li
-                  key={deposit.id}
-                  className="rounded-xl border border-slate-200 bg-white px-4 py-3"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="currency-value min-w-0 truncate text-base text-ink">
-                      {sourceAmount}
-                    </span>
-                    <span
-                      className={cn(
-                        "shrink-0 rounded-full border px-2.5 py-1 text-xs",
-                        statusClass(deposit.status),
-                      )}
-                    >
-                      {statusLabel(deposit.status)}
-                    </span>
-                  </div>
-                  <p className="mt-1 truncate text-sm text-ink-dim">
-                    {deposit.user.fullName ?? deposit.user.email} · {methodLabel(deposit.method)}
-                    {detail}
-                  </p>
-                  <p className="mt-1 text-xs text-ink-faint">
-                    {dateLabel(deposit.createdAt)}
-                    {deposit.status === "CONFIRMED"
-                      ? ` · ${formatUsdt(deposit.amount)} USDT invested`
-                      : ""}
-                    {deposit.adminNote ? ` · ${deposit.adminNote}` : ""}
-                  </p>
-                </li>
-              );
-            })}
-          </ul>
+          <div className="space-y-5">
+            {groupByMonth(deposits, (deposit) => deposit.createdAt).map(
+              (group) => (
+                <section key={group.key} className="space-y-2">
+                  <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-dim">
+                    {group.label}
+                  </h2>
+                  <ul className="divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 bg-white">
+                    {group.items.map((deposit) => {
+                      const sourceAmount =
+                        deposit.method === "CRYPTO"
+                          ? `${formatUsdt(deposit.reportedUsdtAmount ?? deposit.amount)} USDT`
+                          : `${formatInr(deposit.inrAmount ?? 0)} INR`;
+                      const reference =
+                        deposit.method === "BANK" && deposit.reference
+                          ? `UTR ${deposit.reference}`
+                          : deposit.method === "CRYPTO" && deposit.txHash
+                            ? `${deposit.network ?? "USDT"} · ${deposit.txHash}`
+                            : null;
+                      const details = [
+                        reference,
+                        deposit.status === "CONFIRMED"
+                          ? `${formatUsdt(deposit.amount)} USDT invested`
+                          : null,
+                        deposit.adminNote,
+                      ].filter(Boolean);
+
+                      return (
+                        <li key={deposit.id} className="px-3 py-3 sm:px-4">
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="currency-value min-w-0 truncate text-base text-ink">
+                              {sourceAmount}
+                            </span>
+                            <span
+                              className={cn(
+                                "shrink-0 rounded-full border px-2.5 py-1 text-xs",
+                                statusClass(deposit.status),
+                              )}
+                            >
+                              {statusLabel(deposit.status)}
+                            </span>
+                          </div>
+                          <p className="mt-1 truncate text-sm text-ink-dim">
+                            {deposit.user.fullName ?? deposit.user.email} · {methodLabel(deposit.method)}
+                          </p>
+                          <p className="mt-1 text-xs text-ink-faint">
+                            {dateLabel(deposit.createdAt)}
+                          </p>
+                          {details.length > 0 && (
+                            <details className="mt-1.5 text-xs text-ink-dim">
+                              <summary className="cursor-pointer select-none text-blue-700">
+                                Details
+                              </summary>
+                              <p className="mt-1 break-all">{details.join(" · ")}</p>
+                            </details>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </section>
+              ),
+            )}
+          </div>
         )
-      ) : withdrawals.length === 0 ? (
-        <EmptyState>No matching withdrawal transactions.</EmptyState>
+      ) : selectedType === "WITHDRAWALS" ? (
+        withdrawals.length === 0 ? (
+          <EmptyState>No matching withdrawal transactions.</EmptyState>
+        ) : (
+          <div className="space-y-5">
+            {groupByMonth(
+              withdrawals,
+              (withdrawal) => withdrawal.processedAt ?? withdrawal.createdAt,
+            ).map((group) => (
+              <section key={group.key} className="space-y-2">
+                <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-dim">
+                  {group.label}
+                </h2>
+                <ul className="divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 bg-white">
+                  {group.items.map((withdrawal) => {
+                    const paid =
+                      withdrawal.status === "PROCESSED"
+                        ? withdrawal.method === "CRYPTO"
+                          ? `${formatUsdt(withdrawal.paidAmount ?? 0)} USDT paid`
+                          : `${formatInr(withdrawal.paidInrAmount ?? 0)} INR paid`
+                        : null;
+                    const details = [
+                      paid,
+                      withdrawal.txHash
+                        ? `Reference ${withdrawal.txHash}`
+                        : null,
+                      withdrawal.adminNote,
+                    ].filter(Boolean);
+
+                    return (
+                      <li key={withdrawal.id} className="px-3 py-3 sm:px-4">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="currency-value min-w-0 truncate text-base text-ink">
+                            {formatUsdt(withdrawal.amount)} USD
+                          </span>
+                          <span
+                            className={cn(
+                              "shrink-0 rounded-full border px-2.5 py-1 text-xs",
+                              statusClass(withdrawal.status),
+                            )}
+                          >
+                            {statusLabel(withdrawal.status)}
+                          </span>
+                        </div>
+                        <p className="mt-1 truncate text-sm text-ink-dim">
+                          {withdrawal.user.fullName ?? withdrawal.user.email} · {methodLabel(withdrawal.method)}
+                        </p>
+                        <p className="mt-1 text-xs text-ink-faint">
+                          {dateLabel(withdrawal.processedAt ?? withdrawal.createdAt)}
+                        </p>
+                        {details.length > 0 && (
+                          <details className="mt-1.5 text-xs text-ink-dim">
+                            <summary className="cursor-pointer select-none text-blue-700">
+                              Details
+                            </summary>
+                            <p className="mt-1 break-all">{details.join(" · ")}</p>
+                          </details>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            ))}
+          </div>
+        )
+      ) : selectedType === "CONVERSIONS" ? (
+        conversionBatches.length === 0 ? (
+          <EmptyState>No matching INR-to-USDT conversion batches.</EmptyState>
+        ) : (
+          <div className="space-y-5">
+            {groupByMonth(conversionBatches, (batch) => batch.createdAt).map(
+              (group) => (
+                <section key={group.key} className="space-y-2">
+                  <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-dim">
+                    {group.label}
+                  </h2>
+                  <ul className="divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 bg-white">
+                    {group.items.map((batch) => (
+                      <li key={batch.id} className="px-3 py-3 sm:px-4">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="currency-value text-base text-ink">
+                            {formatUsdt(batch.totalUsdt)} USDT queued
+                          </span>
+                          <span className="shrink-0 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs text-blue-700">
+                            {methodLabel(batch.method)}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-sm text-ink-dim">
+                          {formatInr(batch.totalSourceAmount)} INR · {batch._count.deposits} deposit{batch._count.deposits === 1 ? "" : "s"}
+                        </p>
+                        <p className="mt-1 text-xs text-ink-faint">
+                          {dateLabel(batch.createdAt)} · {batch.admin.fullName ?? batch.admin.email}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ),
+            )}
+          </div>
+        )
+      ) : brokerBatches.length === 0 ? (
+        <EmptyState>No broker transfer batches recorded.</EmptyState>
       ) : (
-        <ul className="space-y-2">
-          {withdrawals.map((withdrawal) => {
-            const paid =
-              withdrawal.status === "PROCESSED"
-                ? withdrawal.method === "CRYPTO"
-                  ? ` · ${formatUsdt(withdrawal.paidAmount ?? 0)} USDT paid`
-                  : ` · ${formatInr(withdrawal.paidInrAmount ?? 0)} INR paid`
-                : "";
-            return (
-              <li
-                key={withdrawal.id}
-                className="rounded-xl border border-slate-200 bg-white px-4 py-3"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <span className="currency-value min-w-0 truncate text-base text-ink">
-                    {formatUsdt(withdrawal.amount)} USD
-                  </span>
-                  <span
-                    className={cn(
-                      "shrink-0 rounded-full border px-2.5 py-1 text-xs",
-                      statusClass(withdrawal.status),
-                    )}
-                  >
-                    {statusLabel(withdrawal.status)}
-                  </span>
-                </div>
-                <p className="mt-1 truncate text-sm text-ink-dim">
-                  {withdrawal.user.fullName ?? withdrawal.user.email} · {methodLabel(withdrawal.method)}
-                </p>
-                <p className="mt-1 text-xs text-ink-faint">
-                  {dateLabel(withdrawal.processedAt ?? withdrawal.createdAt)}
-                  {paid}
-                  {withdrawal.adminNote ? ` · ${withdrawal.adminNote}` : ""}
-                </p>
-              </li>
-            );
-          })}
-        </ul>
+        <div className="space-y-5">
+          {groupByMonth(brokerBatches, (batch) => batch.createdAt).map(
+            (group) => (
+              <section key={group.key} className="space-y-2">
+                <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-dim">
+                  {group.label}
+                </h2>
+                <ul className="divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 bg-white">
+                  {group.items.map((batch) => (
+                    <li key={batch.id} className="px-3 py-3 sm:px-4">
+                      <p className="currency-value text-base text-ink">
+                        {formatUsdt(batch.totalReceivedUsdt)} USDT invested
+                      </p>
+                      <p className="mt-1 text-sm text-ink-dim">
+                        {formatUsdt(batch.totalQueuedUsdt)} queued · fee {formatUsdt(batch.totalQueuedUsdt.sub(batch.totalReceivedUsdt))} · {batch._count.deposits} deposit{batch._count.deposits === 1 ? "" : "s"}
+                      </p>
+                      <p className="mt-1 text-xs text-ink-faint">
+                        NAV {formatUsdt(batch.navPrice)} · {dateLabel(batch.createdAt)} · {batch.admin.fullName ?? batch.admin.email}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ),
+          )}
+        </div>
       )}
     </div>
   );

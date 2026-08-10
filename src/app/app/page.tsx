@@ -33,6 +33,7 @@ export default async function DashboardPage() {
       <AccountMetricCards
         initialBalance={toNumber(balance)}
         initialQueued={toNumber(metrics.queued)}
+        initialPendingInr={toNumber(metrics.pendingInr)}
       />
       <PortfolioChart
         initialSeries={performance.series}

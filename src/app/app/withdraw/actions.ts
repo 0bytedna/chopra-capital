@@ -4,8 +4,13 @@ import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { totpCodeSchema, withdrawSchema } from "@/lib/validation";
-import { currentWeekKey, withdrawalRequestWindowMessage, withdrawalsOpenNow, NETWORKS } from "@/lib/config";
+import { currentWeekKey, NETWORKS } from "@/lib/config";
 import { getPortfolioMetrics } from "@/lib/portfolio";
+import {
+  getWithdrawalSchedule,
+  withdrawalRequestWindowMessage,
+  withdrawalsOpenNow,
+} from "@/lib/withdrawalSchedule";
 import { D, toNumber } from "@/lib/money";
 import { verifyTotp } from "@/lib/totp";
 import {
@@ -129,7 +134,10 @@ export async function requestWithdrawal(_prev: WithdrawFormState, formData: Form
   const banking = method === "CASH" ? null : await getBankingDetail(user.id);
   const eligibility = getWithdrawalEligibility(user, banking, method);
   if (eligibility.restriction) return { restriction: eligibility.restriction };
-  if (!withdrawalsOpenNow()) return { windowError: withdrawalRequestWindowMessage() };
+  const schedule = await getWithdrawalSchedule();
+  if (!withdrawalsOpenNow(schedule)) {
+    return { windowError: withdrawalRequestWindowMessage(schedule) };
+  }
 
   const usdAmount = requestedUsdAmount(amount);
   const amountError = await validateWithdrawalAmount(user.id, toNumber(usdAmount));

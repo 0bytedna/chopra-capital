@@ -272,7 +272,7 @@ const investorSteps = [
   {
     Icon: Clock3,
     title: "Request a withdrawal",
-    copy: "Submit your request during the Sunday window for processing on Monday.",
+    copy: "Submit your request during the scheduled window shown in the investor portal for processing on Monday.",
   },
 ];
 
@@ -443,7 +443,7 @@ function LiveHistory({ mt5 }: { mt5: LandingMt5Details }) {
 
 const terms = [
   ["Trading focus", "Gold", "A focused trading approach"],
-  ["Withdrawal request", "Sunday", "12:00 AM–12:00 PM IST"],
+  ["Withdrawal request", "Scheduled window", "Shown in investor portal"],
   ["Processing day", "Monday", "After approval"],
   ["Lock-in period", "None", "The weekly request cycle applies"],
   ["Monthly objective", "1–3%", "An objective, never a guarantee"],
@@ -507,7 +507,7 @@ const faqs = [
   ],
   [
     "When can I withdraw?",
-    "Requests are accepted on Sundays from 12:00 AM to 12:00 PM IST and processed on Mondays after approval. There is no long-term lock-in.",
+    "Requests are accepted during the scheduled window shown in the investor portal and processed on Mondays after approval. There is no long-term lock-in.",
   ],
 ];
 

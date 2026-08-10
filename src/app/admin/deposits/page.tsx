@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Layers3, WalletCards } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatInr, formatUsdt } from "@/lib/money";
 import { cn } from "@/lib/cn";
@@ -52,7 +51,7 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
   const selectedMethod: DepositMethod = isMethod(requestedMethod) ? requestedMethod : "BANK";
   const methodMeta = methods.find((method) => method.value === selectedMethod) ?? methods[0];
 
-  const [methodCounts, activeDeposits, queuedDeposits, conversionBatches, brokerBatches] =
+  const [methodCounts, activeDeposits, queuedDeposits] =
     await Promise.all([
       Promise.all(
         methods.map(async (method) => ({
@@ -74,25 +73,6 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
         where: { status: "QUEUED" },
         orderBy: { createdAt: "asc" },
         include: { user: { select: { email: true, fullName: true } } },
-      }),
-      selectedMethod === "CRYPTO"
-        ? Promise.resolve([])
-        : prisma.depositAllocationBatch.findMany({
-            where: { method: selectedMethod },
-            orderBy: { createdAt: "desc" },
-            take: 6,
-            include: {
-              admin: { select: { fullName: true, email: true } },
-              _count: { select: { deposits: true } },
-            },
-          }),
-      prisma.brokerTransferBatch.findMany({
-        orderBy: { createdAt: "desc" },
-        take: 6,
-        include: {
-          admin: { select: { fullName: true, email: true } },
-          _count: { select: { deposits: true } },
-        },
       }),
     ]);
 
@@ -140,7 +120,7 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
           <div>
             <div className="flex items-center gap-2">
               <span className="flex size-7 items-center justify-center rounded-full border border-gold-500/35 bg-gold-600/10 font-mono text-xs text-gold-300">1</span>
-              <p className="eyebrow">Receipt verification</p>
+              <p className="eyebrow">Step 1</p>
             </div>
           </div>
           <span className={cn("flex size-10 items-center justify-center rounded-full border font-mono text-lg font-semibold", pending.length > 0 ? "border-gold-600 bg-gold-600 text-white" : "border-slate-200 bg-slate-100 text-ink-faint")}>{pending.length}</span>
@@ -164,7 +144,7 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
               <div>
                 <div className="flex items-center gap-2">
                   <span className="flex size-7 items-center justify-center rounded-full border border-gold-500/35 bg-gold-600/10 font-mono text-xs text-gold-300">2</span>
-                  <p className="eyebrow">INR conversion</p>
+                  <p className="eyebrow">Step 2</p>
                 </div>
               </div>
               <span className="rounded-full border border-positive/25 bg-positive/5 px-3 py-1 font-mono text-xs text-positive">
@@ -194,7 +174,7 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
               <span className="flex size-7 items-center justify-center rounded-full border border-gold-500/35 bg-gold-600/10 font-mono text-xs text-gold-300">
                 {selectedMethod === "CRYPTO" ? "2" : "3"}
               </span>
-              <p className="eyebrow">Weekend broker transfer</p>
+              <p className="eyebrow">Step {selectedMethod === "CRYPTO" ? "2" : "3"}</p>
             </div>
           </div>
           <span className="rounded-full border border-gold-500/30 bg-gold-600/8 px-3 py-1 font-mono text-xs text-gold-300">
@@ -223,69 +203,6 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
         </div>
       </section>
 
-      {selectedMethod !== "CRYPTO" && (
-        <section className="space-y-4">
-          <div>
-            <p className="eyebrow">Conversion audit</p>
-            <h2 className="mt-2 font-serif text-xl text-ink">Recent INR-to-USDT batches</h2>
-          </div>
-          {conversionBatches.length === 0 ? (
-            <p className="rounded-xl border border-dashed border-gold-600/20 px-4 py-3 text-center text-sm text-ink-faint">
-              No conversion batches recorded for this method yet.
-            </p>
-          ) : (
-            <ul className="grid gap-3 sm:grid-cols-2">
-              {conversionBatches.map((batch) => (
-                <li key={batch.id} className="rounded-xl border border-gold-600/12 bg-vault-900/35 p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="currency-value text-sm text-ink">{formatUsdt(batch.totalUsdt)} USDT queued</p>
-                      <p className="mt-1 text-xs text-ink-faint">
-                        from {formatInr(batch.totalSourceAmount)} INR · {batch._count.deposits} user{batch._count.deposits === 1 ? "" : "s"}
-                      </p>
-                    </div>
-                    <Layers3 className="size-4 shrink-0 text-gold-500" aria-hidden />
-                  </div>
-                  <p className="mt-3 text-xs text-ink-faint">
-                    {batch.createdAt.toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })} · {batch.admin.fullName ?? batch.admin.email}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      )}
-
-      <section className="space-y-4">
-        <div>
-          <p className="eyebrow">Broker audit</p>
-          <h2 className="mt-2 font-serif text-xl text-ink">Recent weekend transfers</h2>
-        </div>
-        {brokerBatches.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-gold-600/20 px-4 py-3 text-center text-sm text-ink-faint">
-            No broker transfers recorded yet.
-          </p>
-        ) : (
-          <ul className="grid gap-3 sm:grid-cols-2">
-            {brokerBatches.map((batch) => (
-              <li key={batch.id} className="rounded-xl border border-gold-600/12 bg-vault-900/35 p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="currency-value text-sm text-ink">{formatUsdt(batch.totalReceivedUsdt)} USDT invested</p>
-                    <p className="mt-1 text-xs text-ink-faint">
-                      from {formatUsdt(batch.totalQueuedUsdt)} queued · fee {formatUsdt(batch.totalQueuedUsdt.sub(batch.totalReceivedUsdt))} · {batch._count.deposits} deposit{batch._count.deposits === 1 ? "" : "s"}
-                    </p>
-                  </div>
-                  <WalletCards className="size-4 shrink-0 text-gold-500" aria-hidden />
-                </div>
-                <p className="mt-3 text-xs text-ink-faint">
-                  NAV {formatUsdt(batch.navPrice)} · {batch.createdAt.toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })} · {batch.admin.fullName ?? batch.admin.email}
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
     </div>
   );
 }

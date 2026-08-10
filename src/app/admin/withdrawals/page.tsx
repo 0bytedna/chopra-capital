@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+import { AdminActionForm } from "@/components/admin/AdminActionForm";
 import { formatUsdt, type Dec } from "@/lib/money";
+import {
+  getWithdrawalSchedule,
+  WITHDRAWAL_WEEKDAYS,
+  withdrawalScheduleLabel,
+} from "@/lib/withdrawalSchedule";
 import { BulkBrokerWithdrawalForm } from "@/components/admin/BulkBrokerWithdrawalForm";
 import { WithdrawalReviewActions } from "@/components/admin/ReviewDecisionButtons";
 import { WithdrawalSettlementTabs } from "@/components/admin/WithdrawalSettlementTabs";
@@ -8,6 +14,7 @@ import { WithdrawalDistributionPanels } from "@/components/admin/WithdrawalDistr
 import {
   adminApproveWithdrawal,
   adminRejectWithdrawal,
+  adminUpdateWithdrawalSchedule,
 } from "../actions";
 
 export const metadata: Metadata = { title: "Admin · Withdrawals" };
@@ -52,7 +59,7 @@ function EmptyState({ children }: { children: React.ReactNode }) {
 }
 
 export default async function AdminWithdrawalsPage() {
-  const [requested, approved, brokerReceived, inrReady, payoutCorrections] =
+  const [requested, approved, brokerReceived, inrReady, payoutCorrections, schedule] =
     await Promise.all([
       prisma.withdrawal.findMany({
         where: { status: "REQUESTED" },
@@ -79,6 +86,7 @@ export default async function AdminWithdrawalsPage() {
         orderBy: { payoutCorrectionRequestedAt: "asc" },
         include: { user: { select: investorSelect } },
       }),
+      getWithdrawalSchedule(),
     ]);
 
   return (
@@ -90,6 +98,59 @@ export default async function AdminWithdrawalsPage() {
         </h1>
 
       </header>
+
+      <details className="glass-card rounded-xl p-4 sm:p-5">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+          <span className="text-sm font-medium text-ink">Withdrawal window</span>
+          <span className="text-right text-xs text-blue-700 sm:text-sm">
+            {withdrawalScheduleLabel(schedule)}
+          </span>
+        </summary>
+        <AdminActionForm
+          action={adminUpdateWithdrawalSchedule}
+          submitLabel="Save schedule"
+          pendingLabel="Saving…"
+          className="mt-4 border-t border-slate-200 pt-4"
+          submitClassName="w-full sm:w-auto"
+        >
+          <div className="grid gap-3 sm:grid-cols-3">
+            <label className="space-y-1 text-xs uppercase tracking-[0.12em] text-ink-dim">
+              Day
+              <select
+                name="weekday"
+                defaultValue={schedule.weekday}
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm normal-case tracking-normal text-ink outline-none focus:border-blue-400"
+              >
+                {WITHDRAWAL_WEEKDAYS.map((day) => (
+                  <option key={day.value} value={day.value}>
+                    {day.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="space-y-1 text-xs uppercase tracking-[0.12em] text-ink-dim">
+              Opens
+              <input
+                type="time"
+                name="startTime"
+                defaultValue={schedule.startTime}
+                required
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm normal-case tracking-normal text-ink outline-none focus:border-blue-400"
+              />
+            </label>
+            <label className="space-y-1 text-xs uppercase tracking-[0.12em] text-ink-dim">
+              Closes
+              <input
+                type="time"
+                name="endTime"
+                defaultValue={schedule.endTime}
+                required
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm normal-case tracking-normal text-ink outline-none focus:border-blue-400"
+              />
+            </label>
+          </div>
+        </AdminActionForm>
+      </details>
 
       <section className="space-y-3">
         <div>

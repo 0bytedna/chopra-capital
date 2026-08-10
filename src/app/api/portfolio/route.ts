@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
     metrics: {
       currentValue: toNumber(metrics.currentValue),
       queued: toNumber(metrics.queued),
+      pendingInr: toNumber(metrics.pendingInr),
       inPool: toNumber(metrics.units.mul(metrics.nav)),
       totalDeposits: toNumber(metrics.totalDeposits),
       netWithdrawals: toNumber(metrics.netWithdrawals),

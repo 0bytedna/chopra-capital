@@ -32,11 +32,66 @@ import {
   type EditableTradingAdjustmentType,
 } from "@/lib/tradingAccount";
 import { stageRequiredBankPayoutCorrections } from "@/lib/payoutDetails";
+import {
+  WITHDRAWAL_SCHEDULE_SETTING_KEYS,
+  isWithdrawalWeekday,
+  validateWithdrawalSchedule,
+  type WithdrawalSchedule,
+} from "@/lib/withdrawalSchedule";
 
 export type AdminFormState = { error?: string; success?: string };
 
 function fail(err: unknown): AdminFormState {
   return { error: err instanceof Error ? err.message : "Something went wrong" };
+}
+export async function adminUpdateWithdrawalSchedule(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  await requireAdmin();
+  const weekday = String(formData.get("weekday") ?? "");
+  if (!isWithdrawalWeekday(weekday)) return { error: "Choose a valid weekday." };
+  const schedule: WithdrawalSchedule = {
+    weekday,
+    startTime: String(formData.get("startTime") ?? ""),
+    endTime: String(formData.get("endTime") ?? ""),
+  };
+  const validationError = validateWithdrawalSchedule(schedule);
+  if (validationError) return { error: validationError };
+
+  try {
+    await prisma.$transaction([
+      prisma.setting.upsert({
+        where: { key: WITHDRAWAL_SCHEDULE_SETTING_KEYS.weekday },
+        update: { value: schedule.weekday },
+        create: {
+          key: WITHDRAWAL_SCHEDULE_SETTING_KEYS.weekday,
+          value: schedule.weekday,
+        },
+      }),
+      prisma.setting.upsert({
+        where: { key: WITHDRAWAL_SCHEDULE_SETTING_KEYS.startTime },
+        update: { value: schedule.startTime },
+        create: {
+          key: WITHDRAWAL_SCHEDULE_SETTING_KEYS.startTime,
+          value: schedule.startTime,
+        },
+      }),
+      prisma.setting.upsert({
+        where: { key: WITHDRAWAL_SCHEDULE_SETTING_KEYS.endTime },
+        update: { value: schedule.endTime },
+        create: {
+          key: WITHDRAWAL_SCHEDULE_SETTING_KEYS.endTime,
+          value: schedule.endTime,
+        },
+      }),
+    ]);
+    revalidatePath("/admin/withdrawals");
+    revalidatePath("/app/withdraw");
+    return { success: "Withdrawal window updated." };
+  } catch (error) {
+    return fail(error);
+  }
 }
 
 // --- Manual trading account -------------------------------------------------

@@ -6,19 +6,24 @@ import { getPortfolioMetrics } from "@/lib/portfolio";
 import { getWithdrawalReferenceRate } from "@/lib/withdrawal-rate";
 import { toNumber, formatUsdt } from "@/lib/money";
 import { getWithdrawalEligibility } from "@/lib/financialEligibility";
+import {
+  getWithdrawalSchedule,
+  withdrawalScheduleLabel,
+} from "@/lib/withdrawalSchedule";
 import { WithdrawForm, type PayoutDetails } from "./WithdrawForm";
 
 export const metadata: Metadata = { title: "Withdraw" };
 
 export default async function WithdrawPage() {
   const user = await requireUser();
-  const [metrics, banking, inrRate] = await Promise.all([
+  const [metrics, banking, inrRate, schedule] = await Promise.all([
     getPortfolioMetrics(user.id),
     prisma.bankingDetail.findUnique({
       where: { userId: user.id },
       select: { accountNumber: true, ifsc: true, upiId: true, accountType: true, usdtAddress: true, usdtNetwork: true },
     }),
     getWithdrawalReferenceRate(),
+    getWithdrawalSchedule(),
   ]);
 
   const payout: PayoutDetails = {
@@ -58,8 +63,8 @@ export default async function WithdrawPage() {
         </div>
         <div className="flex items-start gap-2 text-xs text-ink-dim sm:text-right sm:text-sm">
           <CalendarClock className="mt-0.5 size-4 shrink-0 text-gold-500" aria-hidden />
-          <p className="whitespace-nowrap leading-5">
-            Requests: <strong className="text-ink">Sunday, 12:00 AM–12:00 PM IST</strong>
+          <p className="leading-5">
+            Requests: <strong className="text-ink">{withdrawalScheduleLabel(schedule)}</strong>
             <br />Processed: <strong className="text-ink">Monday</strong>
           </p>
         </div>
