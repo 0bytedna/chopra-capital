@@ -1,9 +1,11 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { useActionState, useMemo, useRef, useState } from "react";
+import { Loader2, Undo2, X } from "lucide-react";
 import {
   adminRecordBrokerWithdrawalBatch,
+  adminRejectApprovedWithdrawal,
+  adminUndoWithdrawalApproval,
   type AdminFormState,
 } from "@/app/admin/actions";
 import { Alert } from "@/components/ui/Alert";
@@ -42,6 +44,15 @@ export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
     adminRecordBrokerWithdrawalBatch,
     {},
   );
+  const [undoState, undoAction] = useActionState<AdminFormState, FormData>(
+    adminUndoWithdrawalApproval,
+    {},
+  );
+  const [rejectState, rejectAction] = useActionState<AdminFormState, FormData>(
+    adminRejectApprovedWithdrawal,
+    {},
+  );
+  const reasonRef = useRef<HTMLInputElement>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const selected = useMemo(
@@ -62,6 +73,8 @@ export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
       action={formAction}
       className="space-y-3"
       onSubmit={(event) => {
+        const submitter = (event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
+        if (submitter?.dataset.intent !== "broker") return;
         if (!canSubmit) {
           event.preventDefault();
           return;
@@ -72,8 +85,13 @@ export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
         if (!confirmed) event.preventDefault();
       }}
     >
+      <input ref={reasonRef} type="hidden" name="reason" />
       {state.error && <Alert tone="error">{state.error}</Alert>}
       {state.success && <Alert tone="success">{state.success}</Alert>}
+      {undoState.error && <Alert tone="error">{undoState.error}</Alert>}
+      {undoState.success && <Alert tone="success">{undoState.success}</Alert>}
+      {rejectState.error && <Alert tone="error">{rejectState.error}</Alert>}
+      {rejectState.success && <Alert tone="success">{rejectState.success}</Alert>}
 
       {withdrawals.length === 0 ? (
         <p className="rounded-xl border border-dashed border-gold-600/20 px-4 py-3 text-center text-sm text-ink-faint">
@@ -103,10 +121,10 @@ export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
               {withdrawals.map((withdrawal) => {
                 const checked = selectedIds.includes(withdrawal.id);
                 return (
-                  <label
+                  <div
                     key={withdrawal.id}
                     className={cn(
-                      "grid cursor-pointer gap-2 px-4 py-2.5 transition-colors sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center",
+                      "grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-2 px-3 py-2.5 transition-colors",
                       checked ? "bg-gold-600/8" : "hover:bg-vault-950/35",
                     )}
                   >
@@ -115,6 +133,7 @@ export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
                       name="withdrawalIds"
                       value={withdrawal.id}
                       checked={checked}
+                      aria-label={"Select " + withdrawal.investor}
                       onChange={(event) =>
                         setSelectedIds((current) =>
                           event.target.checked
@@ -122,21 +141,64 @@ export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
                             : current.filter((id) => id !== withdrawal.id),
                         )
                       }
-                      className="mt-0.5 size-4 accent-amber-500 sm:mt-0"
+                      className="size-4 accent-amber-500"
                     />
                     <span className="min-w-0">
                       <span className="block truncate text-sm text-ink">
                         {withdrawal.investor}
                       </span>
                       <span className="mt-0.5 block truncate text-xs text-ink-faint">
-                        {withdrawal.email} · {methodLabel(withdrawal.method)} · week{" "}
-                        {withdrawal.weekKey}
+                        {methodLabel(withdrawal.method)} · week {withdrawal.weekKey}
                       </span>
                     </span>
-                    <span className="currency-value pl-7 text-sm text-ink sm:pl-0 sm:text-right">
+                    <span className="currency-value whitespace-nowrap text-right text-sm text-ink">
                       {formatUsd(Number(withdrawal.amount))}
                     </span>
-                  </label>
+                    <span className="flex gap-1">
+                      <button
+                        type="submit"
+                        formAction={undoAction}
+                        formNoValidate
+                        name="id"
+                        value={withdrawal.id}
+                        data-intent="undo"
+                        aria-label={"Undo approval for " + withdrawal.investor}
+                        title="Undo approval"
+                        onClick={(event) => {
+                          const reason = window.prompt("Why are you undoing this withdrawal approval?")?.trim();
+                          if (!reason || !window.confirm("Return this withdrawal to approval review?")) {
+                            event.preventDefault();
+                            return;
+                          }
+                          if (reasonRef.current) reasonRef.current.value = reason;
+                        }}
+                        className="flex size-8 items-center justify-center rounded-full border border-slate-300 bg-white text-ink-dim hover:border-blue-400 hover:text-blue-700"
+                      >
+                        <Undo2 className="size-4" aria-hidden />
+                      </button>
+                      <button
+                        type="submit"
+                        formAction={rejectAction}
+                        formNoValidate
+                        name="id"
+                        value={withdrawal.id}
+                        data-intent="reject"
+                        aria-label={"Reject " + withdrawal.investor + " withdrawal"}
+                        title="Reject withdrawal"
+                        onClick={(event) => {
+                          const reason = window.prompt("Why is this approved withdrawal being rejected?")?.trim();
+                          if (!reason || !window.confirm("Reject this withdrawal before the broker batch?")) {
+                            event.preventDefault();
+                            return;
+                          }
+                          if (reasonRef.current) reasonRef.current.value = reason;
+                        }}
+                        className="flex size-8 items-center justify-center rounded-full border border-rose-300 bg-white text-rose-700 hover:bg-rose-50"
+                      >
+                        <X className="size-4" aria-hidden />
+                      </button>
+                    </span>
+                  </div>
                 );
               })}
             </div>
@@ -156,6 +218,7 @@ export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
             </div>
             <Button
               type="submit"
+              data-intent="broker"
               size="sm"
               disabled={!canSubmit || pending}
               aria-busy={pending}

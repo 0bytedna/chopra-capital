@@ -4,6 +4,7 @@ import { useState } from "react";
 import {
   adminApproveWithdrawalPayoutDetails,
   adminCompleteWithdrawalPayout,
+  adminEditWithdrawalInrConversion,
   adminRejectWithdrawalPayoutDetails,
   adminRequestWithdrawalPayoutCorrection,
 } from "@/app/admin/actions";
@@ -90,6 +91,49 @@ function EmptyPanel({ children }: { children: React.ReactNode }) {
   );
 }
 
+function ConversionEditForm({
+  id,
+  currentAmount,
+}: {
+  id: string;
+  currentAmount: string;
+}) {
+  return (
+    <details className="rounded-xl border border-slate-200 bg-white p-3">
+      <summary className="cursor-pointer text-sm font-medium text-blue-700">
+        Edit conversion value
+      </summary>
+      <AdminActionForm
+        action={adminEditWithdrawalInrConversion}
+        submitLabel="Save conversion"
+        pendingLabel="Saving..."
+        confirmMessage="Save this corrected INR conversion value?"
+        className="mt-3"
+      >
+        <input type="hidden" name="id" value={id} />
+        <input
+          name="newInrAmount"
+          type="number"
+          min="0.01"
+          step="0.01"
+          defaultValue={currentAmount}
+          required
+          aria-label="Corrected INR amount"
+          className={inputClass}
+        />
+        <input
+          name="reason"
+          required
+          maxLength={500}
+          placeholder="Reason for this correction"
+          aria-label="Reason for conversion correction"
+          className={inputClass}
+        />
+      </AdminActionForm>
+    </details>
+  );
+}
+
 function BankDestination({
   accountNumber,
   ifsc,
@@ -146,6 +190,12 @@ function BankCorrections({
               {withdrawal.payoutCorrectionNote ??
                 "Bank destination needs correction"}
             </p>
+            <div className="mt-3">
+              <ConversionEditForm
+                id={withdrawal.id}
+                currentAmount={withdrawal.convertedInrAmount}
+              />
+            </div>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               <div className="rounded-lg border border-amber-200 bg-white p-3">
                 <p className="mb-2 text-xs uppercase tracking-wider text-ink-faint">
@@ -277,6 +327,13 @@ function PayoutCards({
               {withdrawal.user.mobile ?? "not provided"}
             </div>
           )}
+
+          <div className="mt-3">
+            <ConversionEditForm
+              id={withdrawal.id}
+              currentAmount={withdrawal.convertedInrAmount}
+            />
+          </div>
 
           <div
             className={

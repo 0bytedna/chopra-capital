@@ -100,9 +100,9 @@ export default async function AdminWithdrawalsPage() {
       </header>
 
       <details className="glass-card rounded-xl p-4 sm:p-5">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
-          <span className="text-sm font-medium text-ink">Withdrawal window</span>
-          <span className="text-right text-xs text-blue-700 sm:text-sm">
+        <summary className="flex cursor-pointer list-none flex-col items-start justify-between gap-1.5 sm:flex-row sm:items-center sm:gap-3">
+          <span className="whitespace-nowrap text-sm font-medium text-ink">Withdrawal window</span>
+          <span className="whitespace-nowrap text-left text-xs text-blue-700 sm:text-right sm:text-sm">
             {withdrawalScheduleLabel(schedule)}
           </span>
         </summary>

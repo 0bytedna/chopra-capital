@@ -17,7 +17,13 @@ import {
   confirmDepositReceipt,
   investQueuedDepositBatch,
   rejectDeposit,
+  undoConfirmedInrDeposit,
+  rejectConfirmedInrDeposit,
+  editQueuedDepositConversion,
   approveWithdrawal,
+  undoApprovedWithdrawal,
+  rejectApprovedWithdrawal,
+  editWithdrawalInrConversion,
   completeWithdrawalPayout,
   recordBrokerWithdrawalBatch,
   recordWithdrawalConversionBatch,
@@ -462,6 +468,83 @@ export async function adminRejectDeposit(_prev: AdminFormState, formData: FormDa
   return { success: "Deposit rejected." };
 }
 
+export async function adminUndoConfirmedDeposit(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  const admin = await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const reason = String(formData.get("reason") ?? "").trim();
+  if (!id || !reason) return { error: "Enter a reason before undoing confirmation." };
+
+  try {
+    await undoConfirmedInrDeposit(id, admin.id, reason);
+  } catch (err) {
+    return fail(err);
+  }
+  revalidatePath("/admin/deposits");
+  revalidatePath("/admin/transactions");
+  revalidatePath("/admin");
+  revalidatePath("/app");
+  revalidatePath("/app/deposit");
+  revalidatePath("/app/history");
+  revalidatePath("/app/notifications");
+  return { success: "Deposit confirmation undone. The request is pending verification again." };
+}
+
+export async function adminRejectConfirmedDeposit(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  const admin = await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const reason = String(formData.get("reason") ?? "").trim();
+  if (!id || !reason) return { error: "Enter a reason before rejecting this deposit." };
+
+  try {
+    await rejectConfirmedInrDeposit(id, admin.id, reason);
+  } catch (err) {
+    return fail(err);
+  }
+  revalidatePath("/admin/deposits");
+  revalidatePath("/admin/transactions");
+  revalidatePath("/admin");
+  revalidatePath("/app");
+  revalidatePath("/app/deposit");
+  revalidatePath("/app/history");
+  revalidatePath("/app/notifications");
+  return { success: "Confirmed deposit rejected before conversion." };
+}
+
+export async function adminEditQueuedDepositConversion(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  const admin = await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const amountRaw = String(formData.get("newUsdtAmount") ?? "").trim();
+  const reason = String(formData.get("reason") ?? "").trim();
+  if (!id || !amountRaw || !reason) {
+    return { error: "Enter the corrected USDT amount and a reason." };
+  }
+
+  try {
+    const result = await editQueuedDepositConversion(id, D(amountRaw), admin.id, reason);
+    revalidatePath("/admin/deposits");
+    revalidatePath("/admin/transactions");
+    revalidatePath("/admin");
+    revalidatePath("/app");
+    revalidatePath("/app/deposit");
+    revalidatePath("/app/history");
+    revalidatePath("/app/notifications");
+    return {
+      success: "Conversion updated from " + result.previousAmount.toFixed(2) +
+        " to " + result.newUsdtAmount.toFixed(2) + " USDT.",
+    };
+  } catch (err) {
+    return fail(err);
+  }
+}
 export async function adminRequestDepositCorrection(
   _prev: AdminFormState,
   formData: FormData,
@@ -843,6 +926,81 @@ export async function adminRejectWithdrawal(_prev: AdminFormState, formData: For
   return { success: "Withdrawal rejected." };
 }
 
+export async function adminUndoWithdrawalApproval(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  const admin = await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const reason = String(formData.get("reason") ?? "").trim();
+  if (!id || !reason) return { error: "Enter a reason before undoing approval." };
+
+  try {
+    await undoApprovedWithdrawal(id, admin.id, reason);
+  } catch (err) {
+    return fail(err);
+  }
+  revalidatePath("/admin/withdrawals");
+  revalidatePath("/admin/transactions");
+  revalidatePath("/admin");
+  revalidatePath("/app");
+  revalidatePath("/app/withdraw");
+  revalidatePath("/app/history");
+  revalidatePath("/app/notifications");
+  return { success: "Withdrawal approval undone. The request is awaiting approval again." };
+}
+
+export async function adminRejectApprovedWithdrawal(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  const admin = await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const reason = String(formData.get("reason") ?? "").trim();
+  if (!id || !reason) return { error: "Enter a reason before rejecting this withdrawal." };
+
+  try {
+    await rejectApprovedWithdrawal(id, admin.id, reason);
+  } catch (err) {
+    return fail(err);
+  }
+  revalidatePath("/admin/withdrawals");
+  revalidatePath("/admin/transactions");
+  revalidatePath("/admin");
+  revalidatePath("/app");
+  revalidatePath("/app/withdraw");
+  revalidatePath("/app/history");
+  revalidatePath("/app/notifications");
+  return { success: "Approved withdrawal rejected before the broker batch." };
+}
+
+export async function adminEditWithdrawalInrConversion(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  const admin = await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const amountRaw = String(formData.get("newInrAmount") ?? "").trim();
+  const reason = String(formData.get("reason") ?? "").trim();
+  if (!id || !amountRaw || !reason) {
+    return { error: "Enter the corrected INR amount and a reason." };
+  }
+
+  try {
+    const result = await editWithdrawalInrConversion(id, D(amountRaw), admin.id, reason);
+    revalidatePath("/admin/withdrawals");
+    revalidatePath("/admin/transactions");
+    revalidatePath("/app/withdraw");
+    revalidatePath("/app/history");
+    revalidatePath("/app/notifications");
+    return {
+      success: "Conversion updated from " + result.previousAmount.toFixed(2) +
+        " to " + result.newInrAmount.toFixed(2) + " INR.",
+    };
+  } catch (err) {
+    return fail(err);
+  }
+}
 // --- KYC -------------------------------------------------------------------------
 
 export async function adminKycDecision(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {

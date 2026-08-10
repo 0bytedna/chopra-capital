@@ -27,7 +27,7 @@ export function Mt5AccountDetails({ details }: { details: readonly Mt5Detail[] }
           <div
             key={label}
             className={cn(
-              "grid min-w-0 grid-cols-[5.75rem_minmax(0,1fr)] items-center gap-2 px-4 py-3.5",
+              "grid min-w-0 grid-cols-[5.25rem_minmax(0,1fr)] items-center gap-2 px-4 py-3.5 sm:grid-cols-[5.75rem_minmax(0,1fr)]",
               index !== details.length - 1 && "border-b border-slate-200",
               index >= 2 && "sm:border-b-0",
               index % 2 === 0 && "sm:border-r sm:border-slate-200",
@@ -37,7 +37,7 @@ export function Mt5AccountDetails({ details }: { details: readonly Mt5Detail[] }
               {label}
             </dt>
             <dd className="grid min-w-0 grid-cols-[minmax(0,1fr)_1.75rem] items-center gap-2.5">
-              <span className="min-w-0 whitespace-nowrap font-sans text-[clamp(0.67rem,2.8vw,0.875rem)] leading-5 tracking-[-0.025em] text-ink">
+              <span className="min-w-0 whitespace-nowrap font-sans text-[clamp(0.75rem,3.3vw,0.875rem)] font-medium leading-5 tracking-[-0.035em] text-ink">
                 {value}
               </span>
               <CopyButton value={value} label={`Copy ${label}`} compact />

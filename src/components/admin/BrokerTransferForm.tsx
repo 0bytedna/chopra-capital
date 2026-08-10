@@ -1,8 +1,12 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
-import { Loader2 } from "lucide-react";
-import { adminInvestQueuedDeposits, type AdminFormState } from "@/app/admin/actions";
+import { useActionState, useMemo, useRef, useState } from "react";
+import { Loader2, Pencil } from "lucide-react";
+import {
+  adminEditQueuedDepositConversion,
+  adminInvestQueuedDeposits,
+  type AdminFormState,
+} from "@/app/admin/actions";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
@@ -34,6 +38,12 @@ function methodLabel(method: QueuedDeposit["method"]): string {
 
 export function BrokerTransferForm({ deposits }: Props) {
   const [state, formAction, pending] = useActionState<AdminFormState, FormData>(adminInvestQueuedDeposits, {});
+  const [editState, editAction] = useActionState<AdminFormState, FormData>(
+    adminEditQueuedDepositConversion,
+    {},
+  );
+  const correctedAmountRef = useRef<HTMLInputElement>(null);
+  const reasonRef = useRef<HTMLInputElement>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [totalReceived, setTotalReceived] = useState("");
 
@@ -55,6 +65,8 @@ export function BrokerTransferForm({ deposits }: Props) {
       action={formAction}
       className="space-y-3"
       onSubmit={(event) => {
+        const submitter = (event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
+        if (submitter?.dataset.intent !== "invest") return;
         if (!canSubmit) {
           event.preventDefault();
           return;
@@ -64,8 +76,12 @@ export function BrokerTransferForm({ deposits }: Props) {
         }
       }}
     >
+      <input ref={correctedAmountRef} type="hidden" name="newUsdtAmount" />
+      <input ref={reasonRef} type="hidden" name="reason" />
       {state.error && <Alert tone="error">{state.error}</Alert>}
       {state.success && <Alert tone="success">{state.success}</Alert>}
+      {editState.error && <Alert tone="error">{editState.error}</Alert>}
+      {editState.success && <Alert tone="success">{editState.success}</Alert>}
 
       {deposits.length === 0 ? (
         <p className="rounded-xl border border-dashed border-gold-600/20 px-4 py-3 text-center text-sm text-ink-faint">
@@ -95,10 +111,10 @@ export function BrokerTransferForm({ deposits }: Props) {
                 const feeShare = receivedShare === null ? null : queued - receivedShare;
 
                 return (
-                  <label
+                  <div
                     key={deposit.id}
                     className={cn(
-                      "grid cursor-pointer gap-2 px-4 py-2.5 transition-colors sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center",
+                      "grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-2 px-3 py-2.5 transition-colors",
                       checked ? "bg-gold-600/8" : "hover:bg-vault-950/35",
                     )}
                   >
@@ -107,6 +123,7 @@ export function BrokerTransferForm({ deposits }: Props) {
                       name="depositIds"
                       value={deposit.id}
                       checked={checked}
+                      aria-label={"Select " + deposit.investor}
                       onChange={(event) =>
                         setSelectedIds((current) =>
                           event.target.checked
@@ -114,25 +131,57 @@ export function BrokerTransferForm({ deposits }: Props) {
                             : current.filter((id) => id !== deposit.id),
                         )
                       }
-                      className="mt-0.5 size-4 accent-amber-500 sm:mt-0"
+                      className="size-4 accent-amber-500"
                     />
                     <span className="min-w-0">
                       <span className="block truncate text-sm text-ink">{deposit.investor}</span>
-                      <span className="mt-0.5 block truncate text-xs text-ink-faint">
-                        {deposit.email} · {methodLabel(deposit.method)}
-                        {deposit.detail ? ` · ${deposit.detail}` : ""}
+                      <span className="mt-0.5 block text-xs text-ink-faint">
+                        {methodLabel(deposit.method)}
                       </span>
                     </span>
-                    <span className="pl-7 text-left sm:pl-0 sm:text-right">
-                      <span className="currency-value block text-sm text-ink-dim">{formatUsdt(queued)}</span>
+                    <span className="text-right">
+                      <span className="currency-value block whitespace-nowrap text-sm text-ink-dim">
+                        {formatUsdt(queued)}
+                      </span>
                       {receivedShare !== null && feeShare !== null && (
-                        <span className="currency-value mt-0.5 block text-xs text-positive">
+                        <span className="currency-value mt-0.5 block whitespace-nowrap text-xs text-positive">
                           → {formatUsdt(receivedShare)}
-                          {feeShare > 0 ? ` · fee ${formatUsdt(feeShare)}` : ""}
                         </span>
                       )}
                     </span>
-                  </label>
+                    {deposit.method === "CRYPTO" ? (
+                      <span className="size-8" aria-hidden />
+                    ) : (
+                      <button
+                        type="submit"
+                        formAction={editAction}
+                        formNoValidate
+                        name="id"
+                        value={deposit.id}
+                        data-intent="edit"
+                        aria-label={"Edit conversion for " + deposit.investor}
+                        title="Edit conversion value"
+                        onClick={(event) => {
+                          const amount = window.prompt(
+                            "Corrected USDT amount for this deposit",
+                            queued.toFixed(8),
+                          )?.trim();
+                          const reason = amount
+                            ? window.prompt("Reason for changing the conversion value")?.trim()
+                            : "";
+                          if (!amount || !reason || !window.confirm("Save this corrected USDT conversion value?")) {
+                            event.preventDefault();
+                            return;
+                          }
+                          if (correctedAmountRef.current) correctedAmountRef.current.value = amount;
+                          if (reasonRef.current) reasonRef.current.value = reason;
+                        }}
+                        className="flex size-8 items-center justify-center rounded-full border border-slate-300 bg-white text-ink-dim hover:border-blue-400 hover:text-blue-700"
+                      >
+                        <Pencil className="size-4" aria-hidden />
+                      </button>
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -160,7 +209,7 @@ export function BrokerTransferForm({ deposits }: Props) {
                 {selected.length} selected · company wallet {formatUsdt(totalQueued)} · transfer fee {receivedNumber > 0 && receivedNumber <= totalQueued ? formatUsdt(totalQueued - receivedNumber) : "—"}
               </p>
             </div>
-            <Button type="submit" size="sm" disabled={!canSubmit || pending} aria-busy={pending} className="w-full sm:mt-5 sm:w-auto">
+            <Button type="submit" data-intent="invest" size="sm" disabled={!canSubmit || pending} aria-busy={pending} className="w-full sm:mt-5 sm:w-auto">
               {pending ? (
                 <>
                   <Loader2 className="size-4 animate-spin" aria-hidden />

@@ -59,23 +59,44 @@ model User {
   wallet                        Wallet?
   ledger                        LedgerEntry[]
   deposits                      Deposit[]
-  depositAllocationBatches      DepositAllocationBatch[] @relation("DepositAllocationAdmin")
-  brokerTransferBatches         BrokerTransferBatch[]    @relation("BrokerTransferAdmin")
+  depositAllocationBatches      DepositAllocationBatch[]  @relation("DepositAllocationAdmin")
+  brokerTransferBatches         BrokerTransferBatch[]     @relation("BrokerTransferAdmin")
   withdrawals                   Withdrawal[]
   tickets                       Ticket[]
   ticketMessages                TicketMessage[]
   notifications                 AccountNotification[]
   kycDocuments                  KycDocument[]
   bankingDetail                 BankingDetail?
-  internalTransfersSent         InternalTransfer[]       @relation("InternalTransferFrom")
-  internalTransfersReceived     InternalTransfer[]       @relation("InternalTransferTo")
-  internalTransfersAdministered InternalTransfer[]       @relation("InternalTransferAdmin")
+  internalTransfersSent         InternalTransfer[]        @relation("InternalTransferFrom")
+  internalTransfersReceived     InternalTransfer[]        @relation("InternalTransferTo")
+  internalTransfersAdministered InternalTransfer[]        @relation("InternalTransferAdmin")
   profitShareAllocations        ProfitShareAllocation[]
   profitSharePosition           ProfitSharePosition?
-  companyProfitShareRuns        ProfitShareRun[]         @relation("ProfitShareCompany")
-  administeredProfitShareRuns   ProfitShareRun[]         @relation("ProfitShareAdmin")
-  reversedProfitShareRuns       ProfitShareRun[]         @relation("ProfitShareReversalAdmin")
-  tradingAccountEntries         TradingAccountEntry[]    @relation("TradingAccountEntryAdmin")
+  companyProfitShareRuns        ProfitShareRun[]          @relation("ProfitShareCompany")
+  administeredProfitShareRuns   ProfitShareRun[]          @relation("ProfitShareAdmin")
+  reversedProfitShareRuns       ProfitShareRun[]          @relation("ProfitShareReversalAdmin")
+  tradingAccountEntries         TradingAccountEntry[]     @relation("TradingAccountEntryAdmin")
+  financialOperationAudits      FinancialOperationAudit[] @relation("FinancialOperationAuditUser")
+  administeredFinancialAudits   FinancialOperationAudit[] @relation("FinancialOperationAuditAdmin")
+}
+
+model FinancialOperationAudit {
+  id          String   @id @default(cuid())
+  adminId     String
+  admin       User     @relation("FinancialOperationAuditAdmin", fields: [adminId], references: [id], onDelete: Restrict)
+  userId      String
+  user        User     @relation("FinancialOperationAuditUser", fields: [userId], references: [id], onDelete: Restrict)
+  sourceType  String
+  sourceId    String
+  action      String
+  beforeState String
+  afterState  String
+  reason      String
+  createdAt   DateTime @default(now())
+
+  @@index([sourceType, sourceId, createdAt])
+  @@index([adminId, createdAt])
+  @@index([userId, createdAt])
 }
 
 model AccountNotification {

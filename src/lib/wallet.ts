@@ -5,6 +5,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@/generated/prisma";
 import { D, ZERO, type Dec } from "@/lib/money";
 import { getCurrentNav, getSettingDecimal, upsertDailySnapshot } from "@/lib/nav";
 import { withdrawalProcessingWindowMessage, withdrawalsProcessableNow } from "@/lib/config";
@@ -898,17 +899,418 @@ export async function completeWithdrawalPayout(withdrawalId: string, payoutRefer
 
 export async function rejectWithdrawal(withdrawalId: string, adminNote?: string) {
   const wd = await prisma.withdrawal.findUniqueOrThrow({ where: { id: withdrawalId } });
-  if (wd.status !== "REQUESTED" && wd.status !== "APPROVED") {
-    throw new Error("A withdrawal cannot be rejected after funds leave the investor's holdings");
+  if (wd.status !== "REQUESTED") {
+    throw new Error("Only a new withdrawal can use the initial rejection action");
   }
   const result = await prisma.withdrawal.updateMany({
     where: {
       id: withdrawalId,
-      status: { in: ["REQUESTED", "APPROVED"] },
+      status: "REQUESTED",
     },
     data: { status: "REJECTED", adminNote: adminNote || null },
   });
-  if (result.count !== 1) throw new Error("Withdrawal is no longer rejectable");
+  if (result.count !== 1) throw new Error("Withdrawal is no longer awaiting initial approval");
+}
+
+function requiredAdminReason(reason: string): string {
+  const cleanReason = reason.trim();
+  if (!cleanReason) throw new Error("Enter a reason for this administrative change");
+  if (cleanReason.length > 500) throw new Error("The reason must be 500 characters or fewer");
+  return cleanReason;
+}
+
+async function createFinancialAudit(
+  tx: Prisma.TransactionClient,
+  data: {
+    adminId: string;
+    userId: string;
+    sourceType: "DEPOSIT" | "WITHDRAWAL";
+    sourceId: string;
+    action: string;
+    beforeState: string;
+    afterState: string;
+    reason: string;
+  },
+) {
+  await tx.financialOperationAudit.create({ data });
+}
+
+export async function undoConfirmedInrDeposit(
+  depositId: string,
+  adminId: string,
+  reason: string,
+) {
+  const cleanReason = requiredAdminReason(reason);
+  return prisma.$transaction(async (tx) => {
+    const deposit = await tx.deposit.findUniqueOrThrow({ where: { id: depositId } });
+    if (
+      deposit.method === "CRYPTO" ||
+      deposit.status !== "RECEIVED" ||
+      deposit.allocationBatchId ||
+      deposit.brokerTransferBatchId
+    ) {
+      throw new Error("Only a confirmed INR deposit that has not been converted can be undone");
+    }
+
+    const updated = await tx.deposit.updateMany({
+      where: {
+        id: deposit.id,
+        method: { in: ["BANK", "CASH"] },
+        status: "RECEIVED",
+        allocationBatchId: null,
+        brokerTransferBatchId: null,
+      },
+      data: {
+        status: "PENDING",
+        receivedAt: null,
+        adminNote: cleanReason,
+      },
+    });
+    if (updated.count !== 1) throw new Error("This deposit changed before it could be undone");
+
+    await createFinancialAudit(tx, {
+      adminId,
+      userId: deposit.userId,
+      sourceType: "DEPOSIT",
+      sourceId: deposit.id,
+      action: "CONFIRMATION_UNDONE",
+      beforeState: "RECEIVED",
+      afterState: "PENDING",
+      reason: cleanReason,
+    });
+    await tx.accountNotification.create({
+      data: {
+        userId: deposit.userId,
+        kind: "ACTION_REQUIRED",
+        title: "Deposit confirmation reversed",
+        message: cleanReason,
+        href: "/app/history",
+        actionLabel: "View deposit",
+        sourceType: "DEPOSIT",
+        sourceId: deposit.id,
+        eventCode: "DEPOSIT_CONFIRMATION_UNDONE",
+      },
+    });
+    return deposit;
+  });
+}
+
+export async function rejectConfirmedInrDeposit(
+  depositId: string,
+  adminId: string,
+  reason: string,
+) {
+  const cleanReason = requiredAdminReason(reason);
+  return prisma.$transaction(async (tx) => {
+    const deposit = await tx.deposit.findUniqueOrThrow({ where: { id: depositId } });
+    if (
+      deposit.method === "CRYPTO" ||
+      deposit.status !== "RECEIVED" ||
+      deposit.allocationBatchId ||
+      deposit.brokerTransferBatchId
+    ) {
+      throw new Error("Only a confirmed INR deposit that has not been converted can be rejected");
+    }
+
+    const updated = await tx.deposit.updateMany({
+      where: {
+        id: deposit.id,
+        method: { in: ["BANK", "CASH"] },
+        status: "RECEIVED",
+        allocationBatchId: null,
+        brokerTransferBatchId: null,
+      },
+      data: {
+        status: "REJECTED",
+        receivedAt: null,
+        adminNote: cleanReason,
+      },
+    });
+    if (updated.count !== 1) throw new Error("This deposit changed before it could be rejected");
+
+    await createFinancialAudit(tx, {
+      adminId,
+      userId: deposit.userId,
+      sourceType: "DEPOSIT",
+      sourceId: deposit.id,
+      action: "REJECTED_AFTER_CONFIRMATION",
+      beforeState: "RECEIVED",
+      afterState: "REJECTED",
+      reason: cleanReason,
+    });
+    await tx.accountNotification.create({
+      data: {
+        userId: deposit.userId,
+        kind: "ACTION_REQUIRED",
+        title: "Deposit rejected",
+        message: cleanReason,
+        href: "/app/history",
+        actionLabel: "View deposit",
+        sourceType: "DEPOSIT",
+        sourceId: deposit.id,
+        eventCode: "DEPOSIT_REJECTED_AFTER_CONFIRMATION",
+      },
+    });
+    return deposit;
+  });
+}
+
+export async function editQueuedDepositConversion(
+  depositId: string,
+  newUsdtAmount: Dec,
+  adminId: string,
+  reason: string,
+) {
+  const cleanReason = requiredAdminReason(reason);
+  if (newUsdtAmount.lte(0)) throw new Error("The corrected USDT amount must be positive");
+  if (!newUsdtAmount.eq(newUsdtAmount.toDecimalPlaces(8))) {
+    throw new Error("The corrected USDT amount can have at most 8 decimal places");
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const deposit = await tx.deposit.findUniqueOrThrow({ where: { id: depositId } });
+    if (
+      deposit.method === "CRYPTO" ||
+      deposit.status !== "QUEUED" ||
+      !deposit.allocationBatchId ||
+      deposit.brokerTransferBatchId ||
+      deposit.queuedUsdtAmount === null
+    ) {
+      throw new Error("Only an INR conversion still waiting in the company-wallet queue can be edited");
+    }
+
+    const previousAmount = D(deposit.queuedUsdtAmount);
+    const delta = newUsdtAmount.sub(previousAmount);
+    if (delta.eq(0)) throw new Error("Enter a different USDT conversion amount");
+
+    const wallet = await tx.wallet.findUnique({ where: { userId: deposit.userId } });
+    if (!wallet || D(wallet.queued).add(delta).lt(0)) {
+      throw new Error("The investor queue no longer matches this deposit");
+    }
+
+    const updated = await tx.deposit.updateMany({
+      where: {
+        id: deposit.id,
+        status: "QUEUED",
+        allocationBatchId: deposit.allocationBatchId,
+        brokerTransferBatchId: null,
+        queuedUsdtAmount: deposit.queuedUsdtAmount,
+      },
+      data: {
+        queuedUsdtAmount: newUsdtAmount,
+        adminNote: cleanReason,
+      },
+    });
+    if (updated.count !== 1) throw new Error("This deposit changed before the conversion could be edited");
+
+    await tx.wallet.update({
+      where: { id: wallet.id },
+      data: { queued: { increment: delta } },
+    });
+    await tx.depositAllocationBatch.update({
+      where: { id: deposit.allocationBatchId },
+      data: { totalUsdt: { increment: delta } },
+    });
+    await tx.ledgerEntry.create({
+      data: {
+        userId: deposit.userId,
+        type: "DEPOSIT",
+        amount: delta,
+        reference: deposit.id,
+        note: "INR-to-USDT conversion corrected by admin: " + cleanReason,
+      },
+    });
+    await createFinancialAudit(tx, {
+      adminId,
+      userId: deposit.userId,
+      sourceType: "DEPOSIT",
+      sourceId: deposit.id,
+      action: "CONVERSION_VALUE_EDITED",
+      beforeState: previousAmount.toFixed(8),
+      afterState: newUsdtAmount.toFixed(8),
+      reason: cleanReason,
+    });
+    await tx.accountNotification.create({
+      data: {
+        userId: deposit.userId,
+        kind: "UPDATE",
+        title: "Deposit conversion updated",
+        message: cleanReason,
+        href: "/app/history",
+        actionLabel: "View deposit",
+        sourceType: "DEPOSIT",
+        sourceId: deposit.id,
+        eventCode: "DEPOSIT_CONVERSION_EDITED",
+      },
+    });
+    return { previousAmount, newUsdtAmount };
+  });
+}
+
+export async function undoApprovedWithdrawal(
+  withdrawalId: string,
+  adminId: string,
+  reason: string,
+) {
+  const cleanReason = requiredAdminReason(reason);
+  return prisma.$transaction(async (tx) => {
+    const withdrawal = await tx.withdrawal.findUniqueOrThrow({ where: { id: withdrawalId } });
+    if (withdrawal.status !== "APPROVED" || withdrawal.brokerReceivedAt) {
+      throw new Error("Only an approved withdrawal that has not entered the broker batch can be undone");
+    }
+
+    const updated = await tx.withdrawal.updateMany({
+      where: { id: withdrawal.id, status: "APPROVED", brokerReceivedAt: null },
+      data: {
+        status: "REQUESTED",
+        approvedAt: null,
+        adminNote: cleanReason,
+      },
+    });
+    if (updated.count !== 1) throw new Error("This withdrawal changed before approval could be undone");
+
+    await createFinancialAudit(tx, {
+      adminId,
+      userId: withdrawal.userId,
+      sourceType: "WITHDRAWAL",
+      sourceId: withdrawal.id,
+      action: "APPROVAL_UNDONE",
+      beforeState: "APPROVED",
+      afterState: "REQUESTED",
+      reason: cleanReason,
+    });
+    await tx.accountNotification.create({
+      data: {
+        userId: withdrawal.userId,
+        kind: "UPDATE",
+        title: "Withdrawal approval reversed",
+        message: cleanReason,
+        href: "/app/history",
+        actionLabel: "View withdrawal",
+        sourceType: "WITHDRAWAL",
+        sourceId: withdrawal.id,
+        eventCode: "WITHDRAWAL_APPROVAL_UNDONE",
+      },
+    });
+    return withdrawal;
+  });
+}
+
+export async function rejectApprovedWithdrawal(
+  withdrawalId: string,
+  adminId: string,
+  reason: string,
+) {
+  const cleanReason = requiredAdminReason(reason);
+  return prisma.$transaction(async (tx) => {
+    const withdrawal = await tx.withdrawal.findUniqueOrThrow({ where: { id: withdrawalId } });
+    if (withdrawal.status !== "APPROVED" || withdrawal.brokerReceivedAt) {
+      throw new Error("Only an approved withdrawal that has not entered the broker batch can be rejected");
+    }
+
+    const updated = await tx.withdrawal.updateMany({
+      where: { id: withdrawal.id, status: "APPROVED", brokerReceivedAt: null },
+      data: {
+        status: "REJECTED",
+        approvedAt: null,
+        adminNote: cleanReason,
+      },
+    });
+    if (updated.count !== 1) throw new Error("This withdrawal changed before it could be rejected");
+
+    await createFinancialAudit(tx, {
+      adminId,
+      userId: withdrawal.userId,
+      sourceType: "WITHDRAWAL",
+      sourceId: withdrawal.id,
+      action: "REJECTED_AFTER_APPROVAL",
+      beforeState: "APPROVED",
+      afterState: "REJECTED",
+      reason: cleanReason,
+    });
+    await tx.accountNotification.create({
+      data: {
+        userId: withdrawal.userId,
+        kind: "ACTION_REQUIRED",
+        title: "Withdrawal rejected",
+        message: cleanReason,
+        href: "/app/history",
+        actionLabel: "View withdrawal",
+        sourceType: "WITHDRAWAL",
+        sourceId: withdrawal.id,
+        eventCode: "WITHDRAWAL_REJECTED_AFTER_APPROVAL",
+      },
+    });
+    return withdrawal;
+  });
+}
+
+export async function editWithdrawalInrConversion(
+  withdrawalId: string,
+  newInrAmount: Dec,
+  adminId: string,
+  reason: string,
+) {
+  const cleanReason = requiredAdminReason(reason);
+  if (newInrAmount.lte(0)) throw new Error("The corrected INR amount must be positive");
+  if (!newInrAmount.eq(newInrAmount.toDecimalPlaces(2))) {
+    throw new Error("The corrected INR amount can have at most 2 decimal places");
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const withdrawal = await tx.withdrawal.findUniqueOrThrow({ where: { id: withdrawalId } });
+    if (
+      withdrawal.method === "CRYPTO" ||
+      !["INR_READY", "PAYOUT_DETAILS_REQUIRED", "PAYOUT_DETAILS_REVIEW"].includes(withdrawal.status) ||
+      withdrawal.convertedInrAmount === null ||
+      withdrawal.processedAt
+    ) {
+      throw new Error("Only an unpaid bank or cash conversion can be edited");
+    }
+
+    const previousAmount = D(withdrawal.convertedInrAmount);
+    if (newInrAmount.eq(previousAmount)) throw new Error("Enter a different INR conversion amount");
+
+    const updated = await tx.withdrawal.updateMany({
+      where: {
+        id: withdrawal.id,
+        method: { in: ["BANK", "CASH"] },
+        status: { in: ["INR_READY", "PAYOUT_DETAILS_REQUIRED", "PAYOUT_DETAILS_REVIEW"] },
+        processedAt: null,
+        convertedInrAmount: withdrawal.convertedInrAmount,
+      },
+      data: {
+        convertedInrAmount: newInrAmount,
+        adminNote: cleanReason,
+      },
+    });
+    if (updated.count !== 1) throw new Error("This withdrawal changed before the conversion could be edited");
+
+    await createFinancialAudit(tx, {
+      adminId,
+      userId: withdrawal.userId,
+      sourceType: "WITHDRAWAL",
+      sourceId: withdrawal.id,
+      action: "CONVERSION_VALUE_EDITED",
+      beforeState: previousAmount.toFixed(2),
+      afterState: newInrAmount.toFixed(2),
+      reason: cleanReason,
+    });
+    await tx.accountNotification.create({
+      data: {
+        userId: withdrawal.userId,
+        kind: "UPDATE",
+        title: "Withdrawal conversion updated",
+        message: cleanReason,
+        href: "/app/history",
+        actionLabel: "View withdrawal",
+        sourceType: "WITHDRAWAL",
+        sourceId: withdrawal.id,
+        eventCode: "WITHDRAWAL_CONVERSION_EDITED",
+      },
+    });
+    return { previousAmount, newInrAmount };
+  });
 }
 
 export { upsertDailySnapshot };

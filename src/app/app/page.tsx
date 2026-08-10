@@ -24,7 +24,7 @@ export default async function DashboardPage() {
     ["Broker Name", mt5.brokerName],
     ["Server", mt5.server],
     ["MT5 ID", mt5.accountId],
-    ["Investor access", "ChopraCapital"],
+    ["Investor access", "ChopraCapital@1"],
   ];
 
   return (

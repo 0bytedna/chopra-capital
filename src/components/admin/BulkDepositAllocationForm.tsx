@@ -1,8 +1,13 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
-import { Loader2 } from "lucide-react";
-import { adminAllocateDeposits, type AdminFormState } from "@/app/admin/actions";
+import { useActionState, useMemo, useRef, useState } from "react";
+import { Loader2, Undo2, X } from "lucide-react";
+import {
+  adminAllocateDeposits,
+  adminRejectConfirmedDeposit,
+  adminUndoConfirmedDeposit,
+  type AdminFormState,
+} from "@/app/admin/actions";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
@@ -39,6 +44,15 @@ function formatUsdt(amount: number): string {
 
 export function BulkDepositAllocationForm({ method, deposits }: Props) {
   const [state, formAction, pending] = useActionState<AdminFormState, FormData>(adminAllocateDeposits, {});
+  const [undoState, undoAction] = useActionState<AdminFormState, FormData>(
+    adminUndoConfirmedDeposit,
+    {},
+  );
+  const [rejectState, rejectAction] = useActionState<AdminFormState, FormData>(
+    adminRejectConfirmedDeposit,
+    {},
+  );
+  const reasonRef = useRef<HTMLInputElement>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [totalUsdt, setTotalUsdt] = useState("");
 
@@ -56,6 +70,8 @@ export function BulkDepositAllocationForm({ method, deposits }: Props) {
       action={formAction}
       className="space-y-3"
       onSubmit={(event) => {
+        const submitter = (event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
+        if (submitter?.dataset.intent !== "convert") return;
         if (!canSubmit) {
           event.preventDefault();
           return;
@@ -65,10 +81,15 @@ export function BulkDepositAllocationForm({ method, deposits }: Props) {
         }
       }}
     >
+      <input ref={reasonRef} type="hidden" name="reason" />
       <input type="hidden" name="method" value={method} />
 
       {state.error && <Alert tone="error">{state.error}</Alert>}
       {state.success && <Alert tone="success">{state.success}</Alert>}
+      {undoState.error && <Alert tone="error">{undoState.error}</Alert>}
+      {undoState.success && <Alert tone="success">{undoState.success}</Alert>}
+      {rejectState.error && <Alert tone="error">{rejectState.error}</Alert>}
+      {rejectState.success && <Alert tone="success">{rejectState.success}</Alert>}
 
       {deposits.length === 0 ? (
         <p className="rounded-xl border border-dashed border-gold-600/20 px-4 py-3 text-center text-sm text-ink-faint">
@@ -93,10 +114,10 @@ export function BulkDepositAllocationForm({ method, deposits }: Props) {
                 const source = Number(deposit.sourceAmount);
 
                 return (
-                  <label
+                  <div
                     key={deposit.id}
                     className={cn(
-                      "grid cursor-pointer grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 transition-colors",
+                      "grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-2 px-3 py-2.5 transition-colors",
                       checked ? "bg-gold-600/8" : "hover:bg-vault-950/35",
                     )}
                   >
@@ -105,6 +126,7 @@ export function BulkDepositAllocationForm({ method, deposits }: Props) {
                       name="depositIds"
                       value={deposit.id}
                       checked={checked}
+                      aria-label={"Select " + deposit.investor}
                       onChange={(event) =>
                         setSelectedIds((current) =>
                           event.target.checked
@@ -120,7 +142,51 @@ export function BulkDepositAllocationForm({ method, deposits }: Props) {
                     <span className="currency-value whitespace-nowrap text-right text-sm text-ink">
                       {formatSource(method, source)}
                     </span>
-                  </label>
+                    <span className="flex gap-1">
+                      <button
+                        type="submit"
+                        formAction={undoAction}
+                        formNoValidate
+                        name="id"
+                        value={deposit.id}
+                        data-intent="undo"
+                        aria-label={"Undo confirmation for " + deposit.investor}
+                        title="Undo confirmation"
+                        onClick={(event) => {
+                          const reason = window.prompt("Why are you undoing this deposit confirmation?")?.trim();
+                          if (!reason || !window.confirm("Return this deposit to pending verification?")) {
+                            event.preventDefault();
+                            return;
+                          }
+                          if (reasonRef.current) reasonRef.current.value = reason;
+                        }}
+                        className="flex size-8 items-center justify-center rounded-full border border-slate-300 bg-white text-ink-dim hover:border-blue-400 hover:text-blue-700"
+                      >
+                        <Undo2 className="size-4" aria-hidden />
+                      </button>
+                      <button
+                        type="submit"
+                        formAction={rejectAction}
+                        formNoValidate
+                        name="id"
+                        value={deposit.id}
+                        data-intent="reject"
+                        aria-label={"Reject " + deposit.investor + " deposit"}
+                        title="Reject deposit"
+                        onClick={(event) => {
+                          const reason = window.prompt("Why is this confirmed deposit being rejected?")?.trim();
+                          if (!reason || !window.confirm("Reject this deposit before conversion?")) {
+                            event.preventDefault();
+                            return;
+                          }
+                          if (reasonRef.current) reasonRef.current.value = reason;
+                        }}
+                        className="flex size-8 items-center justify-center rounded-full border border-rose-300 bg-white text-rose-700 hover:bg-rose-50"
+                      >
+                        <X className="size-4" aria-hidden />
+                      </button>
+                    </span>
+                  </div>
                 );
               })}
             </div>
@@ -147,7 +213,7 @@ export function BulkDepositAllocationForm({ method, deposits }: Props) {
                 {selected.length} selected · source total {formatSource(method, totalSource)} · distributed proportionally
               </p>
             </div>
-            <Button type="submit" size="sm" disabled={!canSubmit || pending} aria-busy={pending} className="w-full sm:mt-5 sm:w-auto">
+            <Button type="submit" data-intent="convert" size="sm" disabled={!canSubmit || pending} aria-busy={pending} className="w-full sm:mt-5 sm:w-auto">
               {pending ? (
                 <>
                   <Loader2 className="size-4 animate-spin" aria-hidden />
