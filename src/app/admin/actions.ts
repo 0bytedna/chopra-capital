@@ -478,11 +478,10 @@ export async function adminUndoConfirmedDeposit(
 ): Promise<AdminFormState> {
   const admin = await requireAdmin();
   const id = String(formData.get("id") ?? "");
-  const reason = String(formData.get("reason") ?? "").trim();
-  if (!id || !reason) return { error: "Enter a reason before undoing confirmation." };
+  if (!id) return { error: "Choose a deposit to undo." };
 
   try {
-    await undoConfirmedInrDeposit(id, admin.id, reason);
+    await undoConfirmedInrDeposit(id, admin.id, "Confirmation undone by administrator");
   } catch (err) {
     return fail(err);
   }
@@ -502,11 +501,10 @@ export async function adminRejectConfirmedDeposit(
 ): Promise<AdminFormState> {
   const admin = await requireAdmin();
   const id = String(formData.get("id") ?? "");
-  const reason = String(formData.get("reason") ?? "").trim();
-  if (!id || !reason) return { error: "Enter a reason before rejecting this deposit." };
+  if (!id) return { error: "Choose a deposit to reject." };
 
   try {
-    await rejectConfirmedInrDeposit(id, admin.id, reason);
+    await rejectConfirmedInrDeposit(id, admin.id, "Rejected by administrator before conversion");
   } catch (err) {
     return fail(err);
   }
@@ -996,11 +994,10 @@ export async function adminUndoWithdrawalApproval(
 ): Promise<AdminFormState> {
   const admin = await requireAdmin();
   const id = String(formData.get("id") ?? "");
-  const reason = String(formData.get("reason") ?? "").trim();
-  if (!id || !reason) return { error: "Enter a reason before undoing approval." };
+  if (!id) return { error: "Choose a withdrawal to undo." };
 
   try {
-    await undoApprovedWithdrawal(id, admin.id, reason);
+    await undoApprovedWithdrawal(id, admin.id, "Approval undone by administrator");
   } catch (err) {
     return fail(err);
   }
@@ -1020,11 +1017,10 @@ export async function adminRejectApprovedWithdrawal(
 ): Promise<AdminFormState> {
   const admin = await requireAdmin();
   const id = String(formData.get("id") ?? "");
-  const reason = String(formData.get("reason") ?? "").trim();
-  if (!id || !reason) return { error: "Enter a reason before rejecting this withdrawal." };
+  if (!id) return { error: "Choose a withdrawal to reject." };
 
   try {
-    await rejectApprovedWithdrawal(id, admin.id, reason);
+    await rejectApprovedWithdrawal(id, admin.id, "Rejected by administrator before broker withdrawal");
   } catch (err) {
     return fail(err);
   }

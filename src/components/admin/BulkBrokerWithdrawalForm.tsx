@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useRef, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import { Loader2, Undo2, X } from "lucide-react";
 import {
   adminRecordBrokerWithdrawalBatch,
@@ -44,7 +44,7 @@ export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
     adminRejectApprovedWithdrawal,
     {},
   );
-  const reasonRef = useRef<HTMLInputElement>(null);
+
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const selected = useMemo(
@@ -77,7 +77,7 @@ export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
         if (!confirmed) event.preventDefault();
       }}
     >
-      <input ref={reasonRef} type="hidden" name="reason" />
+
       {state.error && <Alert tone="error">{state.error}</Alert>}
       {undoState.error && <Alert tone="error">{undoState.error}</Alert>}
       {rejectState.error && <Alert tone="error">{rejectState.error}</Alert>}
@@ -149,14 +149,9 @@ export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
                         aria-label={"Undo approval for " + withdrawal.investor}
                         title="Undo approval"
                         onClick={(event) => {
-                          event.preventDefault();
-                          const button = event.currentTarget;
-                          const reason = window.prompt("Why are you undoing this withdrawal approval?")?.trim();
-                          if (!reason || !window.confirm("Return this withdrawal to approval review?")) {
-                            return;
+                          if (!window.confirm("Return this withdrawal to approval review?")) {
+                            event.preventDefault();
                           }
-                          if (reasonRef.current) reasonRef.current.value = reason;
-                          window.setTimeout(() => button.form?.requestSubmit(button), 0);
                         }}
                         className="flex size-7 items-center justify-center rounded-full border border-slate-300 bg-white text-ink-dim hover:border-blue-400 hover:text-blue-700"
                       >
@@ -172,14 +167,9 @@ export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
                         aria-label={"Reject " + withdrawal.investor + " withdrawal"}
                         title="Reject withdrawal"
                         onClick={(event) => {
-                          event.preventDefault();
-                          const button = event.currentTarget;
-                          const reason = window.prompt("Why is this approved withdrawal being rejected?")?.trim();
-                          if (!reason || !window.confirm("Reject this withdrawal before the broker batch?")) {
-                            return;
+                          if (!window.confirm("Reject this withdrawal before the broker batch?")) {
+                            event.preventDefault();
                           }
-                          if (reasonRef.current) reasonRef.current.value = reason;
-                          window.setTimeout(() => button.form?.requestSubmit(button), 0);
                         }}
                         className="flex size-7 items-center justify-center rounded-full border border-rose-300 bg-white text-rose-700 hover:bg-rose-50"
                       >

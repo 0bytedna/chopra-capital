@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useRef, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import { Loader2, Undo2, X } from "lucide-react";
 import {
   adminAllocateDeposits,
@@ -52,7 +52,7 @@ export function BulkDepositAllocationForm({ method, deposits }: Props) {
     adminRejectConfirmedDeposit,
     {},
   );
-  const reasonRef = useRef<HTMLInputElement>(null);
+
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [totalUsdt, setTotalUsdt] = useState("");
 
@@ -81,7 +81,7 @@ export function BulkDepositAllocationForm({ method, deposits }: Props) {
         }
       }}
     >
-      <input ref={reasonRef} type="hidden" name="reason" />
+
       <input type="hidden" name="method" value={method} />
 
       {state.error && <Alert tone="error">{state.error}</Alert>}
@@ -150,14 +150,9 @@ export function BulkDepositAllocationForm({ method, deposits }: Props) {
                         aria-label={"Undo confirmation for " + deposit.investor}
                         title="Undo confirmation"
                         onClick={(event) => {
-                          event.preventDefault();
-                          const button = event.currentTarget;
-                          const reason = window.prompt("Why are you undoing this deposit confirmation?")?.trim();
-                          if (!reason || !window.confirm("Return this deposit to pending verification?")) {
-                            return;
+                          if (!window.confirm("Return this deposit to pending verification?")) {
+                            event.preventDefault();
                           }
-                          if (reasonRef.current) reasonRef.current.value = reason;
-                          window.setTimeout(() => button.form?.requestSubmit(button), 0);
                         }}
                         className="flex size-7 items-center justify-center rounded-full border border-slate-300 bg-white text-ink-dim hover:border-blue-400 hover:text-blue-700"
                       >
@@ -173,14 +168,9 @@ export function BulkDepositAllocationForm({ method, deposits }: Props) {
                         aria-label={"Reject " + deposit.investor + " deposit"}
                         title="Reject deposit"
                         onClick={(event) => {
-                          event.preventDefault();
-                          const button = event.currentTarget;
-                          const reason = window.prompt("Why is this confirmed deposit being rejected?")?.trim();
-                          if (!reason || !window.confirm("Reject this deposit before conversion?")) {
-                            return;
+                          if (!window.confirm("Reject this deposit before conversion?")) {
+                            event.preventDefault();
                           }
-                          if (reasonRef.current) reasonRef.current.value = reason;
-                          window.setTimeout(() => button.form?.requestSubmit(button), 0);
                         }}
                         className="flex size-7 items-center justify-center rounded-full border border-rose-300 bg-white text-rose-700 hover:bg-rose-50"
                       >
