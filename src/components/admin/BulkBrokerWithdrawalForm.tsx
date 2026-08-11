@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { startTransition, useActionState, useMemo, useState } from "react";
 import { Loader2, Undo2, X } from "lucide-react";
 import {
   adminRecordBrokerWithdrawalBatch,
@@ -36,11 +36,11 @@ export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
     adminRecordBrokerWithdrawalBatch,
     {},
   );
-  const [undoState, undoAction] = useActionState<AdminFormState, FormData>(
+  const [undoState, undoAction, undoPending] = useActionState<AdminFormState, FormData>(
     adminUndoWithdrawalApproval,
     {},
   );
-  const [rejectState, rejectAction] = useActionState<AdminFormState, FormData>(
+  const [rejectState, rejectAction, rejectPending] = useActionState<AdminFormState, FormData>(
     adminRejectApprovedWithdrawal,
     {},
   );
@@ -113,7 +113,7 @@ export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
                   <div
                     key={withdrawal.id}
                     className={cn(
-                      "grid grid-cols-[1rem_minmax(0,1fr)_max-content_max-content] items-center gap-1.5 px-3 py-2.5 transition-colors",
+                      "grid grid-cols-[1rem_minmax(0,1fr)_max-content] items-center gap-x-2 gap-y-1.5 px-3 py-2.5 transition-colors",
                       checked ? "bg-gold-600/8" : "hover:bg-vault-950/35",
                     )}
                   >
@@ -135,41 +135,37 @@ export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
                     <span className="min-w-0 truncate whitespace-nowrap text-[clamp(0.7rem,3.2vw,0.875rem)] font-medium text-ink">
                       {withdrawal.investor}
                     </span>
-                    <span className="currency-value col-start-4 justify-self-end whitespace-nowrap text-right text-[clamp(0.68rem,3vw,0.875rem)] text-ink">
+                    <span className="currency-value col-start-3 justify-self-end whitespace-nowrap text-right text-[clamp(0.68rem,3vw,0.875rem)] text-ink">
                       {formatUsd(Number(withdrawal.amount))}
                     </span>
-                    <span className="col-start-3 flex gap-1">
+                    <span className="col-start-3 row-start-2 flex justify-self-end gap-1">
                       <button
-                        type="submit"
-                        formAction={undoAction}
-                        formNoValidate
-                        name="id"
-                        value={withdrawal.id}
+                        type="button"
+                        disabled={undoPending || rejectPending}
                         data-intent="undo"
                         aria-label={"Undo approval for " + withdrawal.investor}
                         title="Undo approval"
-                        onClick={(event) => {
-                          if (!window.confirm("Return this withdrawal to approval review?")) {
-                            event.preventDefault();
-                          }
+                        onClick={() => {
+                          if (!window.confirm("Return this withdrawal to approval review?")) return;
+                          const data = new FormData();
+                          data.set("id", withdrawal.id);
+                          startTransition(() => undoAction(data));
                         }}
                         className="flex size-7 items-center justify-center rounded-full border border-slate-300 bg-white text-ink-dim hover:border-blue-400 hover:text-blue-700"
                       >
                         <Undo2 className="size-3.5" aria-hidden />
                       </button>
                       <button
-                        type="submit"
-                        formAction={rejectAction}
-                        formNoValidate
-                        name="id"
-                        value={withdrawal.id}
+                        type="button"
+                        disabled={undoPending || rejectPending}
                         data-intent="reject"
                         aria-label={"Reject " + withdrawal.investor + " withdrawal"}
                         title="Reject withdrawal"
-                        onClick={(event) => {
-                          if (!window.confirm("Reject this withdrawal before the broker batch?")) {
-                            event.preventDefault();
-                          }
+                        onClick={() => {
+                          if (!window.confirm("Reject this withdrawal before the broker batch?")) return;
+                          const data = new FormData();
+                          data.set("id", withdrawal.id);
+                          startTransition(() => rejectAction(data));
                         }}
                         className="flex size-7 items-center justify-center rounded-full border border-rose-300 bg-white text-rose-700 hover:bg-rose-50"
                       >

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { startTransition, useActionState, useMemo, useState } from "react";
 import { Loader2, Undo2, X } from "lucide-react";
 import {
   adminAllocateDeposits,
@@ -44,11 +44,11 @@ function formatUsdt(amount: number): string {
 
 export function BulkDepositAllocationForm({ method, deposits }: Props) {
   const [state, formAction, pending] = useActionState<AdminFormState, FormData>(adminAllocateDeposits, {});
-  const [undoState, undoAction] = useActionState<AdminFormState, FormData>(
+  const [undoState, undoAction, undoPending] = useActionState<AdminFormState, FormData>(
     adminUndoConfirmedDeposit,
     {},
   );
-  const [rejectState, rejectAction] = useActionState<AdminFormState, FormData>(
+  const [rejectState, rejectAction, rejectPending] = useActionState<AdminFormState, FormData>(
     adminRejectConfirmedDeposit,
     {},
   );
@@ -114,7 +114,7 @@ export function BulkDepositAllocationForm({ method, deposits }: Props) {
                   <div
                     key={deposit.id}
                     className={cn(
-                      "grid grid-cols-[1rem_minmax(0,1fr)_max-content_max-content] items-center gap-1.5 px-3 py-2.5 transition-colors",
+                      "grid grid-cols-[1rem_minmax(0,1fr)_max-content] items-center gap-x-2 gap-y-1.5 px-3 py-2.5 transition-colors",
                       checked ? "bg-gold-600/8" : "hover:bg-vault-950/35",
                     )}
                   >
@@ -136,41 +136,37 @@ export function BulkDepositAllocationForm({ method, deposits }: Props) {
                     <span className="min-w-0 truncate whitespace-nowrap text-[clamp(0.7rem,3.2vw,0.875rem)] font-medium text-ink">
                       {deposit.investor}
                     </span>
-                    <span className="currency-value col-start-4 justify-self-end whitespace-nowrap text-right text-[clamp(0.68rem,3vw,0.875rem)] text-ink">
+                    <span className="currency-value col-start-3 justify-self-end whitespace-nowrap text-right text-[clamp(0.68rem,3vw,0.875rem)] text-ink">
                       {formatSource(method, source)}
                     </span>
-                    <span className="col-start-3 flex gap-1">
+                    <span className="col-start-3 row-start-2 flex justify-self-end gap-1">
                       <button
-                        type="submit"
-                        formAction={undoAction}
-                        formNoValidate
-                        name="id"
-                        value={deposit.id}
+                        type="button"
+                        disabled={undoPending || rejectPending}
                         data-intent="undo"
                         aria-label={"Undo confirmation for " + deposit.investor}
                         title="Undo confirmation"
-                        onClick={(event) => {
-                          if (!window.confirm("Return this deposit to pending verification?")) {
-                            event.preventDefault();
-                          }
+                        onClick={() => {
+                          if (!window.confirm("Return this deposit to pending verification?")) return;
+                          const data = new FormData();
+                          data.set("id", deposit.id);
+                          startTransition(() => undoAction(data));
                         }}
                         className="flex size-7 items-center justify-center rounded-full border border-slate-300 bg-white text-ink-dim hover:border-blue-400 hover:text-blue-700"
                       >
                         <Undo2 className="size-3.5" aria-hidden />
                       </button>
                       <button
-                        type="submit"
-                        formAction={rejectAction}
-                        formNoValidate
-                        name="id"
-                        value={deposit.id}
+                        type="button"
+                        disabled={undoPending || rejectPending}
                         data-intent="reject"
                         aria-label={"Reject " + deposit.investor + " deposit"}
                         title="Reject deposit"
-                        onClick={(event) => {
-                          if (!window.confirm("Reject this deposit before conversion?")) {
-                            event.preventDefault();
-                          }
+                        onClick={() => {
+                          if (!window.confirm("Reject this deposit before conversion?")) return;
+                          const data = new FormData();
+                          data.set("id", deposit.id);
+                          startTransition(() => rejectAction(data));
                         }}
                         className="flex size-7 items-center justify-center rounded-full border border-rose-300 bg-white text-rose-700 hover:bg-rose-50"
                       >
