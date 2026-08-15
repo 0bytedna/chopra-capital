@@ -303,7 +303,6 @@ export default async function AdminInvestorRecordPage({
       <CollapsibleCard
         title="Portfolio summary"
         Icon={WalletCards}
-        defaultOpen
         contentClassName="p-3 sm:p-4"
       >
         <section
@@ -346,7 +345,7 @@ export default async function AdminInvestorRecordPage({
       </CollapsibleCard>
 
       <section className="grid items-start gap-3 lg:grid-cols-3" aria-label="Investor details">
-        <CollapsibleCard title="Profile & compliance" Icon={Mail} defaultOpen>
+        <CollapsibleCard title="Profile & compliance" Icon={Mail}>
           <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
             <Detail label="Full name" value={display(investor.fullName)} />
             <Detail label="Phone" value={display(investor.mobile)} />

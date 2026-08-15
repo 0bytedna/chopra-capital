@@ -142,7 +142,7 @@ function StrategyOverview() {
           </p>
         </Reveal>
 
-        <div className="mt-8 grid gap-4 lg:grid-cols-3">
+        <div className="mt-12 grid gap-4 sm:mt-14 lg:grid-cols-3">
           {tradingSteps.map((step, index) => (
             <Reveal key={step.title} delay={index * 0.05}>
               <article className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-[#f6f6f5] p-5 shadow-sm sm:p-6">

@@ -77,7 +77,8 @@ export function BrokerTransferForm({ deposits }: Props) {
       <input ref={correctedAmountRef} type="hidden" name="newUsdtAmount" />
       <input ref={reasonRef} type="hidden" name="reason" />
       {state.error && <Alert tone="error">{state.error}</Alert>}
-      {editState.error && <Alert tone="error">{editState.error}</Alert>}`r`n      {rejectState.error && <Alert tone="error">{rejectState.error}</Alert>}
+      {editState.error && <Alert tone="error">{editState.error}</Alert>}
+      {rejectState.error && <Alert tone="error">{rejectState.error}</Alert>}
 
       {deposits.length === 0 ? (
         <p className="rounded-xl border border-dashed border-gold-600/20 px-4 py-3 text-center text-sm text-ink-faint">

@@ -3,7 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 
 const highlights = [
-  { value: "1–3%", label: "Returns monthly*" },
+  { value: "1–3%", label: "Monthly Profit*" },
   { value: "No lock-in", label: "Period" },
   { value: "Weekly", label: "Withdrawals" },
 ];
