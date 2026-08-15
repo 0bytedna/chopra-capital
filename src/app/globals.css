@@ -32,7 +32,7 @@
   --text-sm: 0.9375rem;
   --text-sm--line-height: 1.5rem;
 
-  --font-serif: var(--font-fraunces), "Fraunces", Georgia, serif;
+  --font-serif: var(--font-geist-sans), system-ui, sans-serif;
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
@@ -150,6 +150,15 @@ textarea::placeholder {
 /* Solid blue emphasis for key figures and highlighted words */
 .gold-text {
   color: #2563eb;
+  font-family: var(--font-sans);
+  font-style: normal;
+  font-weight: 700;
+}
+
+/* Legacy italic utilities now retain emphasis through weight and colour. */
+em,
+.italic {
+  font-style: normal;
 }
 
 /* Pill gold-gradient CTA */
