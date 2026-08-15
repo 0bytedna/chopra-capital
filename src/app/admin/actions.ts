@@ -205,10 +205,7 @@ export async function adminUpdateInvestorProfile(_prev: AdminFormState, formData
           email,
           fullName: String(formData.get("fullName") ?? "").trim() || null,
           mobile: String(formData.get("mobile") ?? "").trim() || null,
-          country: String(formData.get("country") ?? "").trim() || null,
-          address: String(formData.get("address") ?? "").trim() || null,
-          city: String(formData.get("city") ?? "").trim() || null,
-          state: String(formData.get("state") ?? "").trim() || null,
+
           kycStatus: String(formData.get("kycStatus") ?? "NOT_SUBMITTED") as "NOT_SUBMITTED" | "PENDING" | "APPROVED" | "REJECTED",
           kycNote: String(formData.get("kycNote") ?? "").trim() || null,
           bankTransferEnabled: formData.get("bankTransferEnabled") != null,

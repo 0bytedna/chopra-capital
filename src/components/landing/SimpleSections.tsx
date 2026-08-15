@@ -4,19 +4,11 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  Activity,
   ArrowRight,
-  BarChart3,
-  Bot,
-  Check,
   ChevronDown,
-  CircleDollarSign,
   Clock3,
-  Landmark,
   LineChart,
   LockKeyhole,
-  ScanLine,
-  ShieldAlert,
   UserCheck,
   WalletCards,
   Zap,
@@ -47,9 +39,9 @@ function SectionHeading({
           <span className="size-1.5 rounded-full bg-gold-400" />
           {eyebrow}
         </div>
-        <h2 className="mt-5 text-balance font-serif text-3xl leading-tight tracking-[-0.03em] text-ink sm:text-5xl">
+        <h2 className="mt-5 text-balance text-3xl font-extrabold leading-tight tracking-[-0.04em] text-ink sm:text-5xl">
           {before}
-          <em className="gold-text italic">{accent}</em>
+          <em className="gold-text not-italic">{accent}</em>
           {after}
         </h2>
         {copy && (
@@ -67,337 +59,6 @@ function SectionHeading({
   );
 }
 
-function StrategyOverview() {
-  return (
-    <section id="strategy" className="scroll-mt-24 px-4 py-8 sm:px-6 sm:py-14">
-      <div className="mx-auto max-w-7xl">
-        <SectionHeading
-          eyebrow="Our trading approach"
-          title="Zero-Loss Algorithmic Trading, Finally a Reality"
-          accent="Zero-Loss"
-          copy="Arbitrage is the holy grail of trading — risk-free profit from market inefficiencies. Chopra Capital is built to detect and exploit gold price discrepancies between the Spot and Futures markets in real time. It does this 24/7, with no fatigue, no emotions, and no room for human error. Backed by advanced algorithms and overseen by trading professionals, Chopra Capital guarantees every trade is a winning trade."
-        />
-
-      </div>
-    </section>
-  );
-}
-
-const tradingSteps = [
-  {
-    title: "Price Gap Detection",
-    copy: "Chopra Capital scans the Spot and Future markets for profitable price discrepancies.",
-    image: "/landing/price-gap-detection-full.png",
-    imageAlt: "Gold price chart showing a detected price gap",
-  },
-  {
-    title: "Trade Execution",
-    copy: "It buys low in the Spot market and sells high in the Future market, securing risk-free profits.",
-    image: "/landing/trade-execution-full.png",
-    imageAlt: "Spot and futures trade execution report",
-  },
-  {
-    title: "Profit Logging",
-    copy: "With nanosecond execution, Chopra Capital ensures seamless trades and consistent profits.",
-    image: "/landing/profit-logging-full.png",
-    imageAlt: "Transaction history and account summary reports",
-  },
-];
-
-function TradingProcess() {
-  return (
-    <section id="how-it-works" className="scroll-mt-24 px-4 py-4 sm:px-6 sm:py-6">
-      <div className="mx-auto max-w-7xl py-8 sm:py-12">
-        <SectionHeading
-          eyebrow="How it works"
-          title="How It Works?"
-          accent="Works?"
-          copy="Chopra Capital detects price inefficiencies and executes trades instantly, with zero risk."
-        />
-
-        <div className="mt-10 grid gap-6 lg:grid-cols-3">
-          {tradingSteps.map((step, index) => (
-            <Reveal key={step.title} delay={index * 0.06}>
-              <article className="flex h-full min-h-[430px] flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-[#f6f6f5] px-6 pt-7 shadow-sm sm:px-8">
-                <h3 className="text-xl font-semibold text-ink sm:text-2xl">{step.title}</h3>
-                <p className="mt-3 text-base leading-7 text-ink-dim">{step.copy}</p>
-                <div className="relative mt-auto h-64 w-full overflow-hidden">
-                  <Image
-                    src={step.image}
-                    alt={step.imageAlt}
-                    fill
-                    sizes="(min-width: 1024px) 30vw, 90vw"
-                    className="object-contain object-bottom"
-                  />
-                </div>
-              </article>
-            </Reveal>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-const features = [
-  {
-    Icon: Activity,
-    title: "24/5 Automated Trading",
-    copy: "Chopra Capital continuously monitors markets and executes trades even while you sleep, ensuring you never miss a profitable opportunity.",
-  },
-  {
-    Icon: UserCheck,
-    title: "Expert Advise",
-    copy: "Combining the accuracy of expert advisors with the insight of experienced traders, Chopra Capital delivers smarter, more reliable decisions",
-  },
-  {
-    Icon: ScanLine,
-    title: "Price Gap Arbitrage Engine",
-    copy: "Chopra Capital constantly scans Spot and Futures markets for even the smallest price gaps. When an opportunity appears, it executes high-speed trades to lock in profits before the gap closes.",
-  },
-  {
-    Icon: Zap,
-    title: "Real-Time Execution",
-    copy: "Trades are executed in milliseconds — far faster than any human reaction time. This lightning-fast execution ensures that price gaps are captured before they disappear, maximizing profitability.",
-  },
-  {
-    Icon: Landmark,
-    title: "Broker Agnostic",
-    copy: "No need to change your broker. Chopra Capital is compatible with most MT4 and MT5 brokers, giving you the freedom to use your existing trading setup with zero limitations.",
-  },
-  {
-    Icon: BarChart3,
-    title: "Instant Trade Reports",
-    copy: "Stay informed with real-time updates on every trade executed by the bot. Access detailed logs, performance metrics, and profit reports directly from your dashboard, anytime.",
-  },
-  {
-    Icon: LockKeyhole,
-    title: "Encrypted & Secure",
-    copy: "Security is built into every layer of Chopra Capital. Your account data, MT5 credentials, and trading history are protected using enterprise-grade encryption and strict access controls.",
-  },
-  {
-    Icon: Bot,
-    title: "Emotionless Execution",
-    copy: "Chopra Capital trades without fear, greed, or hesitation. Every decision is based purely on logic, market data, and strategy — resulting in consistently rational, risk-free execution.",
-  },
-];
-
-function KeyFeatures() {
-  return (
-    <section id="features" className="scroll-mt-24 px-4 py-8 sm:px-6 sm:py-14">
-      <div className="mx-auto max-w-7xl">
-        <div className="grid gap-10 lg:grid-cols-[.8fr_1.2fr]">
-          <div className="lg:sticky lg:top-28 lg:h-fit">
-            <SectionHeading
-              centered={false}
-              eyebrow="Key Features"
-              title="Power-Packed Features, Built for Zero Losses"
-              accent="Power-Packed"
-              copy="Everything you need for safe, smart, and automated gold trading."
-            />
-            <Reveal delay={0.08}>
-              <div className="mt-8 flex flex-wrap gap-2">
-                {["Robust Security", "Fast", "Accurate", "Automated Efficiency", "Profitable"].map(
-                  (item) => (
-                    <span
-                      key={item}
-                      className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-ink-dim shadow-sm"
-                    >
-                      {item}
-                    </span>
-                  ),
-                )}
-              </div>
-            </Reveal>
-          </div>
-
-          <div className="divide-y divide-slate-200 border-l-2 border-blue-500/30">
-            {features.map((feature, index) => (
-              <Reveal key={feature.title} delay={index * 0.035}>
-                <article className="relative px-6 py-6 sm:px-8 sm:py-7">
-                  <span className="absolute -left-[7px] top-9 size-3 rounded-full border-2 border-white bg-blue-600 shadow-sm" />
-                  <div className="flex items-start gap-4">
-                    <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
-                      <feature.Icon className="size-5" aria-hidden />
-                    </span>
-                    <div>
-                      <h3 className="font-semibold text-ink">{feature.title}</h3>
-                      <p className="mt-2 text-sm leading-7 text-ink-dim">{feature.copy}</p>
-                    </div>
-                  </div>
-                </article>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-
-        <Reveal delay={0.08}>
-          <aside className="mt-10 rounded-2xl border-2 border-amber-300 bg-amber-50 p-5 sm:p-7" aria-label="Trading disclaimer">
-            <div className="flex items-start gap-4">
-              <ShieldAlert className="mt-0.5 size-6 shrink-0 text-amber-700" aria-hidden />
-              <div>
-                <h3 className="font-serif text-xl text-amber-950">Important disclaimer</h3>
-                <p className="mt-2 text-sm leading-7 text-amber-900">
-                  “Zero-loss,” “risk-free,” “guaranteed,” “profitable,” and similar statements describe the intended strategy design and are not guarantees of actual results. Trading involves risk, price gaps may disappear before execution, losses can occur, and invested capital is at risk. Past performance does not guarantee future results.
-                </p>
-              </div>
-            </div>
-          </aside>
-        </Reveal>
-      </div>
-    </section>
-  );
-}
-const investorSteps = [
-  {
-    Icon: UserCheck,
-    title: "Open your account",
-    copy: "Create your Chopra Capital account and enter your basic profile information.",
-  },
-  {
-    Icon: LockKeyhole,
-    title: "Complete KYC",
-    copy: "Submit your identity documents. KYC approval is required before adding funds.",
-  },
-  {
-    Icon: WalletCards,
-    title: "Deposit funds",
-    copy: "Choose crypto, bank transfer, or cash when the method is available on your account.",
-  },
-  {
-    Icon: LineChart,
-    title: "Follow performance",
-    copy: "Use your dashboard to review your balance, profits, and account activity.",
-  },
-  {
-    Icon: Clock3,
-    title: "Request a withdrawal",
-    copy: "Submit your request during the scheduled window shown in the investor portal for processing on Monday.",
-  },
-];
-
-function InvestorJourney() {
-  return (
-    <section id="getting-started" className="scroll-mt-24 px-4 py-4 sm:px-6 sm:py-6">
-      <div className="section-shell mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-12 lg:px-12">
-        <SectionHeading
-          eyebrow="How it works"
-          title="From account opening to withdrawal in five clear steps."
-          accent="five clear steps"
-          copy="Getting started is straightforward. Complete verification, add funds, follow your account, and request withdrawals from the same dashboard."
-        />
-
-        <div className="relative mt-10 grid gap-4 md:grid-cols-5">
-          <div
-            className="absolute left-[10%] right-[10%] top-7 hidden h-px bg-blue-200 md:block"
-            aria-hidden
-          />
-          {investorSteps.map((step, index) => (
-            <Reveal key={step.title} delay={index * 0.05}>
-              <article className="relative h-full rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <span className="relative z-10 flex size-14 items-center justify-center rounded-2xl border border-blue-200 bg-blue-50 text-blue-700">
-                  <step.Icon className="size-5" aria-hidden />
-                </span>
-                <p className="mt-6 text-xs font-semibold uppercase tracking-[0.16em] text-blue-700">
-                  Step 0{index + 1}
-                </p>
-                <h3 className="mt-2 font-serif text-lg text-ink">{step.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-ink-dim">{step.copy}</p>
-              </article>
-            </Reveal>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-function InvestorExperience() {
-  const items = [
-    "See your current balance and performance",
-    "Track deposits and withdrawal requests",
-    "Review profit and balance charts",
-    "Contact support and attach documents",
-    "Manage bank, crypto, profile, and security details",
-  ];
-
-  return (
-    <section id="visibility" className="scroll-mt-24 px-4 py-4 sm:px-6 sm:py-6">
-      <div className="section-shell mx-auto grid max-w-7xl gap-10 px-5 py-10 sm:px-8 sm:py-12 lg:grid-cols-[.9fr_1.1fr] lg:items-center lg:px-12">
-        <div>
-          <SectionHeading
-            centered={false}
-            eyebrow="Your investor dashboard"
-            title="Everything important, in one place."
-            accent="one place"
-            copy="Your account is designed to show the information that matters without filling the screen with trading or accounting jargon."
-          />
-          <Reveal delay={0.08}>
-            <ul className="mt-8 space-y-3">
-              {items.map((item) => (
-                <li key={item} className="flex items-center gap-3 text-sm text-ink-dim">
-                  <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-emerald-100">
-                    <Check className="size-4 text-emerald-700" aria-hidden />
-                  </span>
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </Reveal>
-        </div>
-
-        <Reveal delay={0.12}>
-          <div className="product-window overflow-hidden">
-            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-              <div>
-                <p className="eyebrow">Investor dashboard</p>
-                <p className="mt-1 text-sm text-ink">A clear account overview</p>
-              </div>
-              <span className="status-pill">
-                <span className="status-dot" />
-                Updated
-              </span>
-            </div>
-            <div className="grid grid-cols-2 gap-3 p-5">
-              {[
-                [CircleDollarSign, "Balance", "Current account value"],
-                [Clock3, "In queue", "Waiting to be invested"],
-                [LineChart, "Performance", "Profit and balance charts"],
-                [Landmark, "Transactions", "Deposits and withdrawals"],
-              ].map(([Icon, title, copy]) => {
-                const ItemIcon = Icon as typeof CircleDollarSign;
-                return (
-                  <div key={String(title)} className="metric-tile">
-                    <ItemIcon className="size-5 text-blue-600" aria-hidden />
-                    <p className="mt-5 font-serif text-lg text-ink">{String(title)}</p>
-                    <p className="mt-1 text-xs leading-5 text-ink-dim">{String(copy)}</p>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="border-t border-slate-200 p-5">
-              <div className="flex h-28 items-end gap-2" aria-hidden>
-                {[31, 39, 37, 50, 46, 59, 56, 71, 66, 78, 75, 90].map(
-                  (height, index) => (
-                    <span
-                      key={index}
-                      className="flex-1 rounded-t bg-gradient-to-t from-blue-200 to-cyan-400"
-                      style={{ height: `${height}%` }}
-                    />
-                  ),
-                )}
-              </div>
-              <div className="mt-3 flex justify-between text-xs font-medium text-ink-dim">
-                <span>Account opened</span>
-                <span>Today</span>
-              </div>
-            </div>
-          </div>
-        </Reveal>
-      </div>
-    </section>
-  );
-}
-
 type LandingMt5Details = {
   brokerName: string;
   server: string;
@@ -409,26 +70,25 @@ function LiveHistory({ mt5 }: { mt5: LandingMt5Details }) {
     ["Broker Name", mt5.brokerName],
     ["Server", mt5.server],
     ["MT5 ID", mt5.accountId],
-    ["Investor access", "ChopraCapital"],
+    ["Investor access", "ChopraCapital@1"],
   ];
 
   return (
     <section id="backtesting" className="scroll-mt-24 px-4 py-8 sm:px-6 sm:py-12">
       <div className="mx-auto max-w-7xl">
         <SectionHeading
-          eyebrow="Live account history"
-          title="Review the trading account yourself."
-          accent="yourself"
-          copy="Use the read-only investor access below to inspect the account in MetaTrader 5. It allows viewing only and cannot place or change trades."
+          eyebrow="Backtesting data"
+          title="Check our live account history."
+          accent="live account history"
         />
-        <Reveal delay={0.1}>
-          <div className="product-window mx-auto mt-6 max-w-4xl overflow-hidden">
+        <Reveal delay={0.08}>
+          <div className="product-window mx-auto mt-7 max-w-4xl overflow-hidden">
             <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
               <div>
-                <p className="eyebrow">MT5 read-only account</p>
-                <p className="mt-1 text-sm text-ink-dim">Live account details</p>
+                <p className="eyebrow text-sm">MT5 read-only account</p>
+                <p className="mt-1 text-lg font-medium text-ink-dim">Live account details</p>
               </div>
-              <span className="status-pill w-fit">
+              <span className="status-pill w-fit text-sm">
                 <span className="status-dot" />
                 Live history
               </span>
@@ -441,48 +101,175 @@ function LiveHistory({ mt5 }: { mt5: LandingMt5Details }) {
   );
 }
 
-const terms = [
-  ["Trading focus", "Gold", "A focused trading approach"],
-  ["Withdrawal request", "Scheduled window", "Shown in investor portal"],
-  ["Processing day", "Monday", "After approval"],
-  ["Lock-in period", "None", "The weekly request cycle applies"],
-  ["Monthly objective", "1–3%", "An objective, never a guarantee"],
+const tradingSteps = [
+  {
+    title: "Price Gap Detection",
+    image: "/landing/price-gap-detection-full.png",
+    imageAlt: "Gold price chart showing a detected price gap",
+  },
+  {
+    title: "Trade Execution",
+    image: "/landing/trade-execution-full.png",
+    imageAlt: "Spot and futures trade execution report",
+  },
+  {
+    title: "Profit Logging",
+    image: "/landing/profit-logging-full.png",
+    imageAlt: "Transaction history and account summary reports",
+  },
 ];
 
-function Terms() {
+function StrategyOverview() {
   return (
-    <section id="terms" className="scroll-mt-24 px-4 py-4 sm:px-6 sm:py-6">
-      <div className="section-shell mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-12 lg:px-12">
+    <section id="strategy" className="scroll-mt-24 px-4 py-8 sm:px-6 sm:py-12">
+      <div className="mx-auto max-w-7xl">
         <SectionHeading
-          eyebrow="Terms and schedule"
-          title="Simple terms and a clear weekly schedule."
-          accent="clear weekly schedule"
+          eyebrow="Our trading approach"
+          title="Zero-Loss Algorithmic Trading, Finally a Reality"
+          accent="Zero-Loss"
         />
-        <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {terms.map(([label, value, note], index) => (
-            <Reveal key={label} delay={index * 0.04}>
-              <article className="h-full rounded-2xl border border-slate-200 bg-white p-5">
-                <p className="text-xs font-medium uppercase tracking-[.14em] text-ink-dim">
-                  {label}
-                </p>
-                <p className="mt-4 font-serif text-2xl text-blue-700">{value}</p>
-                <p className="mt-2 text-xs leading-5 text-ink-dim">{note}</p>
+
+        <Reveal delay={0.06}>
+          <p className="mx-auto mt-7 max-w-4xl text-pretty text-base leading-8 text-ink-dim sm:text-lg">
+            Arbitrage is the holy grail of trading — risk-free profit from market inefficiencies.
+            Chopra Capital is built to detect and exploit gold price discrepancies between the Spot
+            and Futures markets in real time. Gold trades in two places at once: the spot market and
+            the futures market. Those two prices should be linked, but they drift apart for short
+            windows. When they do, we buy the cheaper side and sell the HIGHER side at the same time,
+            then hold until the gap closes. It does this 24/7, with no fatigue, no emotions, and no
+            room for human error. Backed by advanced algorithms and overseen by trading
+            professionals.
+          </p>
+        </Reveal>
+
+        <div className="mt-8 grid gap-4 lg:grid-cols-3">
+          {tradingSteps.map((step, index) => (
+            <Reveal key={step.title} delay={index * 0.05}>
+              <article className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-[#f6f6f5] p-5 shadow-sm sm:p-6">
+                <h3 className="text-center text-lg font-semibold text-ink sm:text-xl">{step.title}</h3>
+                <div className="relative mt-4 h-56 w-full overflow-hidden sm:h-64">
+                  <Image
+                    src={step.image}
+                    alt={step.imageAlt}
+                    fill
+                    sizes="(min-width: 1024px) 30vw, 90vw"
+                    className="object-contain"
+                  />
+                </div>
               </article>
             </Reveal>
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+const investorSteps = [
+  {
+    Icon: UserCheck,
+    title: "Open your account",
+    copy: "Create your Chopra Capital investor account.",
+  },
+  {
+    Icon: LockKeyhole,
+    title: "Complete KYC",
+    copy: "Submit your identity documents for approval.",
+  },
+  {
+    Icon: WalletCards,
+    title: "Deposit funds",
+    copy: "Choose an enabled deposit method and submit your request.",
+  },
+  {
+    Icon: LineChart,
+    title: "Follow performance",
+    copy: "Track your balance, profits, and account activity.",
+  },
+  {
+    Icon: Clock3,
+    title: "Withdraw weekly",
+    copy: "Request a withdrawal during the weekly window.",
+  },
+];
+
+function InvestorJourney() {
+  return (
+    <section id="getting-started" className="scroll-mt-24 px-4 py-8 sm:px-6 sm:py-12">
+      <div className="section-shell mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-12 lg:px-12">
+        <SectionHeading
+          eyebrow="How it works"
+          title="Five Steps, No Software"
+          accent="No Software"
+        />
+
+        <div className="relative mt-9 grid gap-3 sm:grid-cols-2 md:grid-cols-5">
+          <div
+            className="absolute left-[10%] right-[10%] top-7 hidden h-px bg-blue-200 md:block"
+            aria-hidden
+          />
+          {investorSteps.map((step, index) => (
+            <Reveal key={step.title} delay={index * 0.04}>
+              <article className="relative h-full rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                <span className="relative z-10 flex size-12 items-center justify-center rounded-xl border border-blue-200 bg-blue-50 text-blue-700">
+                  <step.Icon className="size-5" aria-hidden />
+                </span>
+                <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-blue-700">
+                  Step 0{index + 1}
+                </p>
+                <h3 className="mt-2 text-lg font-bold text-ink">{step.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-ink-dim">{step.copy}</p>
+              </article>
+            </Reveal>
+          ))}
+        </div>
+
         <Reveal delay={0.12}>
-          <div className="mt-5 flex gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-5 sm:p-6">
-            <ShieldAlert className="mt-0.5 size-5 shrink-0 text-amber-700" aria-hidden />
-            <div>
-              <p className="font-serif text-lg text-amber-950">Risk is reduced, not erased.</p>
-              <p className="mt-2 text-sm leading-6 text-amber-900">
-                Automated trading and risk controls cannot guarantee a profit. Markets can move
-                unexpectedly, technical problems can occur, and invested capital can be lost.
-              </p>
-            </div>
-          </div>
+          <p className="mx-auto mt-7 max-w-3xl rounded-2xl border border-blue-200 bg-blue-50 px-5 py-4 text-center text-base font-semibold leading-7 text-blue-950">
+            You never install anything. You never touch MT5 unless you want to inspect the account.
+          </p>
         </Reveal>
+      </div>
+    </section>
+  );
+}
+
+const operationalPoints = [
+  {
+    Icon: Zap,
+    title: "Executes in milliseconds.",
+    copy: "Gaps close in fractions of a second. The system takes both legs faster than any human could click. If it can’t get both, it doesn’t take the trade.",
+  },
+  {
+    Icon: UserCheck,
+    title: "Runs 24/5, watched by people.",
+    copy: "The system trades on its own through every session. A trader monitors it, kills it in abnormal conditions, and can flatten the book manually. Automation without a human on the switch is how accounts blow up.",
+  },
+];
+
+function ThingsThatMatter() {
+  return (
+    <section id="things-that-matter" className="scroll-mt-24 px-4 py-8 sm:px-6 sm:py-12">
+      <div className="mx-auto max-w-6xl">
+        <SectionHeading
+          eyebrow="Execution and oversight"
+          title="Things that matter"
+          accent="matter"
+        />
+
+        <div className="mt-8 grid gap-4 md:grid-cols-2">
+          {operationalPoints.map((point, index) => (
+            <Reveal key={point.title} delay={index * 0.06}>
+              <article className="h-full rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
+                <span className="flex size-11 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+                  <point.Icon className="size-5" aria-hidden />
+                </span>
+                <h3 className="mt-5 text-xl font-bold text-ink">{point.title}</h3>
+                <p className="mt-3 text-base leading-7 text-ink-dim">{point.copy}</p>
+              </article>
+            </Reveal>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -490,24 +277,24 @@ function Terms() {
 
 const faqs = [
   [
-    "Do I need to install a trading bot?",
-    "No. Chopra Capital manages the trading operation. Investors only need an account to fund, monitor, and manage their investment.",
+    "Do I need to install trading software?",
+    "No. Chopra Capital manages the trading operation. You never install a bot or configure MT5. The read-only MT5 account is available only if you want to inspect the trading history.",
   ],
   [
-    "Is the return guaranteed?",
-    "No. The 1–3% monthly figure is an objective, not a guarantee. Some periods may be flat or negative, and capital can be lost.",
+    "Is the 1–3% monthly return guaranteed?",
+    "No. It is a performance objective, not a guarantee. Some periods may be flat or negative, and capital can be lost.",
+  ],
+  [
+    "What does no lock-in mean?",
+    "There is no long-term lock-in period. Withdrawal requests follow the weekly window shown inside the investor portal.",
   ],
   [
     "How do I follow my account?",
-    "Your dashboard shows your balance, performance charts, queued funds, transaction history, support tickets, and security settings.",
-  ],
-  [
-    "How are deposits and withdrawals protected?",
-    "KYC is required, and payment requests pass through verification and approval before account balances or payouts are completed.",
+    "Your dashboard shows your balance, profits, queued funds, transactions, support tickets, and account activity.",
   ],
   [
     "When can I withdraw?",
-    "Requests are accepted during the scheduled window shown in the investor portal and processed on Mondays after approval. There is no long-term lock-in.",
+    "Withdrawal requests are accepted during the weekly schedule shown in the investor portal and are processed after approval.",
   ],
 ];
 
@@ -515,7 +302,7 @@ function Faq() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <section id="faq" className="scroll-mt-24 px-4 py-8 sm:px-6 sm:py-14">
+    <section id="faq" className="scroll-mt-24 px-4 py-8 sm:px-6 sm:py-12">
       <div className="mx-auto max-w-4xl">
         <SectionHeading
           eyebrow="Common questions"
@@ -534,7 +321,7 @@ function Faq() {
                     aria-expanded={active}
                     className="flex w-full items-center justify-between gap-4 px-5 py-5 text-left sm:px-6"
                   >
-                    <span className="font-serif text-base text-ink sm:text-lg">{question}</span>
+                    <span className="text-base font-bold text-ink sm:text-lg">{question}</span>
                     <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white">
                       <ChevronDown
                         className={cn(
@@ -569,19 +356,19 @@ function Faq() {
 
 function FinalCta() {
   return (
-    <section className="px-4 pb-10 sm:px-6 sm:pb-14">
+    <section className="px-4 pb-10 pt-4 sm:px-6 sm:pb-14 sm:pt-6">
       <Reveal>
         <div className="section-shell relative mx-auto max-w-7xl overflow-hidden px-5 py-12 text-center sm:px-8 sm:py-16">
           <div className="absolute inset-0 -z-10 gold-aura" aria-hidden />
           <div className="absolute inset-0 -z-10 landing-grid opacity-50" aria-hidden />
           <p className="eyebrow">Get started</p>
-          <h2 className="mx-auto mt-5 max-w-4xl text-balance font-serif text-4xl leading-tight tracking-[-0.035em] text-ink sm:text-6xl">
+          <h2 className="mx-auto mt-5 max-w-4xl text-balance text-4xl font-extrabold leading-tight tracking-[-0.045em] text-ink sm:text-6xl">
             A simpler way to participate in{" "}
-            <em className="gold-text italic">automated gold trading.</em>
+            <em className="gold-text not-italic">automated gold trading.</em>
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-ink-dim">
-            Open your account, complete verification, and review the process before adding
-            funds. No trading software to install or configure. Capital remains at risk.
+            Open your account, complete verification, and review the process before adding funds.
+            No trading software to install or configure. Capital remains at risk.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
             <Link href="/signup" className="btn-gold min-h-12 px-8 text-base">
@@ -607,13 +394,10 @@ function FinalCta() {
 export function LandingSections({ mt5 }: { mt5: LandingMt5Details }) {
   return (
     <>
-      <StrategyOverview />
-      <TradingProcess />
-      <KeyFeatures />
-      <InvestorJourney />
-      <InvestorExperience />
       <LiveHistory mt5={mt5} />
-      <Terms />
+      <StrategyOverview />
+      <InvestorJourney />
+      <ThingsThatMatter />
       <Faq />
       <FinalCta />
     </>

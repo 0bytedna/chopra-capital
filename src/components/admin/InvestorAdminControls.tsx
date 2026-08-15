@@ -18,7 +18,7 @@ function formatUsd(value: string): string {
 
 type Props = {
   investor: {
-    id: string; fullName: string | null; email: string; mobile: string | null; country: string | null; address: string | null; city: string | null; state: string | null;
+    id: string; fullName: string | null; email: string; mobile: string | null;
     kycStatus: string; kycNote: string | null; bankTransferEnabled: boolean; cashEnabled: boolean;
     bankingDetail: { accountNumber: string | null; ifsc: string | null; upiId: string | null; accountType: string | null; usdtAddress: string | null; usdtNetwork: string | null } | null;
   };
@@ -36,7 +36,7 @@ export function InvestorAdminControls({ investor, queued, invested, deposits, wi
       <AdminActionForm action={adminUpdateInvestorProfile} submitLabel="Save account details" pendingLabel="Saving…" variant="gold" className="rounded-xl border border-gold-600/15 bg-slate-50 p-4">
         <input type="hidden" name="userId" value={investor.id}/><h3 className="text-sm font-medium text-ink">Profile, KYC, bank and crypto</h3>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{[
-          ["fullName","Full name",investor.fullName],["email","Email",investor.email],["mobile","Mobile",investor.mobile],["address","Address",investor.address],["city","City",investor.city],["state","State",investor.state],["country","Country",investor.country],
+          ["fullName","Full name",investor.fullName],["email","Email",investor.email],["mobile","Mobile",investor.mobile],
           ["accountNumber","Bank account",investor.bankingDetail?.accountNumber],["ifsc","IFSC",investor.bankingDetail?.ifsc],["upiId","UPI ID",investor.bankingDetail?.upiId],["accountType","Account type",investor.bankingDetail?.accountType],["usdtAddress","USDT address",investor.bankingDetail?.usdtAddress],["usdtNetwork","USDT network",investor.bankingDetail?.usdtNetwork],
         ].map(([name,label,value]) => <label key={String(name)} className={labelClass}>{label}<input name={String(name)} defaultValue={String(value ?? "")} required={name === "email"} className={inputClass}/></label>)}</div>
         <div className="mt-3 grid gap-3 sm:grid-cols-2"><label className={labelClass}>KYC status<select name="kycStatus" defaultValue={investor.kycStatus} className={inputClass}><option value="NOT_SUBMITTED">Not submitted</option><option value="PENDING">Pending</option><option value="APPROVED">Approved</option><option value="REJECTED">Rejected</option></select></label><label className={labelClass}>KYC note<input name="kycNote" defaultValue={investor.kycNote ?? ""} className={inputClass}/></label></div>

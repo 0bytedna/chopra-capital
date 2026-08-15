@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   WalletCards,
 } from "lucide-react";
+import { CollapsibleCard } from "@/components/admin/CollapsibleCard";
 import { DepositMethodsToggle } from "@/components/admin/DepositMethodsToggle";
 import { InvestorAdminControls } from "@/components/admin/InvestorAdminControls";
 import { PortfolioChart } from "@/components/app/PortfolioChart";
@@ -109,13 +110,13 @@ function MetricCard({
   tone?: "positive" | "negative";
 }) {
   return (
-    <article className="glass-card rounded-xl p-4 sm:p-5">
+    <article className="min-w-0 rounded-xl border border-gold-600/12 bg-white/55 p-3 sm:p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">{label}</p>
           <p
             className={cn(
-              "currency-value mt-2 truncate text-xl",
+              "currency-value mt-1.5 truncate text-base sm:text-lg",
               tone === "positive"
                 ? "text-positive"
                 : tone === "negative"
@@ -126,11 +127,15 @@ function MetricCard({
             {value}
           </p>
         </div>
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-gold-600/15 bg-gold-600/8 text-gold-400">
-          <Icon className="size-4" aria-hidden />
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-gold-600/15 bg-gold-600/8 text-gold-400">
+          <Icon className="size-3.5" aria-hidden />
         </span>
       </div>
-      {detail && <p className="mt-2 text-xs text-ink-faint">{detail}</p>}
+      {detail && (
+        <p className="mt-1.5 line-clamp-2 text-[0.7rem] leading-4 text-ink-faint">
+          {detail}
+        </p>
+      )}
     </article>
   );
 }
@@ -139,15 +144,22 @@ function Detail({
   label,
   value,
   mono = false,
+  wide = false,
 }: {
   label: string;
   value: string;
   mono?: boolean;
+  wide?: boolean;
 }) {
   return (
-    <div className="min-w-0 border-b border-gold-600/10 pb-3 last:border-0 last:pb-0">
+    <div
+      className={cn(
+        "min-w-0 border-b border-gold-600/10 pb-2.5",
+        wide && "col-span-2",
+      )}
+    >
       <dt className="text-xs uppercase tracking-[0.14em] text-ink-faint">{label}</dt>
-      <dd className={cn("mt-1 break-words text-sm text-ink", mono && "font-mono")}>{value}</dd>
+      <dd className={cn("mt-1 break-words text-sm leading-5 text-ink", mono && "font-mono")}>{value}</dd>
     </div>
   );
 }
@@ -165,10 +177,7 @@ export default async function AdminInvestorRecordPage({
       fullName: true,
       email: true,
       mobile: true,
-      country: true,
-      address: true,
-      city: true,
-      state: true,
+
       kycStatus: true,
       isCompanyAccount: true,
       kycNote: true,
@@ -227,9 +236,7 @@ export default async function AdminInvestorRecordPage({
   const totalProfit = metrics.bookedProfit.add(metrics.unrealizedProfit);
   const profitTone = totalProfit.gt(0) ? "positive" : totalProfit.lt(0) ? "negative" : undefined;
   const kyc = kycDetails[investor.kycStatus];
-  const address = [investor.address, investor.city, investor.state, investor.country]
-    .filter(Boolean)
-    .join(", ");
+
   const transfers = [
     ...investor.internalTransfersSent.map((transfer) => ({
       ...transfer,
@@ -244,7 +251,7 @@ export default async function AdminInvestorRecordPage({
   ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8">
+    <div className="mx-auto max-w-7xl space-y-4 sm:space-y-5">
       <header>
         <Link
           href="/admin/investors"
@@ -279,10 +286,6 @@ export default async function AdminInvestorRecordPage({
           fullName: investor.fullName,
           email: investor.email,
           mobile: investor.mobile,
-          country: investor.country,
-          address: investor.address,
-          city: investor.city,
-          state: investor.state,
           kycStatus: investor.kycStatus,
           kycNote: investor.kycNote,
           bankTransferEnabled: investor.bankTransferEnabled,
@@ -294,60 +297,75 @@ export default async function AdminInvestorRecordPage({
         deposits={investor.deposits.map((deposit) => ({ id: deposit.id, method: methodLabels[deposit.method], amount: deposit.amount.toString(), status: deposit.status, reference: deposit.reference, txHash: deposit.txHash, adminNote: deposit.adminNote }))}
         withdrawals={investor.withdrawals.map((withdrawal) => ({ id: withdrawal.id, method: methodLabels[withdrawal.method], amount: withdrawal.amount.toString(), status: withdrawal.status, reference: withdrawal.txHash, adminNote: withdrawal.adminNote }))}
       />
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5" aria-label="Investor portfolio summary">
-        <MetricCard
-          label="Balance"
-          value={`${formatUsdt(metrics.currentValue)} USD`}
-          detail="Invested and queued"
-          Icon={WalletCards}
-        />
-        <MetricCard
-          label="Invested"
-          value={`${formatUsdt(investedValue)} USD`}
-          detail={`${formatUsdt(metrics.units, 6)} pool units`}
-          Icon={Landmark}
-        />
-        <MetricCard
-          label="In queue"
-          value={`${formatUsdt(metrics.queued)} USD`}
-          detail="Awaiting investment"
-          Icon={Clock3}
-        />
-        <MetricCard
-          label="Generated profit"
-          value={signedUsd(totalProfit)}
-          detail="Booked and floating"
-          Icon={CircleDollarSign}
-          tone={profitTone}
-        />
-        <MetricCard
-          label="Pool share"
-          value={`${poolShare.toFixed(2)}%`}
-          detail="Current invested units"
-          Icon={BadgeCheck}
-        />
-      </section>
+      <CollapsibleCard
+        title="Portfolio summary"
+        Icon={WalletCards}
+        defaultOpen
+        contentClassName="p-3 sm:p-4"
+      >
+        <section
+          className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5"
+          aria-label="Investor portfolio summary"
+        >
+          <MetricCard
+            label="Balance"
+            value={`${formatUsdt(metrics.currentValue)} USD`}
+            detail="Invested and queued"
+            Icon={WalletCards}
+          />
+          <MetricCard
+            label="Invested"
+            value={`${formatUsdt(investedValue)} USD`}
+            detail={`${formatUsdt(metrics.units, 6)} pool units`}
+            Icon={Landmark}
+          />
+          <MetricCard
+            label="In queue"
+            value={`${formatUsdt(metrics.queued)} USD`}
+            detail="Awaiting investment"
+            Icon={Clock3}
+          />
+          <MetricCard
+            label="Generated profit"
+            value={signedUsd(totalProfit)}
+            detail="Booked and floating"
+            Icon={CircleDollarSign}
+            tone={profitTone}
+          />
+          <MetricCard
+            label="Pool share"
+            value={`${poolShare.toFixed(2)}%`}
+            detail="Current invested units"
+            Icon={BadgeCheck}
+          />
+        </section>
+      </CollapsibleCard>
 
-      <section className="grid gap-4 xl:grid-cols-3" aria-label="Investor details">
-        <article className="glass-card rounded-2xl p-5 sm:p-6">
-          <div className="flex items-center gap-2">
-            <Mail className="size-4 text-gold-400" aria-hidden />
-            <h2 className="font-serif text-xl text-ink">Profile & compliance</h2>
-          </div>
-          <dl className="mt-5 space-y-3">
+      <section className="grid items-start gap-3 lg:grid-cols-3" aria-label="Investor details">
+        <CollapsibleCard title="Profile & compliance" Icon={Mail} defaultOpen>
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
             <Detail label="Full name" value={display(investor.fullName)} />
-            <Detail label="Account type" value={investor.isCompanyAccount ? "Company trading account" : "Investor account"} />
-            <Detail label="Email" value={investor.email} />
             <Detail label="Phone" value={display(investor.mobile)} />
-            <Detail label="Residential address" value={address || "Not provided"} />
+            <Detail label="Email" value={investor.email} wide />
+            <Detail
+              label="Account type"
+              value={investor.isCompanyAccount ? "Company trading account" : "Investor account"}
+            />
             <Detail label="KYC status" value={kyc.label} />
-            <Detail label="KYC note" value={display(investor.kycNote)} />
-            <Detail label="Two-factor authentication" value={investor.twoFactorEnabled ? "Enabled" : "Not enabled"} />
+            <Detail label="KYC note" value={display(investor.kycNote)} wide />
+            <Detail
+              label="Two-factor authentication"
+              value={investor.twoFactorEnabled ? "Enabled" : "Not enabled"}
+            />
             <Detail label="Account created" value={formatDate(investor.createdAt, true)} />
-            <Detail label="Profile last updated" value={formatDate(investor.updatedAt, true)} />
+            <Detail
+              label="Profile last updated"
+              value={formatDate(investor.updatedAt, true)}
+              wide
+            />
           </dl>
 
-          <div className="mt-5 border-t border-gold-600/15 pt-4">
+          <div className="mt-4 border-t border-gold-600/15 pt-4">
             <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">KYC documents</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {investor.kycDocuments.length > 0 ? (
@@ -368,15 +386,15 @@ export default async function AdminInvestorRecordPage({
               )}
             </div>
           </div>
-        </article>
+        </CollapsibleCard>
 
-        <article className="glass-card rounded-2xl p-5 sm:p-6">
-          <div className="flex items-center gap-2">
-            <Landmark className="size-4 text-gold-400" aria-hidden />
-            <h2 className="font-serif text-xl text-ink">Banking details</h2>
-          </div>
-          <dl className="mt-5 space-y-3">
-            <Detail label="Account number" value={display(investor.bankingDetail?.accountNumber)} mono />
+        <CollapsibleCard title="Banking details" Icon={Landmark}>
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
+            <Detail
+              label="Account number"
+              value={display(investor.bankingDetail?.accountNumber)}
+              mono
+            />
             <Detail label="IFSC" value={display(investor.bankingDetail?.ifsc)} mono />
             <Detail
               label="Account type"
@@ -384,21 +402,28 @@ export default async function AdminInvestorRecordPage({
             />
             <Detail label="UPI ID" value={display(investor.bankingDetail?.upiId)} mono />
           </dl>
-        </article>
+        </CollapsibleCard>
 
-        <article className="glass-card rounded-2xl p-5 sm:p-6">
-          <div className="flex items-center gap-2">
-            <WalletCards className="size-4 text-gold-400" aria-hidden />
-            <h2 className="font-serif text-xl text-ink">Crypto & funding</h2>
-          </div>
-          <dl className="mt-5 space-y-3">
-            <Detail label="USDT wallet address" value={display(investor.bankingDetail?.usdtAddress)} mono />
+        <CollapsibleCard title="Crypto & funding" Icon={WalletCards}>
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
+            <Detail
+              label="USDT wallet address"
+              value={display(investor.bankingDetail?.usdtAddress)}
+              mono
+              wide
+            />
             <Detail label="USDT network" value={display(investor.bankingDetail?.usdtNetwork)} />
             <Detail label="Crypto deposits" value="Enabled" />
-            <Detail label="Bank deposits and withdrawals" value={investor.bankTransferEnabled ? "Enabled" : "Disabled"} />
-            <Detail label="Cash deposits and withdrawals" value={investor.cashEnabled ? "Enabled" : "Disabled"} />
+            <Detail
+              label="Bank access"
+              value={investor.bankTransferEnabled ? "Enabled" : "Disabled"}
+            />
+            <Detail
+              label="Cash access"
+              value={investor.cashEnabled ? "Enabled" : "Disabled"}
+            />
           </dl>
-          <div className="mt-5 border-t border-gold-600/15 pt-4">
+          <div className="mt-4 border-t border-gold-600/15 pt-4">
             <p className="mb-3 text-xs uppercase tracking-[0.14em] text-ink-faint">
               Deposit method access
             </p>
@@ -408,36 +433,23 @@ export default async function AdminInvestorRecordPage({
               cashEnabled={investor.cashEnabled}
             />
           </div>
-        </article>
+        </CollapsibleCard>
       </section>
-
-      <section className="space-y-4" aria-labelledby="performance-heading">
-        <div>
-          <p className="eyebrow">Performance</p>
-          <h2 id="performance-heading" className="mt-2 font-serif text-2xl text-ink">
-            Profit and balance history
-          </h2>
-          <p className="mt-1 text-sm text-ink-dim">
-            Choose a preset or exact dates. Internal transfers are excluded from trading profit.
-          </p>
-        </div>
+      <CollapsibleCard title="Profit and balance history" Icon={CircleDollarSign}>
         <PortfolioChart
           initialSeries={performance.series}
           firstActivityDate={performance.firstActivityDate}
           endpoint={`/api/admin/investors/${encodeURIComponent(investor.id)}/portfolio`}
         />
-      </section>
-
+      </CollapsibleCard>
       <section className="grid gap-4 xl:grid-cols-2" aria-label="Funding history">
-        <article className="glass-card min-w-0 rounded-2xl p-5 sm:p-6">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <ArrowDownToLine className="size-4 text-gold-400" aria-hidden />
-              <h2 className="font-serif text-xl text-ink">Deposits</h2>
-            </div>
-            <span className="font-mono text-xs text-ink-faint">{investor.deposits.length}</span>
-          </div>
-          <div className="mt-4 max-h-[32rem] overflow-auto">
+        <CollapsibleCard
+          title="Deposits"
+          Icon={ArrowDownToLine}
+          count={investor.deposits.length}
+          contentClassName="p-0"
+        >
+          <div className="max-h-[32rem] overflow-auto">
             {investor.deposits.length > 0 ? (
               <table className="w-full min-w-[38rem] text-left text-xs">
                 <thead className="sticky top-0 bg-vault-900 text-xs uppercase tracking-[0.14em] text-ink-faint">
@@ -477,17 +489,15 @@ export default async function AdminInvestorRecordPage({
               <p className="py-8 text-center text-sm text-ink-faint">No deposit history.</p>
             )}
           </div>
-        </article>
+        </CollapsibleCard>
 
-        <article className="glass-card min-w-0 rounded-2xl p-5 sm:p-6">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <ArrowUpFromLine className="size-4 text-gold-400" aria-hidden />
-              <h2 className="font-serif text-xl text-ink">Withdrawals</h2>
-            </div>
-            <span className="font-mono text-xs text-ink-faint">{investor.withdrawals.length}</span>
-          </div>
-          <div className="mt-4 max-h-[32rem] overflow-auto">
+        <CollapsibleCard
+          title="Withdrawals"
+          Icon={ArrowUpFromLine}
+          count={investor.withdrawals.length}
+          contentClassName="p-0"
+        >
+          <div className="max-h-[32rem] overflow-auto">
             {investor.withdrawals.length > 0 ? (
               <table className="w-full min-w-[38rem] text-left text-xs">
                 <thead className="sticky top-0 bg-vault-900 text-xs uppercase tracking-[0.14em] text-ink-faint">
@@ -527,16 +537,16 @@ export default async function AdminInvestorRecordPage({
               <p className="py-8 text-center text-sm text-ink-faint">No withdrawal history.</p>
             )}
           </div>
-        </article>
+        </CollapsibleCard>
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-3" aria-label="Audit history">
-        <article className="glass-card min-w-0 rounded-2xl p-5 sm:p-6">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <ArrowLeftRight className="size-4 text-gold-400" aria-hidden />
-              <h2 className="font-serif text-xl text-ink">Internal transfers</h2>
-            </div>
+      <section className="grid gap-4 xl:grid-cols-2" aria-label="Audit history">
+        <CollapsibleCard
+          title="Internal transfers"
+          Icon={ArrowLeftRight}
+          count={transfers.length}
+        >
+          <div className="mb-3 flex justify-end">
             <Link
               href="/admin/internal-transfers"
               className="text-xs text-gold-400 transition-colors hover:text-gold-300"
@@ -544,7 +554,7 @@ export default async function AdminInvestorRecordPage({
               Open transfers
             </Link>
           </div>
-          <div className="mt-4 max-h-[28rem] overflow-auto">
+          <div className="max-h-[28rem] overflow-auto">
             {transfers.length > 0 ? (
               <div className="divide-y divide-gold-600/10">
                 {transfers.map((transfer) => (
@@ -582,16 +592,9 @@ export default async function AdminInvestorRecordPage({
               <p className="py-8 text-center text-sm text-ink-faint">No internal transfers.</p>
             )}
           </div>
-        </article>
-        <article className="glass-card min-w-0 rounded-2xl p-5 sm:p-6">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <Banknote className="size-4 text-gold-400" aria-hidden />
-              <h2 className="font-serif text-xl text-ink">Ledger</h2>
-            </div>
-            <span className="font-mono text-xs text-ink-faint">{investor.ledger.length}</span>
-          </div>
-          <div className="mt-4 max-h-[28rem] overflow-auto">
+        </CollapsibleCard>
+        <CollapsibleCard title="Ledger" Icon={Banknote} count={investor.ledger.length}>
+          <div className="max-h-[28rem] overflow-auto">
             {investor.ledger.length > 0 ? (
               <div className="divide-y divide-gold-600/10">
                 {investor.ledger.map((entry) => (
@@ -620,10 +623,11 @@ export default async function AdminInvestorRecordPage({
               <p className="py-8 text-center text-sm text-ink-faint">No ledger entries.</p>
             )}
           </div>
-        </article>
+        </CollapsibleCard>
       </section>
 
-      <section className="grid gap-3 sm:grid-cols-3" aria-label="Lifetime totals">
+      <CollapsibleCard title="Lifetime totals" Icon={Banknote}>
+        <section className="grid grid-cols-2 gap-2 sm:grid-cols-3" aria-label="Lifetime totals">
         <MetricCard
           label="Lifetime deposits"
           value={`${formatUsdt(metrics.totalDeposits)} USD`}
@@ -639,7 +643,8 @@ export default async function AdminInvestorRecordPage({
           value={`${formatUsdt(metrics.totalFees)} USD`}
           Icon={Banknote}
         />
-      </section>
+        </section>
+      </CollapsibleCard>
     </div>
   );
 }

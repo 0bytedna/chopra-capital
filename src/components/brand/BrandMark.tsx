@@ -14,7 +14,7 @@ export function BrandMark({
       className={cn("relative inline-flex size-9 shrink-0", className)}
     >
       <Image
-        src="/brand/chopra-capital-mark-c2.png"
+        src="/brand/chopra-capital-mark-c2-green.png"
         alt=""
         fill
         sizes="48px"

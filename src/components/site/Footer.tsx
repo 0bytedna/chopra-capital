@@ -5,11 +5,10 @@ const columns = [
   {
     title: "Platform",
     links: [
-      { href: "/#how-it-works", label: "How it works" },
-      { href: "/#strategy", label: "Trading approach" },
-      { href: "/#visibility", label: "Investor dashboard" },
       { href: "/#backtesting", label: "Live account history" },
-      { href: "/#terms", label: "Terms & schedule" },
+      { href: "/#strategy", label: "Trading approach" },
+      { href: "/#getting-started", label: "Five steps" },
+      { href: "/#things-that-matter", label: "What matters" },
       { href: "/#faq", label: "FAQ" },
     ],
   },

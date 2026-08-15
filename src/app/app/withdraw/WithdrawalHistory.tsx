@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
-import { Ban, Info, Pencil, X } from "lucide-react";
+import { Ban, Pencil, X } from "lucide-react";
 import { cancelWithdrawal, editWithdrawal, type WithdrawFormState } from "./actions";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
@@ -254,14 +254,23 @@ export function WithdrawalHistory({
                 <p className="currency-value min-w-0 text-sm text-ink">
                   {withdrawal.amount} USD requested
                 </p>
-                <span
+                <button
+                  type="button"
+                  aria-expanded={detailsOpen}
+                  aria-controls={`withdrawal-details-${withdrawal.id}`}
+                  title={detailsOpen ? "Hide withdrawal details" : "Show withdrawal details"}
+                  onClick={() => {
+                    setDetailsId(detailsOpen ? null : withdrawal.id);
+                    setEditingId(null);
+                    setCancellingId(null);
+                  }}
                   className={cn(
-                    "shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium",
+                    "shrink-0 cursor-pointer rounded-full border px-2.5 py-1 text-xs font-medium transition-opacity hover:opacity-75",
                     statusClass[withdrawal.status],
                   )}
                 >
                   {statusLabel(withdrawal)}
-                </span>
+                </button>
               </div>
               <p className="mt-1 text-xs text-ink-faint">
                 {methodLabel(withdrawal)} · {new Date(withdrawal.createdAt).toLocaleDateString("en-IN", {
@@ -298,60 +307,36 @@ export function WithdrawalHistory({
                   Your corrected bank details were submitted. The payout remains blocked until an admin approves them.
                 </p>
               )}
-              <div
-                className={cn(
-                  "flex flex-wrap items-center gap-2 sm:justify-end",
-                  withdrawal.paidAmount || withdrawal.paidInrAmount
-                    ? "-mt-6 justify-end"
-                    : "mt-3",
-                )}
-              >
-                <button
-                  type="button"
-                  aria-expanded={detailsOpen}
-                  aria-controls={`withdrawal-details-${withdrawal.id}`}
-                  title={detailsOpen ? "Hide withdrawal details" : "Show withdrawal details"}
-                  onClick={() => {
-                    setDetailsId(detailsOpen ? null : withdrawal.id);
-                    setEditingId(null);
-                    setCancellingId(null);
-                  }}
-                  className="inline-flex size-9 items-center justify-center rounded-full border border-gold-600/20 text-ink-dim transition-colors hover:border-gold-500/45 hover:bg-gold-600/8 hover:text-ink"
-                >
-                  <Info className="size-4" aria-hidden />
-                  <span className="sr-only">{detailsOpen ? "Hide" : "Show"} withdrawal details</span>
-                </button>
-                {canEdit && !editing && !cancelling && (
-                  <>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setEditingId(withdrawal.id);
-                        setCancellingId(null);
-                        setDetailsId(null);
-                      }}
-                    >
-                      <Pencil className="size-3.5" aria-hidden />
-                      Edit
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="danger"
-                      size="sm"
-                      onClick={() => {
-                        setCancellingId(withdrawal.id);
-                        setEditingId(null);
-                        setDetailsId(null);
-                      }}
-                    >
-                      <Ban className="size-3.5" aria-hidden />
-                      Cancel request
-                    </Button>
-                  </>
-                )}
-              </div>
+              {canEdit && !editing && !cancelling && (
+                <div className="mt-3 flex flex-wrap items-center gap-2 sm:justify-end">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setEditingId(withdrawal.id);
+                      setCancellingId(null);
+                      setDetailsId(null);
+                    }}
+                  >
+                    <Pencil className="size-3.5" aria-hidden />
+                    Edit
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="danger"
+                    size="sm"
+                    onClick={() => {
+                      setCancellingId(withdrawal.id);
+                      setEditingId(null);
+                      setDetailsId(null);
+                    }}
+                  >
+                    <Ban className="size-3.5" aria-hidden />
+                    Cancel request
+                  </Button>
+                </div>
+              )}
             </div>
             {detailsOpen && (
               <dl

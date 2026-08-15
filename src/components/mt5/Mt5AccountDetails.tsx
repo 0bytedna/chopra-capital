@@ -27,17 +27,17 @@ export function Mt5AccountDetails({ details }: { details: readonly Mt5Detail[] }
           <div
             key={label}
             className={cn(
-              "grid min-w-0 grid-cols-[5.25rem_minmax(0,1fr)] items-center gap-2 px-4 py-3.5 sm:grid-cols-[5.75rem_minmax(0,1fr)]",
+              "grid min-w-0 grid-cols-[6.25rem_minmax(0,1fr)] items-center gap-3 px-4 py-4 sm:grid-cols-[7.5rem_minmax(0,1fr)] sm:px-5 sm:py-5",
               index !== details.length - 1 && "border-b border-slate-200",
               index >= 2 && "sm:border-b-0",
               index % 2 === 0 && "sm:border-r sm:border-slate-200",
             )}
           >
-            <dt className="text-xs font-medium uppercase leading-4 tracking-[.11em] text-ink-dim">
+            <dt className="text-sm font-semibold uppercase leading-5 tracking-[.08em] text-ink-dim sm:text-base">
               {label}
             </dt>
             <dd className="grid min-w-0 grid-cols-[minmax(0,1fr)_1.75rem] items-center gap-2.5">
-              <span className="min-w-0 whitespace-nowrap font-sans text-[clamp(0.75rem,3.3vw,0.875rem)] font-medium leading-5 tracking-[-0.035em] text-ink">
+              <span className="min-w-0 whitespace-nowrap font-sans text-[clamp(1rem,3.5vw,1.25rem)] font-semibold leading-6 tracking-[-0.04em] text-ink sm:text-lg sm:leading-7 lg:text-xl">
                 {value}
               </span>
               <CopyButton value={value} label={`Copy ${label}`} compact />
@@ -56,10 +56,10 @@ export function Mt5AccountDetails({ details }: { details: readonly Mt5Detail[] }
               href={href}
               target="_blank"
               rel="noreferrer noopener"
-              className="inline-flex min-w-0 items-center justify-center gap-1 rounded-lg border border-slate-200 bg-white px-1.5 py-2 text-center text-[0.65rem] font-semibold leading-tight text-blue-700 transition-colors hover:border-blue-300 hover:bg-blue-50 sm:text-xs"
+              className="inline-flex min-w-0 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 py-3 text-center text-sm font-bold leading-tight text-blue-700 transition-colors hover:border-blue-300 hover:bg-blue-50 sm:text-base"
             >
               <span className="whitespace-nowrap">{label}</span>
-              <ExternalLink className="size-3 shrink-0 sm:size-3.5" aria-hidden />
+              <ExternalLink className="size-4 shrink-0 sm:size-4" aria-hidden />
             </a>
           ))}
         </div>
@@ -67,10 +67,10 @@ export function Mt5AccountDetails({ details }: { details: readonly Mt5Detail[] }
           href={MT5_LOGIN_HELP_LINK}
           target="_blank"
           rel="noreferrer noopener"
-          className="mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-center text-xs font-semibold text-blue-700 transition-colors hover:border-blue-300 hover:bg-blue-50"
+          className="mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-3 text-center text-base font-bold text-blue-700 transition-colors hover:border-blue-300 hover:bg-blue-50"
         >
           <span>How to log in to MT5</span>
-          <ExternalLink className="size-3.5 shrink-0" aria-hidden />
+          <ExternalLink className="size-4 shrink-0" aria-hidden />
         </a>
       </nav>
     </>
