@@ -27,7 +27,7 @@ export function Mt5AccountDetails({ details }: { details: readonly Mt5Detail[] }
           <div
             key={label}
             className={cn(
-              "grid min-w-0 grid-cols-[6.25rem_minmax(0,1fr)] items-center gap-3 px-4 py-4 sm:grid-cols-[7.5rem_minmax(0,1fr)] sm:px-5 sm:py-5",
+              "grid min-w-0 grid-cols-[5.5rem_minmax(0,1fr)] items-center gap-2.5 px-4 py-4 sm:grid-cols-[7.5rem_minmax(0,1fr)] sm:gap-3 sm:px-5 sm:py-5",
               index !== details.length - 1 && "border-b border-slate-200",
               index >= 2 && "sm:border-b-0",
               index % 2 === 0 && "sm:border-r sm:border-slate-200",
@@ -37,7 +37,14 @@ export function Mt5AccountDetails({ details }: { details: readonly Mt5Detail[] }
               {label}
             </dt>
             <dd className="grid min-w-0 grid-cols-[minmax(0,1fr)_1.75rem] items-center gap-2.5">
-              <span className="min-w-0 whitespace-nowrap font-sans text-[clamp(1rem,3.5vw,1.25rem)] font-semibold leading-6 tracking-[-0.04em] text-ink sm:text-lg sm:leading-7 lg:text-xl">
+              <span
+                className={cn(
+                  "min-w-0 whitespace-nowrap font-sans font-semibold leading-6 tracking-[-0.04em] text-ink",
+                  value.length >= 20
+                    ? "text-[clamp(0.72rem,2.9vw,1rem)]"
+                    : "text-[clamp(0.95rem,4vw,1.25rem)]",
+                )}
+              >
                 {value}
               </span>
               <CopyButton value={value} label={`Copy ${label}`} compact />
@@ -56,10 +63,10 @@ export function Mt5AccountDetails({ details }: { details: readonly Mt5Detail[] }
               href={href}
               target="_blank"
               rel="noreferrer noopener"
-              className="inline-flex min-w-0 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 py-3 text-center text-sm font-bold leading-tight text-blue-700 transition-colors hover:border-blue-300 hover:bg-blue-50 sm:text-base"
+              className="inline-flex min-w-0 items-center justify-center gap-1 rounded-lg border border-slate-200 bg-white px-1 py-3 text-center text-[clamp(0.72rem,3vw,1rem)] font-bold leading-tight text-blue-700 transition-colors hover:border-blue-300 hover:bg-blue-50"
             >
               <span className="whitespace-nowrap">{label}</span>
-              <ExternalLink className="size-4 shrink-0 sm:size-4" aria-hidden />
+              <ExternalLink className="size-3.5 shrink-0 sm:size-4" aria-hidden />
             </a>
           ))}
         </div>

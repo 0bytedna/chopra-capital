@@ -11,14 +11,15 @@ import { adminConfirmDeposit, adminRejectDeposit, adminRequestDepositCorrection 
 export const metadata: Metadata = { title: "Admin · Deposits" };
 
 const methods = [
-  { value: "BANK", label: "Bank transfer", navLabel: "Bank", source: "INR received" },
-  { value: "CRYPTO", label: "Crypto", navLabel: "Crypto", source: "USDT received" },
-  { value: "CASH", label: "Cash", navLabel: "Cash", source: "INR received" },
+  { value: "BANK", label: "Bank transfer", navLabel: "Bank" },
+  { value: "CASH", label: "Cash", navLabel: "Cash" },
+  { value: "CRYPTO", label: "Crypto", navLabel: "Crypto" },
 ] as const;
 
-
+const conversionMethods = methods.filter((method) => method.value !== "CRYPTO");
 
 type DepositMethod = (typeof methods)[number]["value"];
+type ConversionMethod = Exclude<DepositMethod, "CRYPTO">;
 
 function isMethod(value: string | undefined): value is DepositMethod {
   return methods.some((method) => method.value === value);
@@ -41,33 +42,63 @@ function sourceAmountLabel(deposit: Parameters<typeof sourceAmount>[0]): string 
     ? formatUsdt(amount) + " USDT"
     : formatInr(amount) + " INR";
 }
+
 type Props = {
-  searchParams: Promise<{ method?: string | string[] }>;
+  searchParams: Promise<{
+    approvalMethod?: string | string[];
+    conversionMethod?: string | string[];
+  }>;
 };
+
+function depositHref(
+  approvalMethod: DepositMethod,
+  conversionMethod: ConversionMethod,
+): string {
+  const params = new URLSearchParams({ approvalMethod, conversionMethod });
+  return `/admin/deposits?${params.toString()}`;
+}
 
 export default async function AdminDepositsPage({ searchParams }: Props) {
   const query = await searchParams;
-  const requestedMethod = typeof query.method === "string" ? query.method : undefined;
-  const selectedMethod: DepositMethod = isMethod(requestedMethod) ? requestedMethod : "BANK";
-  const methodMeta = methods.find((method) => method.value === selectedMethod) ?? methods[0];
+  const requestedApprovalMethod =
+    typeof query.approvalMethod === "string" ? query.approvalMethod : undefined;
+  const requestedConversionMethod =
+    typeof query.conversionMethod === "string" ? query.conversionMethod : undefined;
+  const approvalMethod: DepositMethod = isMethod(requestedApprovalMethod)
+    ? requestedApprovalMethod
+    : "BANK";
+  const conversionMethod: ConversionMethod =
+    requestedConversionMethod === "CASH" ? "CASH" : "BANK";
+  const approvalMeta =
+    methods.find((method) => method.value === approvalMethod) ?? methods[0];
 
-  const [methodCounts, activeDeposits, queuedDeposits] =
+  const [approvalCounts, conversionCounts, pending, conversionReady, queuedDeposits] =
     await Promise.all([
       Promise.all(
         methods.map(async (method) => ({
           method: method.value,
           count: await prisma.deposit.count({
-            where: {
-              method: method.value,
-              status: { in: ["PENDING", "NEEDS_CORRECTION", "RECEIVED", "QUEUED"] },
-            },
+            where: { method: method.value, status: "PENDING" },
+          }),
+        })),
+      ),
+      Promise.all(
+        conversionMethods.map(async (method) => ({
+          method: method.value,
+          count: await prisma.deposit.count({
+            where: { method: method.value, status: "RECEIVED" },
           }),
         })),
       ),
       prisma.deposit.findMany({
-        where: { method: selectedMethod, status: { in: ["PENDING", "RECEIVED"] } },
+        where: { method: approvalMethod, status: "PENDING" },
         orderBy: { createdAt: "asc" },
-        include: { user: { select: { fullName: true, kycStatus: true } } },
+        include: { user: { select: { fullName: true } } },
+      }),
+      prisma.deposit.findMany({
+        where: { method: conversionMethod, status: "RECEIVED" },
+        orderBy: { createdAt: "asc" },
+        include: { user: { select: { fullName: true } } },
       }),
       prisma.deposit.findMany({
         where: { status: "QUEUED" },
@@ -76,9 +107,6 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
       }),
     ]);
 
-  const pending = activeDeposits.filter((deposit) => deposit.status === "PENDING");
-  const conversionReady = activeDeposits.filter((deposit) => deposit.status === "RECEIVED");
-
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <header>
@@ -86,101 +114,69 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
         <h1 className="mt-2 font-serif text-3xl text-ink">
           Deposit <em className="gold-text italic">operations</em>
         </h1>
-
       </header>
 
-      <nav className="grid grid-cols-3 gap-2" aria-label="Deposit method sections">
-        {methods.map((method) => {
-          const count = methodCounts.find((item) => item.method === method.value)?.count ?? 0;
-          return (
-            <Link
-              key={method.value}
-              href={`/admin/deposits?method=${method.value}`}
-              className={cn(
-                "flex min-w-0 items-center justify-between gap-2 rounded-xl border px-3 py-3 transition-colors",
-                selectedMethod === method.value
-                  ? "border-gold-500/55 bg-gold-600/12"
-                  : "border-gold-600/15 bg-vault-900/45 hover:border-gold-600/35",
-              )}
-              aria-current={selectedMethod === method.value ? "page" : undefined}
-            >
-              <span className="min-w-0">
-                <span className="block truncate text-xs font-medium text-ink sm:text-sm">{method.navLabel}</span>
-              </span>
-              <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-full border font-mono text-sm font-semibold", count > 0 ? "border-gold-600 bg-gold-600 text-white" : "border-slate-200 bg-slate-100 text-ink-faint")} aria-label={`${count} active requests`}>
-                {count}
-              </span>
-            </Link>
-          );
-        })}
-      </nav>
-
       <section className="glass-card rounded-2xl p-4 sm:p-5">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="flex size-7 items-center justify-center rounded-full border border-gold-500/35 bg-gold-600/10 font-mono text-xs text-gold-300">1</span>
-              <p className="eyebrow">Step 1</p>
-            </div>
-          </div>
-          <span className={cn("flex size-10 items-center justify-center rounded-full border font-mono text-lg font-semibold", pending.length > 0 ? "border-gold-600 bg-gold-600 text-white" : "border-slate-200 bg-slate-100 text-ink-faint")}>{pending.length}</span>
-        </div>
-
+        <StageHeader
+          number="1"
+          title="Step 1 - Approval"
+          count={pending.length}
+          attention={pending.length > 0}
+        />
+        <StageMethodTabs
+          className="mt-4"
+          methods={methods}
+          counts={approvalCounts}
+          selectedMethod={approvalMethod}
+          hrefFor={(method) => depositHref(method, conversionMethod)}
+          label="Approval method filters"
+        />
         {pending.length === 0 ? (
           <p className="mt-4 rounded-xl border border-dashed border-gold-600/20 px-4 py-3 text-center text-sm text-ink-faint">
-            No {methodMeta.label.toLowerCase()} deposits need receipt verification.
+            No {approvalMeta.label.toLowerCase()} deposits need approval.
           </p>
         ) : (
           <DepositReviewTable deposits={pending} />
-
         )}
       </section>
 
-      {selectedMethod !== "CRYPTO" && (
-        <>
-
-          <section className="glass-card rounded-2xl border-gold-500/20 p-4 sm:p-5">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="flex size-7 items-center justify-center rounded-full border border-gold-500/35 bg-gold-600/10 font-mono text-xs text-gold-300">2</span>
-                  <p className="eyebrow">Step 2</p>
-                </div>
-              </div>
-              <span className="rounded-full border border-positive/25 bg-positive/5 px-3 py-1 font-mono text-xs text-positive">
-                {conversionReady.length} ready
-              </span>
-            </div>
-            <div className="mt-4">
-              <BulkDepositAllocationForm
-                key={`${selectedMethod}-${conversionReady.map((deposit) => deposit.id).join("-")}`}
-                method={selectedMethod}
-                deposits={conversionReady.map((deposit) => ({
-                  id: deposit.id,
-                  investor: deposit.user.fullName ?? "Unnamed investor",
-                  sourceAmount: String(sourceAmount(deposit)),
-                }))}
-              />
-            </div>
-          </section>
-        </>
-      )}
-
+      <section className="glass-card rounded-2xl border-gold-500/20 p-4 sm:p-5">
+        <StageHeader
+          number="2"
+          title="Step 2 - INR to USDT Conversion"
+          count={conversionReady.length}
+          suffix="ready"
+          attention={conversionReady.length > 0}
+        />
+        <StageMethodTabs
+          className="mt-4"
+          methods={conversionMethods}
+          counts={conversionCounts}
+          selectedMethod={conversionMethod}
+          hrefFor={(method) => depositHref(approvalMethod, method as ConversionMethod)}
+          label="INR conversion method filters"
+        />
+        <div className="mt-4">
+          <BulkDepositAllocationForm
+            key={`${conversionMethod}-${conversionReady.map((deposit) => deposit.id).join("-")}`}
+            method={conversionMethod}
+            deposits={conversionReady.map((deposit) => ({
+              id: deposit.id,
+              investor: deposit.user.fullName ?? "Unnamed investor",
+              sourceAmount: String(sourceAmount(deposit)),
+            }))}
+          />
+        </div>
+      </section>
 
       <section className="glass-card rounded-2xl border-gold-500/30 p-4 sm:p-5">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="flex size-7 items-center justify-center rounded-full border border-gold-500/35 bg-gold-600/10 font-mono text-xs text-gold-300">
-                {selectedMethod === "CRYPTO" ? "2" : "3"}
-              </span>
-              <p className="eyebrow">Step {selectedMethod === "CRYPTO" ? "2" : "3"}</p>
-            </div>
-          </div>
-          <span className="rounded-full border border-gold-500/30 bg-gold-600/8 px-3 py-1 font-mono text-xs text-gold-300">
-            {queuedDeposits.length} queued
-          </span>
-        </div>
+        <StageHeader
+          number="3"
+          title="Step 3 - Broker Deposit"
+          count={queuedDeposits.length}
+          suffix="queued"
+          attention={queuedDeposits.length > 0}
+        />
         <div className="mt-4">
           <BrokerTransferForm
             key={queuedDeposits.map((deposit) => deposit.id).join("-")}
@@ -193,8 +189,95 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
           />
         </div>
       </section>
-
     </div>
+  );
+}
+
+function StageHeader({
+  number,
+  title,
+  count,
+  suffix,
+  attention,
+}: {
+  number: string;
+  title: string;
+  count: number;
+  suffix?: string;
+  attention: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <div className="flex min-w-0 items-center gap-2">
+        <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-gold-500/35 bg-gold-600/10 font-mono text-xs text-gold-300">
+          {number}
+        </span>
+        <h2 className="truncate text-xs font-semibold uppercase tracking-[0.16em] text-blue-700 sm:text-sm">
+          {title}
+        </h2>
+      </div>
+      <span
+        className={cn(
+          "shrink-0 rounded-full border px-3 py-1 font-mono text-xs font-semibold",
+          attention
+            ? "border-blue-600 bg-blue-600 text-white"
+            : "border-slate-200 bg-slate-100 text-ink-faint",
+        )}
+      >
+        {count}{suffix ? ` ${suffix}` : ""}
+      </span>
+    </div>
+  );
+}
+
+function StageMethodTabs<TMethod extends DepositMethod>({
+  className,
+  methods: stageMethods,
+  counts,
+  selectedMethod,
+  hrefFor,
+  label,
+}: {
+  className?: string;
+  methods: readonly { value: TMethod; navLabel: string }[];
+  counts: readonly { method: string; count: number }[];
+  selectedMethod: TMethod;
+  hrefFor: (method: TMethod) => string;
+  label: string;
+}) {
+  return (
+    <nav className={cn("grid gap-2", stageMethods.length === 3 ? "grid-cols-3" : "grid-cols-2", className)} aria-label={label}>
+      {stageMethods.map((method) => {
+        const count = counts.find((item) => item.method === method.value)?.count ?? 0;
+        const selected = selectedMethod === method.value;
+        return (
+          <Link
+            key={method.value}
+            href={hrefFor(method.value)}
+            className={cn(
+              "flex min-w-0 items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-colors",
+              selected
+                ? "border-blue-500 bg-blue-100 text-blue-800"
+                : "border-slate-200 bg-white text-ink hover:border-blue-300 hover:bg-blue-50",
+            )}
+            aria-current={selected ? "page" : undefined}
+          >
+            <span className="truncate">{method.navLabel}</span>
+            <span
+              className={cn(
+                "flex size-7 shrink-0 items-center justify-center rounded-full border font-mono text-xs font-semibold",
+                count > 0
+                  ? "border-blue-600 bg-blue-600 text-white"
+                  : "border-slate-200 bg-slate-100 text-ink-faint",
+              )}
+              aria-label={`${count} requests`}
+            >
+              {count}
+            </span>
+          </Link>
+        );
+      })}
+    </nav>
   );
 }
 

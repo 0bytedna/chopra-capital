@@ -1,10 +1,11 @@
 "use client";
 
-import { useActionState, useMemo, useRef, useState } from "react";
-import { Loader2, Pencil } from "lucide-react";
+import { startTransition, useActionState, useMemo, useRef, useState } from "react";
+import { Loader2, Pencil, X } from "lucide-react";
 import {
   adminEditQueuedDepositConversion,
   adminInvestQueuedDeposits,
+  adminRejectQueuedDeposit,
   type AdminFormState,
 } from "@/app/admin/actions";
 import { Alert } from "@/components/ui/Alert";
@@ -33,6 +34,10 @@ export function BrokerTransferForm({ deposits }: Props) {
   const [state, formAction, pending] = useActionState<AdminFormState, FormData>(adminInvestQueuedDeposits, {});
   const [editState, editAction] = useActionState<AdminFormState, FormData>(
     adminEditQueuedDepositConversion,
+    {},
+  );
+  const [rejectState, rejectAction, rejectPending] = useActionState<AdminFormState, FormData>(
+    adminRejectQueuedDeposit,
     {},
   );
   const correctedAmountRef = useRef<HTMLInputElement>(null);
@@ -72,7 +77,7 @@ export function BrokerTransferForm({ deposits }: Props) {
       <input ref={correctedAmountRef} type="hidden" name="newUsdtAmount" />
       <input ref={reasonRef} type="hidden" name="reason" />
       {state.error && <Alert tone="error">{state.error}</Alert>}
-      {editState.error && <Alert tone="error">{editState.error}</Alert>}
+      {editState.error && <Alert tone="error">{editState.error}</Alert>}`r`n      {rejectState.error && <Alert tone="error">{rejectState.error}</Alert>}
 
       {deposits.length === 0 ? (
         <p className="rounded-xl border border-dashed border-gold-600/20 px-4 py-3 text-center text-sm text-ink-faint">
@@ -100,7 +105,7 @@ export function BrokerTransferForm({ deposits }: Props) {
                   <div
                     key={deposit.id}
                     className={cn(
-                      "grid grid-cols-[1rem_minmax(0,1fr)_max-content_max-content] items-center gap-1.5 px-3 py-2.5 transition-colors",
+                      "grid grid-cols-[1rem_minmax(0,1fr)_max-content_auto] items-center gap-2 px-3 py-2.5 transition-colors",
                       checked ? "bg-gold-600/8" : "hover:bg-vault-950/35",
                     )}
                   >
@@ -122,44 +127,58 @@ export function BrokerTransferForm({ deposits }: Props) {
                     <span className="min-w-0 truncate whitespace-nowrap text-[clamp(0.7rem,3.2vw,0.875rem)] font-medium text-ink">
                       {deposit.investor}
                     </span>
-                    <span className="currency-value col-start-4 justify-self-end whitespace-nowrap text-right text-[clamp(0.68rem,3vw,0.875rem)] text-ink">
+                    <span className="currency-value col-start-3 justify-self-end whitespace-nowrap text-right text-[clamp(0.68rem,3vw,0.875rem)] text-ink">
                       {formatUsdt(queued)}
                     </span>
-                    {deposit.method === "CRYPTO" ? (
-                      <span className="col-start-3 size-7" aria-hidden />
-                    ) : (
+                    <span className="col-start-4 flex justify-self-end gap-1">
+                      {deposit.method !== "CRYPTO" && (
+                        <button
+                          type="submit"
+                          formAction={editAction}
+                          formNoValidate
+                          name="id"
+                          value={deposit.id}
+                          data-intent="edit"
+                          aria-label={"Edit conversion for " + deposit.investor}
+                          title="Edit conversion value"
+                          onClick={(event) => {
+                            event.preventDefault();
+                            const button = event.currentTarget;
+                            const amount = window.prompt(
+                              "Corrected USDT amount for this deposit",
+                              queued.toFixed(8),
+                            )?.trim();
+                            const reason = amount
+                              ? window.prompt("Reason for changing the conversion value")?.trim()
+                              : "";
+                            if (!amount || !reason || !window.confirm("Save this corrected USDT conversion value?")) {
+                              return;
+                            }
+                            if (correctedAmountRef.current) correctedAmountRef.current.value = amount;
+                            if (reasonRef.current) reasonRef.current.value = reason;
+                            window.setTimeout(() => button.form?.requestSubmit(button), 0);
+                          }}
+                          className="flex size-7 items-center justify-center rounded-full border border-slate-300 bg-white text-ink-dim hover:border-blue-400 hover:text-blue-700"
+                        >
+                          <Pencil className="size-3.5" aria-hidden />
+                        </button>
+                      )}
                       <button
-                        type="submit"
-                        formAction={editAction}
-                        formNoValidate
-                        name="id"
-                        value={deposit.id}
-                        data-intent="edit"
-                        aria-label={"Edit conversion for " + deposit.investor}
-                        title="Edit conversion value"
-                        onClick={(event) => {
-                          event.preventDefault();
-                          const button = event.currentTarget;
-                          const amount = window.prompt(
-                            "Corrected USDT amount for this deposit",
-                            queued.toFixed(8),
-                          )?.trim();
-                          const reason = amount
-                            ? window.prompt("Reason for changing the conversion value")?.trim()
-                            : "";
-                          if (!amount || !reason || !window.confirm("Save this corrected USDT conversion value?")) {
-                            return;
-                          }
-                          if (correctedAmountRef.current) correctedAmountRef.current.value = amount;
-                          if (reasonRef.current) reasonRef.current.value = reason;
-                          window.setTimeout(() => button.form?.requestSubmit(button), 0);
+                        type="button"
+                        disabled={rejectPending}
+                        aria-label={"Reject " + deposit.investor + " deposit"}
+                        title="Reject deposit"
+                        onClick={() => {
+                          if (!window.confirm("Reject this deposit and remove it from the company-wallet queue?")) return;
+                          const data = new FormData();
+                          data.set("id", deposit.id);
+                          startTransition(() => rejectAction(data));
                         }}
-                        className="col-start-3 flex size-7 items-center justify-center rounded-full border border-slate-300 bg-white text-ink-dim hover:border-blue-400 hover:text-blue-700"
+                        className="flex size-7 items-center justify-center rounded-full border border-rose-300 bg-white text-rose-700 hover:bg-rose-50 disabled:opacity-50"
                       >
-                        <Pencil className="size-3.5" aria-hidden />
+                        <X className="size-3.5" aria-hidden />
                       </button>
-                    )}
-                  </div>
+                    </span>                  </div>
                 );
               })}
             </div>

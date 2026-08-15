@@ -88,7 +88,7 @@ function LiveHistory({ mt5 }: { mt5: LandingMt5Details }) {
                 <p className="eyebrow text-sm">MT5 read-only account</p>
                 <p className="mt-1 text-lg font-medium text-ink-dim">Live account details</p>
               </div>
-              <span className="status-pill w-fit text-sm">
+              <span className="status-pill w-fit shrink-0 whitespace-nowrap text-xs sm:text-sm">
                 <span className="status-dot" />
                 Live history
               </span>
@@ -135,7 +135,7 @@ function StrategyOverview() {
             Chopra Capital is built to detect and exploit gold price discrepancies between the Spot
             and Futures markets in real time. Gold trades in two places at once: the spot market and
             the futures market. Those two prices should be linked, but they drift apart for short
-            windows. When they do, we buy the cheaper side and sell the HIGHER side at the same time,
+            windows. When they do, we buy the cheaper side and sell the higher side at the same time,
             then hold until the gap closes. It does this 24/7, with no fatigue, no emotions, and no
             room for human error. Backed by advanced algorithms and overseen by trading
             professionals.

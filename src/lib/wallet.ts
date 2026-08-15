@@ -1055,6 +1055,75 @@ export async function rejectConfirmedInrDeposit(
   });
 }
 
+export async function rejectQueuedDeposit(
+  depositId: string,
+  adminId: string,
+  reason: string,
+) {
+  const cleanReason = requiredAdminReason(reason);
+  return prisma.$transaction(async (tx) => {
+    const deposit = await tx.deposit.findUniqueOrThrow({ where: { id: depositId } });
+    const queuedAmount = D(deposit.queuedUsdtAmount ?? 0);
+    if (
+      deposit.status !== "QUEUED" ||
+      deposit.brokerTransferBatchId ||
+      queuedAmount.lte(0)
+    ) {
+      throw new Error("Only a queued deposit that has not reached the broker can be rejected");
+    }
+
+    const wallet = await tx.wallet.findUnique({ where: { userId: deposit.userId } });
+    if (!wallet || D(wallet.queued).lt(queuedAmount)) {
+      throw new Error("The investor queued balance no longer matches this deposit");
+    }
+
+    const updated = await tx.deposit.updateMany({
+      where: {
+        id: deposit.id,
+        status: "QUEUED",
+        brokerTransferBatchId: null,
+      },
+      data: {
+        status: "REJECTED",
+        adminNote: cleanReason,
+      },
+    });
+    if (updated.count !== 1) throw new Error("This deposit changed before it could be rejected");
+
+    await tx.wallet.update({
+      where: { id: wallet.id },
+      data: { queued: { decrement: queuedAmount } },
+    });
+    await tx.ledgerEntry.deleteMany({
+      where: { userId: deposit.userId, type: "DEPOSIT", reference: deposit.id },
+    });
+    await createFinancialAudit(tx, {
+      adminId,
+      userId: deposit.userId,
+      sourceType: "DEPOSIT",
+      sourceId: deposit.id,
+      action: "REJECTED_FROM_QUEUE",
+      beforeState: "QUEUED",
+      afterState: "REJECTED",
+      reason: cleanReason,
+    });
+    await tx.accountNotification.create({
+      data: {
+        userId: deposit.userId,
+        kind: "ACTION_REQUIRED",
+        title: "Deposit rejected",
+        message: cleanReason,
+        href: "/app/history",
+        actionLabel: "View deposit",
+        sourceType: "DEPOSIT",
+        sourceId: deposit.id,
+        eventCode: "DEPOSIT_REJECTED_FROM_QUEUE",
+      },
+    });
+
+    return { deposit, queuedAmount };
+  });
+}
 export async function editQueuedDepositConversion(
   depositId: string,
   newUsdtAmount: Dec,

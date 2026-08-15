@@ -19,6 +19,7 @@ import {
   rejectDeposit,
   undoConfirmedInrDeposit,
   rejectConfirmedInrDeposit,
+  rejectQueuedDeposit,
   editQueuedDepositConversion,
   approveWithdrawal,
   undoApprovedWithdrawal,
@@ -515,6 +516,32 @@ export async function adminRejectConfirmedDeposit(
   return { success: "Confirmed deposit rejected before conversion." };
 }
 
+export async function adminRejectQueuedDeposit(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  const admin = await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  if (!id) return { error: "Choose a queued deposit to reject." };
+
+  try {
+    await rejectQueuedDeposit(
+      id,
+      admin.id,
+      "Rejected by administrator before broker deposit",
+    );
+  } catch (err) {
+    return fail(err);
+  }
+  revalidatePath("/admin/deposits");
+  revalidatePath("/admin/transactions");
+  revalidatePath("/admin");
+  revalidatePath("/app");
+  revalidatePath("/app/deposit");
+  revalidatePath("/app/history");
+  revalidatePath("/app/notifications");
+  return { success: "Queued deposit rejected and removed from the investor queue." };
+}
 export async function adminEditQueuedDepositConversion(
   _prev: AdminFormState,
   formData: FormData,

@@ -1,12 +1,20 @@
 import type { Metadata } from "next";
 import { InvestorDirectory } from "@/components/admin/InvestorDirectory";
-import { D, formatUsdt, toNumber } from "@/lib/money";
+import { D, formatInr, formatUsdt, toNumber } from "@/lib/money";
 import { getCurrentNav } from "@/lib/nav";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = { title: "Admin · Investors" };
 
-function SummaryCard({ label, value }: { label: string; value: string }) {
+function SummaryCard({
+  label,
+  value,
+  secondaryValue,
+}: {
+  label: string;
+  value: string;
+  secondaryValue?: string;
+}) {
   return (
     <article className="glass-card flex flex-col items-center justify-center rounded-xl px-3 py-4 text-center sm:py-5">
       <p className="text-[11px] uppercase tracking-[0.12em] text-ink-faint sm:text-xs">
@@ -15,12 +23,17 @@ function SummaryCard({ label, value }: { label: string; value: string }) {
       <p className="currency-value mt-1.5 max-w-full break-words text-base text-ink sm:text-lg">
         {value}
       </p>
+      {secondaryValue && (
+        <p className="currency-value mt-1 max-w-full break-words text-sm text-ink sm:text-base">
+          {secondaryValue}
+        </p>
+      )}
     </article>
   );
 }
 
 export default async function AdminInvestorsPage() {
-  const [users, { nav, totalUnits }] = await Promise.all([
+  const [users, { nav, totalUnits }, pendingInrGroups] = await Promise.all([
     prisma.user.findMany({
       where: { role: "USER" },
       orderBy: { createdAt: "asc" },
@@ -46,9 +59,23 @@ export default async function AdminInvestorsPage() {
       },
     }),
     getCurrentNav(),
+    prisma.deposit.groupBy({
+      by: ["userId"],
+      where: {
+        method: { in: ["BANK", "CASH"] },
+        status: { in: ["PENDING", "NEEDS_CORRECTION", "RECEIVED"] },
+      },
+      _sum: { inrAmount: true },
+    }),
   ]);
 
   const totalUnitsNumber = toNumber(totalUnits);
+  const pendingInrByUser = new Map(
+    pendingInrGroups.map((group) => [
+      group.userId,
+      toNumber(group._sum.inrAmount ?? 0),
+    ]),
+  );
   const rows = users
     .map((user) => {
       const units = D(user.wallet?.units ?? 0);
@@ -66,6 +93,7 @@ export default async function AdminInvestorsPage() {
         mobile: user.mobile ?? "Not provided",
         kyc: user.kycStatus,
         queued: toNumber(queued),
+        pendingInr: pendingInrByUser.get(user.id) ?? 0,
         balance: toNumber(balance),
         share,
         isCompanyAccount: user.isCompanyAccount,
@@ -92,6 +120,10 @@ export default async function AdminInvestorsPage() {
   );
   const totalQueued = investorRows.reduce(
     (sum, row) => sum + row.queued,
+    0,
+  );
+  const totalPendingInr = investorRows.reduce(
+    (sum, row) => sum + row.pendingInr,
     0,
   );
 
@@ -123,6 +155,7 @@ export default async function AdminInvestorsPage() {
         <SummaryCard
           label="In queue"
           value={`${formatUsdt(totalQueued)} USD`}
+          secondaryValue={`${formatInr(totalPendingInr)} INR`}
         />
       </section>
 

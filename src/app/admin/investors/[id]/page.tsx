@@ -99,38 +99,41 @@ function signedUsd(value: unknown) {
 function MetricCard({
   label,
   value,
+  secondaryValue,
   detail,
   Icon,
   tone,
 }: {
   label: string;
   value: string;
+  secondaryValue?: string;
   detail?: string;
   Icon: typeof WalletCards;
   tone?: "positive" | "negative";
 }) {
   return (
-    <article className="min-w-0 rounded-xl border border-gold-600/12 bg-white/55 p-3 sm:p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">{label}</p>
-          <p
-            className={cn(
-              "currency-value mt-1.5 truncate text-base sm:text-lg",
-              tone === "positive"
-                ? "text-positive"
-                : tone === "negative"
-                  ? "text-negative"
-                  : "text-ink",
-            )}
-          >
-            {value}
-          </p>
-        </div>
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-gold-600/15 bg-gold-600/8 text-gold-400">
-          <Icon className="size-3.5" aria-hidden />
-        </span>
-      </div>
+    <article className="relative min-w-0 rounded-xl border border-gold-600/12 bg-white/55 p-3 sm:p-4">
+      <p className="pr-10 text-xs uppercase tracking-[0.14em] text-ink-faint">{label}</p>
+      <p
+        className={cn(
+          "currency-value mt-1.5 whitespace-nowrap text-[clamp(0.78rem,3.6vw,1.125rem)]",
+          tone === "positive"
+            ? "text-positive"
+            : tone === "negative"
+              ? "text-negative"
+              : "text-ink",
+        )}
+      >
+        {value}
+      </p>
+      {secondaryValue && (
+        <p className="currency-value mt-1 whitespace-nowrap text-[clamp(0.72rem,3.2vw,1rem)] text-ink">
+          {secondaryValue}
+        </p>
+      )}
+      <span className="absolute right-3 top-3 flex size-8 items-center justify-center rounded-lg border border-gold-600/15 bg-gold-600/8 text-gold-400 sm:right-4 sm:top-4">
+        <Icon className="size-3.5" aria-hidden />
+      </span>
       {detail && (
         <p className="mt-1.5 line-clamp-2 text-[0.7rem] leading-4 text-ink-faint">
           {detail}
@@ -322,7 +325,8 @@ export default async function AdminInvestorRecordPage({
           <MetricCard
             label="In queue"
             value={`${formatUsdt(metrics.queued)} USD`}
-            detail="Awaiting investment"
+            secondaryValue={`${formatInr(metrics.pendingInr)} INR`}
+            detail="Awaiting investment or conversion"
             Icon={Clock3}
           />
           <MetricCard
