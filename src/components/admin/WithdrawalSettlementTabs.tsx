@@ -117,6 +117,7 @@ export function CryptoPayouts({
             pendingLabel="Recording payout..."
             confirmMessage="Confirm that the USDT was sent to the wallet shown above?"
             className="mt-3 max-w-xl"
+            submitClassName="h-11 w-full sm:w-56"
           >
             <input type="hidden" name="id" value={withdrawal.id} />
             <label
@@ -264,44 +265,42 @@ function BulkConversionForm({
         </div>
       </div>
 
-      <div className="grid gap-3 rounded-xl border border-gold-500/25 bg-gold-600/6 p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
-        <div>
-          <label
-            htmlFor={"bulk-inr-" + method.toLowerCase()}
-            className="block text-xs uppercase tracking-[0.14em] text-ink-dim"
-          >
-            Total INR received in company bank account
-          </label>
-          <input
-            id={"bulk-inr-" + method.toLowerCase()}
-            name="totalInrReceived"
-            type="number"
-            min="0.01"
-            step="0.01"
-            value={totalInrInput}
-            onChange={(event) => setTotalInrInput(event.target.value)}
-            placeholder="Actual INR received after bulk conversion"
-            required
-            className={inputClass + " mt-2"}
-          />
-          <p className="mt-2 text-xs text-ink-faint">
-            {selected.length} selected · {formatUsd(totalUsd)}
-            {totalInr > 0 && totalUsd > 0
-              ? " · effective rate " +
-                (totalInr / totalUsd).toLocaleString("en-IN", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                }) +
-                " INR/USD"
-              : ""}
-          </p>
-        </div>
+      <div className="grid gap-x-3 gap-y-2 rounded-xl border border-gold-500/25 bg-gold-600/6 p-3 sm:grid-cols-[minmax(0,1fr)_14rem]">
+        <label
+          htmlFor={"bulk-inr-" + method.toLowerCase()}
+          className="text-xs uppercase tracking-[0.14em] text-ink-dim sm:col-span-2"
+        >
+          Total INR received in company bank account
+        </label>
+        <input
+          id={"bulk-inr-" + method.toLowerCase()}
+          name="totalInrReceived"
+          type="number"
+          min="0.01"
+          step="0.01"
+          value={totalInrInput}
+          onChange={(event) => setTotalInrInput(event.target.value)}
+          placeholder="Actual INR received after bulk conversion"
+          required
+          className={inputClass + " h-11 sm:col-start-1 sm:row-start-2"}
+        />
+        <p className="text-xs text-ink-faint sm:col-start-1 sm:row-start-3">
+          {selected.length} selected · {formatUsd(totalUsd)}
+          {totalInr > 0 && totalUsd > 0
+            ? " · effective rate " +
+              (totalInr / totalUsd).toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              }) +
+              " INR/USD"
+            : ""}
+        </p>
         <Button
           type="submit"
           size="sm"
           disabled={!canSubmit || pending}
           aria-busy={pending}
-          className="w-full sm:mt-5 sm:w-auto"
+          className="h-11 w-full sm:col-start-2 sm:row-start-2"
         >
           {pending ? (
             <>

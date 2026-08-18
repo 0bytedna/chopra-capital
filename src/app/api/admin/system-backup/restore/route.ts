@@ -1,9 +1,12 @@
 import {
   assertSameOrigin,
-  restoreSystemBackup,
   SystemBackupError,
   verifyAdminBackupAccess,
 } from "@/lib/systemBackup";
+import {
+  restoreDatabaseFile,
+  restoreEnvironmentFile,
+} from "@/lib/systemFiles";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,21 +16,41 @@ export async function POST(request: Request) {
     assertSameOrigin(request);
     const formData = await request.formData();
     await verifyAdminBackupAccess(formData);
-    if (String(formData.get("confirmation") ?? "") !== "RESTORE") {
-      throw new SystemBackupError('Type "RESTORE" to confirm this operation.');
+    const target = String(formData.get("target") ?? "");
+    const expectedConfirmation =
+      target === "database"
+        ? "RESTORE DATABASE"
+        : target === "environment"
+          ? "RESTORE ENV"
+          : null;
+
+    if (!expectedConfirmation) {
+      throw new SystemBackupError("Choose database or environment file to restore.");
+    }
+    if (String(formData.get("confirmation") ?? "") !== expectedConfirmation) {
+      throw new SystemBackupError(
+        `Type "${expectedConfirmation}" to confirm this operation.`,
+      );
     }
 
     const upload = formData.get("backup");
     if (!(upload instanceof File) || upload.size === 0) {
-      throw new SystemBackupError("Choose a Chopra Capital backup file.");
+      throw new SystemBackupError(
+        target === "database" ? "Choose a production.db file." : "Choose a .env file.",
+      );
     }
 
-    const result = await restoreSystemBackup(
-      Buffer.from(await upload.arrayBuffer()),
-    );
+    const uploaded = Buffer.from(await upload.arrayBuffer());
+    const result =
+      target === "database"
+        ? await restoreDatabaseFile(uploaded)
+        : await restoreEnvironmentFile(uploaded);
+
     return Response.json({
       success:
-        "The database and .env file were restored. Restart the systemd service immediately.",
+        target === "database"
+          ? "The production database was restored. Restart the systemd service immediately."
+          : "The .env file was restored. Restart the systemd service immediately.",
       ...result,
     });
   } catch (error) {
@@ -35,7 +58,7 @@ export async function POST(request: Request) {
     const message =
       error instanceof SystemBackupError
         ? error.message
-        : "The system backup could not be restored.";
+        : "The requested file could not be restored.";
     return Response.json({ error: message }, { status });
   }
 }

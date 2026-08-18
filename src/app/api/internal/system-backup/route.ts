@@ -1,8 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
-import {
-  saveSystemBackupToServer,
-  SystemBackupError,
-} from "@/lib/systemBackup";
+import { saveSeparateBackupsToServer } from "@/lib/systemFiles";
+import { SystemBackupError } from "@/lib/systemBackup";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -30,7 +28,7 @@ function verifyScheduler(request: Request): void {
 export async function POST(request: Request) {
   try {
     verifyScheduler(request);
-    const backup = await saveSystemBackupToServer("scheduled");
+    const backup = await saveSeparateBackupsToServer("scheduled");
     return Response.json({ success: true, backup });
   } catch (error) {
     const status = error instanceof SystemBackupError ? error.status : 500;

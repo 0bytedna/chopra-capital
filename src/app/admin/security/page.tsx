@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/auth";
 import { TotpSection } from "@/app/app/profile/ProfileForms";
-import { SystemBackupPanel } from "@/components/admin/SystemBackupPanel";
+import { SystemFilesPanel } from "@/components/admin/SystemFilesPanel";
 
 export const metadata: Metadata = { title: "Admin security" };
 
@@ -26,7 +26,7 @@ export default async function AdminSecurityPage() {
         <TotpSection enabled={admin.twoFactorEnabled} />
       </section>
 
-      <SystemBackupPanel twoFactorEnabled={admin.twoFactorEnabled} />
+      <SystemFilesPanel twoFactorEnabled={admin.twoFactorEnabled} />
     </div>
   );
 }

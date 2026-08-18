@@ -109,6 +109,7 @@ function ConversionEditForm({
         pendingLabel="Saving..."
         confirmMessage="Save this corrected INR conversion value?"
         className="mt-3"
+        submitClassName="h-11 w-full sm:w-56"
       >
         <input type="hidden" name="id" value={id} />
         <input
@@ -235,7 +236,7 @@ function BankCorrections({
                   submitLabel="Approve corrected details"
                   pendingLabel="Approving..."
                   confirmMessage="Approve this new bank destination and return the withdrawal to ready for payout?"
-                  submitClassName="w-full"
+                  submitClassName="h-11 w-full"
                 >
                   <input type="hidden" name="id" value={withdrawal.id} />
                 </AdminActionForm>
@@ -245,7 +246,7 @@ function BankCorrections({
                   submitLabel="Request another correction"
                   pendingLabel="Sending..."
                   variant="danger"
-                  submitClassName="w-full"
+                  submitClassName="h-11 w-full"
                 >
                   <input type="hidden" name="id" value={withdrawal.id} />
                   <input
@@ -355,6 +356,7 @@ function PayoutCards({
               }
               pendingLabel="Recording payout..."
               confirmMessage="Confirm that this INR payout was completed using the approved details shown above?"
+              submitClassName="h-11 w-full"
             >
               <input type="hidden" name="id" value={withdrawal.id} />
               <input
@@ -382,6 +384,7 @@ function PayoutCards({
                 pendingLabel="Blocking payout..."
                 variant="danger"
                 confirmMessage="Block this payout and ask the investor to correct their bank details?"
+                submitClassName="h-11 w-full"
               >
                 <input type="hidden" name="id" value={withdrawal.id} />
                 <input

@@ -26,8 +26,8 @@ const MAX_DATABASE_BYTES = 250 * 1024 * 1024;
 const MAX_ENV_BYTES = 1024 * 1024;
 const MAX_BACKUP_BYTES = 300 * 1024 * 1024;
 const MAX_EXPANDED_BYTES = 350 * 1024 * 1024;
-const DEFAULT_SERVER_BACKUP_RETENTION = 30;
-const MAX_SERVER_BACKUP_RETENTION = 365;
+const DEFAULT_SERVER_BACKUP_RETENTION = 50;
+const MAX_SERVER_BACKUP_RETENTION = 50;
 
 type BackupFile = {
   data: string;
@@ -324,7 +324,7 @@ export async function saveSystemBackupToServer(
   const pruned = await pruneServerBackups(
     directory,
     serverBackupRetention(),
-  ).catch(() => 0);
+  );
 
   return {
     createdAt,

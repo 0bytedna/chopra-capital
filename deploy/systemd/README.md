@@ -13,7 +13,7 @@ Add these settings to `/var/www/chopra-capital/.env`:
 
 ```dotenv
 SERVER_BACKUP_DIR=/var/backups/chopra-capital
-SERVER_BACKUP_RETENTION=30
+SERVER_BACKUP_RETENTION=50
 BACKUP_CRON_SECRET=replace-with-the-output-of-openssl-rand-hex-32
 ```
 

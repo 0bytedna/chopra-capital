@@ -178,7 +178,7 @@ export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 rounded-xl border border-gold-500/25 bg-gold-600/6 p-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="grid gap-3 rounded-xl border border-gold-500/25 bg-gold-600/6 p-3 sm:grid-cols-[minmax(0,1fr)_14rem] sm:items-center">
             <div>
               <p className="text-xs uppercase tracking-[0.14em] text-ink-dim">
                 Bulk broker withdrawal
@@ -196,7 +196,7 @@ export function BulkBrokerWithdrawalForm({ withdrawals }: Props) {
               size="sm"
               disabled={!canSubmit || pending}
               aria-busy={pending}
-              className="w-full sm:w-auto"
+              className="h-11 w-full"
             >
               {pending ? (
                 <>

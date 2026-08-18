@@ -7,7 +7,6 @@ import {
   ArrowLeftRight,
   ArrowUpFromLine,
   BadgeCheck,
-  Banknote,
   CircleDollarSign,
   Clock3,
   FileText,
@@ -21,7 +20,7 @@ import { DepositMethodsToggle } from "@/components/admin/DepositMethodsToggle";
 import { InvestorAdminControls } from "@/components/admin/InvestorAdminControls";
 import { PortfolioChart } from "@/components/app/PortfolioChart";
 import { cn } from "@/lib/cn";
-import { D, formatInr, formatUsdt, toNumber } from "@/lib/money";
+import { formatInr, formatUsdt, toNumber } from "@/lib/money";
 import { getCurrentNav } from "@/lib/nav";
 import { getPortfolioMetrics, getPortfolioSeries } from "@/lib/portfolio";
 import { prisma } from "@/lib/prisma";
@@ -193,7 +192,6 @@ export default async function AdminInvestorRecordPage({
       kycDocuments: { orderBy: { createdAt: "desc" } },
       deposits: { orderBy: { createdAt: "desc" } },
       withdrawals: { orderBy: { createdAt: "desc" } },
-      ledger: { orderBy: { createdAt: "desc" } },
       profitShareAllocations: {
         orderBy: { createdAt: "desc" },
         include: {
@@ -306,7 +304,7 @@ export default async function AdminInvestorRecordPage({
         contentClassName="p-3 sm:p-4"
       >
         <section
-          className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5"
+          className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6"
           aria-label="Investor portfolio summary"
         >
           <MetricCard
@@ -314,12 +312,6 @@ export default async function AdminInvestorRecordPage({
             value={`${formatUsdt(metrics.currentValue)} USD`}
             detail="Invested and queued"
             Icon={WalletCards}
-          />
-          <MetricCard
-            label="Invested"
-            value={`${formatUsdt(investedValue)} USD`}
-            detail={`${formatUsdt(metrics.units, 6)} pool units`}
-            Icon={Landmark}
           />
           <MetricCard
             label="In queue"
@@ -340,6 +332,16 @@ export default async function AdminInvestorRecordPage({
             value={`${poolShare.toFixed(2)}%`}
             detail="Current invested units"
             Icon={BadgeCheck}
+          />
+          <MetricCard
+            label="Total deposits"
+            value={`${formatUsdt(metrics.totalDeposits)} USD`}
+            Icon={ArrowDownToLine}
+          />
+          <MetricCard
+            label="Total withdrawals"
+            value={`${formatUsdt(metrics.netWithdrawals)} USD`}
+            Icon={ArrowUpFromLine}
           />
         </section>
       </CollapsibleCard>
@@ -543,7 +545,7 @@ export default async function AdminInvestorRecordPage({
         </CollapsibleCard>
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-2" aria-label="Audit history">
+      <section aria-label="Internal transfer history">
         <CollapsibleCard
           title="Internal transfers"
           Icon={ArrowLeftRight}
@@ -596,58 +598,7 @@ export default async function AdminInvestorRecordPage({
             )}
           </div>
         </CollapsibleCard>
-        <CollapsibleCard title="Ledger" Icon={Banknote} count={investor.ledger.length}>
-          <div className="max-h-[28rem] overflow-auto">
-            {investor.ledger.length > 0 ? (
-              <div className="divide-y divide-gold-600/10">
-                {investor.ledger.map((entry) => (
-                  <div key={entry.id} className="flex items-start justify-between gap-3 py-3 first:pt-0">
-                    <div className="min-w-0">
-                      <p className="text-sm text-ink">{entry.type.replaceAll("_", " ")}</p>
-                      <p className="mt-1 truncate text-xs text-ink-faint" title={entry.note ?? ""}>
-                        {formatDate(entry.createdAt, true)}
-                        {entry.note ? ` · ${entry.note}` : ""}
-                      </p>
-                    </div>
-                    <div className="shrink-0 text-right">
-                      <p className={cn("currency-value text-sm", D(entry.amount).lt(0) ? "text-negative" : "text-positive")}>
-                        {signedUsd(entry.amount)}
-                      </p>
-                      {entry.units !== null && (
-                        <p className="mt-1 font-mono text-xs text-ink-faint">
-                          {signedUsd(entry.units).replace(" USD", " units")}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="py-8 text-center text-sm text-ink-faint">No ledger entries.</p>
-            )}
-          </div>
-        </CollapsibleCard>
       </section>
-
-      <CollapsibleCard title="Lifetime totals" Icon={Banknote}>
-        <section className="grid grid-cols-2 gap-2 sm:grid-cols-3" aria-label="Lifetime totals">
-        <MetricCard
-          label="Lifetime deposits"
-          value={`${formatUsdt(metrics.totalDeposits)} USD`}
-          Icon={ArrowDownToLine}
-        />
-        <MetricCard
-          label="Lifetime withdrawals"
-          value={`${formatUsdt(metrics.netWithdrawals)} USD`}
-          Icon={ArrowUpFromLine}
-        />
-        <MetricCard
-          label="Total fees"
-          value={`${formatUsdt(metrics.totalFees)} USD`}
-          Icon={Banknote}
-        />
-        </section>
-      </CollapsibleCard>
     </div>
   );
 }

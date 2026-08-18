@@ -78,9 +78,9 @@ if (
   backupRetention &&
   (!Number.isSafeInteger(Number(backupRetention)) ||
     Number(backupRetention) < 1 ||
-    Number(backupRetention) > 365)
+    Number(backupRetention) > 50)
 ) {
-  errors.push("SERVER_BACKUP_RETENTION must be an integer between 1 and 365.");
+  errors.push("SERVER_BACKUP_RETENTION must be an integer between 1 and 50.");
 }
 
 for (const name of ["DEPOSIT_ADDRESS_TRC20", "DEPOSIT_ADDRESS_ERC20", "DEPOSIT_ADDRESS_BEP20"]) {

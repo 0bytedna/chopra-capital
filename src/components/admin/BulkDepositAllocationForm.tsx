@@ -179,28 +179,26 @@ export function BulkDepositAllocationForm({ method, deposits }: Props) {
             </div>
           </div>
 
-          <div className="grid gap-3 rounded-xl border border-gold-500/25 bg-gold-600/6 p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
-            <div>
-              <label htmlFor={`total-usdt-${method}`} className="block text-xs uppercase tracking-[0.14em] text-ink-dim">
-                Total USDT bought in company wallet
-              </label>
-              <input
-                id={`total-usdt-${method}`}
-                name="totalUsdt"
-                type="number"
-                min="0.00000001"
-                step="0.00000001"
-                value={totalUsdt}
-                onChange={(event) => setTotalUsdt(event.target.value)}
-                placeholder="Enter USDT received after conversion"
-                required
-                className={`${inputClass} mt-2`}
-              />
-              <p className="mt-2 text-xs text-ink-faint">
-                {selected.length} selected · source total {formatSource(method, totalSource)} · distributed proportionally
-              </p>
-            </div>
-            <Button type="submit" data-intent="convert" size="sm" disabled={!canSubmit || pending} aria-busy={pending} className="w-full sm:mt-5 sm:w-auto">
+          <div className="grid gap-x-3 gap-y-2 rounded-xl border border-gold-500/25 bg-gold-600/6 p-3 sm:grid-cols-[minmax(0,1fr)_14rem]">
+            <label htmlFor={`total-usdt-${method}`} className="text-xs uppercase tracking-[0.14em] text-ink-dim sm:col-span-2">
+              Total USDT bought in company wallet
+            </label>
+            <input
+              id={`total-usdt-${method}`}
+              name="totalUsdt"
+              type="number"
+              min="0.00000001"
+              step="0.00000001"
+              value={totalUsdt}
+              onChange={(event) => setTotalUsdt(event.target.value)}
+              placeholder="Enter USDT received after conversion"
+              required
+              className={`${inputClass} h-11 sm:col-start-1 sm:row-start-2`}
+            />
+            <p className="text-xs text-ink-faint sm:col-start-1 sm:row-start-3">
+              {selected.length} selected · source total {formatSource(method, totalSource)} · distributed proportionally
+            </p>
+            <Button type="submit" data-intent="convert" size="sm" disabled={!canSubmit || pending} aria-busy={pending} className="h-11 w-full sm:col-start-2 sm:row-start-2">
               {pending ? (
                 <>
                   <Loader2 className="size-4 animate-spin" aria-hidden />

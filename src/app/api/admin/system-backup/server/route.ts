@@ -1,9 +1,9 @@
 import {
   assertSameOrigin,
-  saveSystemBackupToServer,
   SystemBackupError,
   verifyAdminBackupAccess,
 } from "@/lib/systemBackup";
+import { saveSeparateBackupsToServer } from "@/lib/systemFiles";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,10 +13,10 @@ export async function POST(request: Request) {
     assertSameOrigin(request);
     const formData = await request.formData();
     await verifyAdminBackupAccess(formData);
-    const backup = await saveSystemBackupToServer("manual");
+    const backup = await saveSeparateBackupsToServer("manual");
 
     return Response.json({
-      success: `Server backup saved as ${backup.filename}.`,
+      success: `Server backups saved as ${backup.databaseFilename} and ${backup.environmentFilename}.`,
       backup,
     });
   } catch (error) {
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     const message =
       error instanceof SystemBackupError
         ? error.message
-        : "The server backup could not be saved.";
+        : "The separate server backups could not be saved.";
     return Response.json({ error: message }, { status });
   }
 }
