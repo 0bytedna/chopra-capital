@@ -11,6 +11,11 @@ import {
   YAxis,
 } from "recharts";
 import { cn } from "@/lib/cn";
+import {
+  reportingDayKey,
+  reportingMonthStart,
+  reportingWeekStart,
+} from "@/lib/reportingCalendar";
 
 export type SeriesPoint = {
   date: string;
@@ -23,22 +28,20 @@ type Props = {
   initialSeries: SeriesPoint[];
   firstActivityDate: string;
   endpoint?: string;
+  balanceCaption?: string;
+  ariaLabel?: string;
 };
 
 const PRESETS = [
-  { key: "1W", days: 7 },
-  { key: "1M", days: 30 },
-  { key: "3M", days: 91 },
-  { key: "1Y", days: 365 },
-  { key: "ALL", days: null },
+  { key: "1W" },
+  { key: "1M" },
+  { key: "3M" },
+  { key: "1Y" },
+  { key: "ALL" },
 ] as const;
 
 type PresetKey = (typeof PRESETS)[number]["key"];
 type GraphKey = "profit" | "value";
-
-function dayKey(date: Date): string {
-  return date.toISOString().slice(0, 10);
-}
 
 function fmtAxisDate(date: string): string {
   return new Date(`${date}T00:00:00Z`).toLocaleDateString("en-US", {
@@ -126,7 +129,7 @@ function GraphCard({
   signed?: boolean;
   emphasizeSummary?: boolean;
 }) {
-  const today = useMemo(() => dayKey(new Date()), []);
+  const today = useMemo(() => reportingDayKey(), []);
   const [preset, setPreset] = useState<PresetKey | "CUSTOM">("ALL");
   const [from, setFrom] = useState(firstActivityDate);
   const [to, setTo] = useState(today);
@@ -156,10 +159,16 @@ function GraphCard({
   }, [from, to, fetchRange]);
 
   function applyPreset(key: PresetKey) {
-    const found = PRESETS.find((item) => item.key === key);
-    const presetStart = new Date(`${today}T00:00:00Z`);
-    if (found?.days != null) presetStart.setUTCDate(presetStart.getUTCDate() - found.days);
-    const requestedFrom = found?.days == null ? firstActivityDate : dayKey(presetStart);
+    const requestedFrom =
+      key === "1W"
+        ? reportingWeekStart(today)
+        : key === "1M"
+          ? reportingMonthStart(today)
+          : key === "3M"
+            ? reportingMonthStart(today, 2)
+            : key === "1Y"
+              ? reportingMonthStart(today, 11)
+              : firstActivityDate;
     const nextFrom = requestedFrom < firstActivityDate ? firstActivityDate : requestedFrom;
 
     setPreset(key);
@@ -332,12 +341,14 @@ export function PortfolioChart({
   initialSeries,
   firstActivityDate,
   endpoint = "/api/portfolio",
+  balanceCaption = "Includes deposits, withdrawals, queued funds, profits and losses.",
+  ariaLabel = "Account history graphs",
 }: Props) {
   const [activeGraph, setActiveGraph] = useState<GraphKey>("profit");
   const showingProfit = activeGraph === "profit";
 
   return (
-    <section className="min-w-0 space-y-3" aria-label="Account history graphs">
+    <section className="min-w-0 space-y-3" aria-label={ariaLabel}>
       <div
         className="grid grid-cols-2 rounded-xl border border-slate-200 bg-white p-1 shadow-sm"
         role="tablist"
@@ -390,7 +401,7 @@ export function PortfolioChart({
           caption={
             showingProfit
               ? "Deposits and withdrawals are excluded from this calculation."
-              : "Includes deposits, withdrawals, queued funds, profits and losses."
+              : balanceCaption
           }
           summaryLabel={showingProfit ? "Selected period" : "Ending balance"}
           dataKey={activeGraph}

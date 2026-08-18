@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { D, ZERO, type Dec } from "@/lib/money";
+import { reportingDayKey } from "@/lib/reportingCalendar";
 
 export async function getPoolState() {
   return prisma.poolState.upsert({
@@ -27,12 +28,12 @@ export async function getCurrentNav(): Promise<PoolNav> {
   return { nav, balance, equity, totalUnits, live: false };
 }
 
-export function utcDayKey(date = new Date()): string {
-  return date.toISOString().slice(0, 10);
+export function snapshotDayKey(date = new Date()): string {
+  return reportingDayKey(date);
 }
 
 export async function upsertDailySnapshot(nav: Dec, equity: Dec, totalUnits: Dec): Promise<void> {
-  const day = utcDayKey();
+  const day = snapshotDayKey();
   await prisma.navSnapshot.upsert({
     where: { day },
     update: { nav, equity, totalUnits },

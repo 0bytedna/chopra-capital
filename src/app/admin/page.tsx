@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentNav } from "@/lib/nav";
 import { formatUsdt } from "@/lib/money";
 import { cn } from "@/lib/cn";
+import { PortfolioChart } from "@/components/app/PortfolioChart";
+import { getPoolPortfolioSeries } from "@/lib/poolPortfolio";
 
 export const metadata: Metadata = { title: "Admin · Overview" };
 
@@ -15,6 +17,7 @@ export default async function AdminOverviewPage() {
     activeWithdrawals,
     pendingKyc,
     openTickets,
+    poolPortfolio,
   ] = await Promise.all([
     getCurrentNav(),
     prisma.tradingAccountEntry.aggregate({
@@ -50,6 +53,7 @@ export default async function AdminOverviewPage() {
       },
     }),
     prisma.ticket.count({ where: { status: "OPEN" } }),
+    getPoolPortfolioSeries(),
   ]);
 
   const tradingProfit = tradingProfitAgg._sum.amount ?? 0;
@@ -123,6 +127,14 @@ export default async function AdminOverviewPage() {
           </Link>
         ))}
       </section>
+
+      <PortfolioChart
+        initialSeries={poolPortfolio.series}
+        firstActivityDate={poolPortfolio.firstActivityDate}
+        endpoint="/api/admin/portfolio"
+        ariaLabel="Pool profit and balance graphs"
+        balanceCaption="Includes verified deposits, withdrawals, trading results, fees and company share."
+      />
     </div>
   );
 }

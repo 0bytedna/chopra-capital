@@ -21,7 +21,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       kycStatus={user.kycStatus}
       investedDisplay={`${formatUsdt(invested)} USD`}
       queuedDisplay={`${formatUsdt(metrics.queued)} USD`}
-      attentionCount={notifications.attentionCount}
+      attentionCount={notifications.unreadCount}
     >
       {children}
     </AppShell>

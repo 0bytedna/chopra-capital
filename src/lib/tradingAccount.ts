@@ -2,7 +2,7 @@ import "server-only";
 import type { TradingAdjustmentType } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { D, type Dec } from "@/lib/money";
-import { utcDayKey } from "@/lib/nav";
+import { snapshotDayKey } from "@/lib/nav";
 
 const DECREASE_TYPES = new Set<TradingAdjustmentType>([
   "TRADING_LOSS",
@@ -69,9 +69,9 @@ export async function recordTradingAdjustment(input: {
       adminId: input.adminId,
     }});
     await tx.navSnapshot.upsert({
-      where: { day: utcDayKey() },
+      where: { day: snapshotDayKey() },
       update: { nav, equity: equityAfter, totalUnits },
-      create: { day: utcDayKey(), nav, equity: equityAfter, totalUnits },
+      create: { day: snapshotDayKey(), nav, equity: equityAfter, totalUnits },
     });
     return after;
   });
@@ -178,7 +178,7 @@ async function reviseTradingAdjustment(input: {
     });
 
     const snapshots = await tx.navSnapshot.findMany({
-      where: { day: { gte: utcDayKey(target.createdAt) } },
+      where: { day: { gte: snapshotDayKey(target.createdAt) } },
       orderBy: { day: "asc" },
     });
     for (const snapshot of snapshots) {

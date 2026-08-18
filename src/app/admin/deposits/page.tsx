@@ -117,12 +117,7 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
       </header>
 
       <section className="glass-card rounded-2xl p-4 sm:p-5">
-        <StageHeader
-          number="1"
-          title="Step 1 - Approval"
-          count={pending.length}
-          attention={pending.length > 0}
-        />
+        <StageHeader title="Step 1 - Approval" />
         <StageMethodTabs
           className="mt-4"
           methods={methods}
@@ -141,13 +136,7 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
       </section>
 
       <section className="glass-card rounded-2xl border-gold-500/20 p-4 sm:p-5">
-        <StageHeader
-          number="2"
-          title="Step 2 - INR to USDT Conversion"
-          count={conversionReady.length}
-          suffix="ready"
-          attention={conversionReady.length > 0}
-        />
+        <StageHeader title="Step 2 - INR to USDT Conversion" />
         <StageMethodTabs
           className="mt-4"
           methods={conversionMethods}
@@ -170,13 +159,7 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
       </section>
 
       <section className="glass-card rounded-2xl border-gold-500/30 p-4 sm:p-5">
-        <StageHeader
-          number="3"
-          title="Step 3 - Broker Deposit"
-          count={queuedDeposits.length}
-          suffix="queued"
-          attention={queuedDeposits.length > 0}
-        />
+        <StageHeader title="Step 3 - Broker Deposit" />
         <div className="mt-4">
           <BrokerTransferForm
             key={queuedDeposits.map((deposit) => deposit.id).join("-")}
@@ -193,39 +176,10 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
   );
 }
 
-function StageHeader({
-  number,
-  title,
-  count,
-  suffix,
-  attention,
-}: {
-  number: string;
-  title: string;
-  count: number;
-  suffix?: string;
-  attention: boolean;
-}) {
+function StageHeader({ title }: { title: string }) {
   return (
-    <div className="flex items-center justify-between gap-3">
-      <div className="flex min-w-0 items-center gap-2">
-        <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-gold-500/35 bg-gold-600/10 font-mono text-xs text-gold-300">
-          {number}
-        </span>
-        <h2 className="truncate text-xs font-semibold uppercase tracking-[0.16em] text-blue-700 sm:text-sm">
-          {title}
-        </h2>
-      </div>
-      <span
-        className={cn(
-          "shrink-0 rounded-full border px-3 py-1 font-mono text-xs font-semibold",
-          attention
-            ? "border-blue-600 bg-blue-600 text-white"
-            : "border-slate-200 bg-slate-100 text-ink-faint",
-        )}
-      >
-        {count}{suffix ? ` ${suffix}` : ""}
-      </span>
+    <div>
+      <p className="eyebrow">{title}</p>
     </div>
   );
 }
@@ -246,7 +200,14 @@ function StageMethodTabs<TMethod extends DepositMethod>({
   label: string;
 }) {
   return (
-    <nav className={cn("grid gap-2", stageMethods.length === 3 ? "grid-cols-3" : "grid-cols-2", className)} aria-label={label}>
+    <nav
+      className={cn(
+        "grid gap-1 rounded-xl border border-slate-200 bg-white p-1",
+        stageMethods.length === 3 ? "grid-cols-3" : "grid-cols-2",
+        className,
+      )}
+      aria-label={label}
+    >
       {stageMethods.map((method) => {
         const count = counts.find((item) => item.method === method.value)?.count ?? 0;
         const selected = selectedMethod === method.value;
@@ -255,20 +216,18 @@ function StageMethodTabs<TMethod extends DepositMethod>({
             key={method.value}
             href={hrefFor(method.value)}
             className={cn(
-              "flex min-w-0 items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-colors",
+              "min-w-0 rounded-lg px-2 py-2 text-center text-xs transition-colors sm:text-sm",
               selected
-                ? "border-blue-500 bg-blue-100 text-blue-800"
-                : "border-slate-200 bg-white text-ink hover:border-blue-300 hover:bg-blue-50",
+                ? "bg-blue-100 text-blue-700"
+                : "text-ink-dim hover:bg-slate-50 hover:text-ink",
             )}
             aria-current={selected ? "page" : undefined}
           >
-            <span className="truncate">{method.navLabel}</span>
+            <span>{method.navLabel}</span>
             <span
               className={cn(
-                "flex size-7 shrink-0 items-center justify-center rounded-full border font-mono text-xs font-semibold",
-                count > 0
-                  ? "border-blue-600 bg-blue-600 text-white"
-                  : "border-slate-200 bg-slate-100 text-ink-faint",
+                "ml-1.5 rounded-full bg-white/75 px-1.5 py-0.5 font-mono text-[11px]",
+                count > 0 ? "text-blue-700" : "text-ink-faint",
               )}
               aria-label={`${count} requests`}
             >

@@ -7,7 +7,7 @@ import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/generated/prisma";
 import { D, ZERO, type Dec } from "@/lib/money";
-import { getCurrentNav, getSettingDecimal, upsertDailySnapshot } from "@/lib/nav";
+import { getCurrentNav, getSettingDecimal, upsertDailySnapshot, snapshotDayKey } from "@/lib/nav";
 import { withdrawalProcessingWindowMessage, withdrawalsProcessableNow } from "@/lib/config";
 
 export async function ensureWallet(userId: string) {
@@ -477,7 +477,7 @@ export async function investQueuedDepositBatch(
       data: { totalUnits: { increment: unitsIssued }, lastNav: investmentNav, tradingBalance: balanceAfter, tradingEquity: equity },
     });
     await tx.tradingAccountEntry.create({ data: { type: "USER_DEPOSIT", amount: totalReceivedUsdt, balanceBefore: poolBefore.tradingBalance, balanceAfter, equityBefore: poolBefore.tradingBalance, equityAfter: equity, note: `Broker deposit batch ${batch.id}`, adminId } });
-    const day = new Date().toISOString().slice(0, 10);
+    const day = snapshotDayKey();
     await tx.navSnapshot.upsert({
       where: { day },
       update: { nav: investmentNav, equity, totalUnits: pool.totalUnits },
@@ -561,7 +561,7 @@ export async function runWeeklyInvest(): Promise<{ invested: Dec; investors: num
 
     // Keep today's snapshot in sync so charts pick up the new pool size.
     const equity = D(pool.totalUnits).mul(nav);
-    const day = new Date().toISOString().slice(0, 10);
+    const day = snapshotDayKey();
     await tx.navSnapshot.upsert({
       where: { day },
       update: { nav, totalUnits: pool.totalUnits },

@@ -2,7 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { D, ZERO, type Dec } from "@/lib/money";
-import { utcDayKey } from "@/lib/nav";
+import { snapshotDayKey } from "@/lib/nav";
 
 function requiredReason(reason: string) {
   const clean = reason.trim();
@@ -305,7 +305,7 @@ export async function editBrokerTransferBatch(
     });
 
     const snapshots = await tx.navSnapshot.findMany({
-      where: { day: { gte: utcDayKey(batch.createdAt) } },
+      where: { day: { gte: snapshotDayKey(batch.createdAt) } },
       orderBy: { day: "asc" },
     });
     for (const snapshot of snapshots) {

@@ -113,7 +113,7 @@ function MetricCard({
 }) {
   return (
     <article className="relative min-w-0 rounded-xl border border-gold-600/12 bg-white/55 p-3 sm:p-4">
-      <p className="pr-10 text-xs uppercase tracking-[0.14em] text-ink-faint">{label}</p>
+      <p className="pr-7 text-xs uppercase tracking-[0.14em] text-ink-faint">{label}</p>
       <p
         className={cn(
           "currency-value mt-1.5 whitespace-nowrap text-[clamp(0.78rem,3.6vw,1.125rem)]",
@@ -131,8 +131,8 @@ function MetricCard({
           {secondaryValue}
         </p>
       )}
-      <span className="absolute right-3 top-3 flex size-8 items-center justify-center rounded-lg border border-gold-600/15 bg-gold-600/8 text-gold-400 sm:right-4 sm:top-4">
-        <Icon className="size-3.5" aria-hidden />
+      <span className="absolute right-2.5 top-2.5 flex size-6 items-center justify-center rounded-md border border-gold-600/15 bg-gold-600/8 text-gold-400 sm:right-3 sm:top-3">
+        <Icon className="size-3" aria-hidden />
       </span>
       {detail && (
         <p className="mt-1.5 line-clamp-2 text-[0.7rem] leading-4 text-ink-faint">

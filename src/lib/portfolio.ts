@@ -1,12 +1,17 @@
-// Portfolio maths: replays the investor's append-only ledger to compute
-// metrics and an honest day-by-day value series. NAV history comes from real
-// NavSnapshot rows — days between snapshots are linearly interpolated, and
-// nothing is ever extrapolated into the past before data existed.
+// Portfolio maths: replays the investor ledger, pool balance events, and unit
+// movements to compute an IST-aligned day-by-day value and profit series.
+// Legacy NAV snapshots are used only when older event data is unavailable.
 
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { D, ZERO, toNumber, type Dec } from "@/lib/money";
 import { getCurrentNav } from "@/lib/nav";
+import {
+  reportingDayEnd,
+  reportingDayKey,
+  reportingDayStart,
+  shiftReportingDay,
+} from "@/lib/reportingCalendar";
 import type { LedgerEntry } from "@/generated/prisma";
 
 export type PortfolioMetrics = {
@@ -164,44 +169,41 @@ export type SeriesPoint = {
   profit: number; // cumulative P/L with external deposits and withdrawals removed
 };
 
-function dayKey(d: Date): string {
-  return d.toISOString().slice(0, 10);
-}
-
-function addDays(d: Date, days: number): Date {
-  const copy = new Date(d);
-  copy.setUTCDate(copy.getUTCDate() + days);
-  return copy;
-}
-
-/** NAV per day from real snapshots, linearly interpolated between them. */
+/** NAV per day from stored snapshots, used only as a legacy fallback. */
 function buildNavLookup(
   snapshots: Array<{ day: string; nav: Dec }>,
   fallback: Dec,
 ): (day: string) => Dec {
   if (snapshots.length === 0) return () => fallback;
-  const days = snapshots.map((s) => s.day);
-  const navs = snapshots.map((s) => D(s.nav));
+  const days = snapshots.map((snapshot) => snapshot.day);
+  const navs = snapshots.map((snapshot) => D(snapshot.nav));
 
   return (day: string) => {
     if (day <= days[0]) return navs[0];
     if (day >= days[days.length - 1]) {
-      // After the last snapshot the freshest figure is the live/last NAV.
       return day > days[days.length - 1] ? fallback : navs[navs.length - 1];
     }
-    let lo = 0;
-    for (let i = 0; i < days.length; i++) {
-      if (days[i] <= day) lo = i;
+    let lowerIndex = 0;
+    for (let index = 0; index < days.length; index += 1) {
+      if (days[index] <= day) lowerIndex = index;
       else break;
     }
-    if (days[lo] === day) return navs[lo];
-    const hi = lo + 1;
-    const t0 = new Date(days[lo] + "T00:00:00Z").getTime();
-    const t1 = new Date(days[hi] + "T00:00:00Z").getTime();
-    const t = new Date(day + "T00:00:00Z").getTime();
-    const frac = (t - t0) / (t1 - t0);
-    return navs[lo].add(navs[hi].sub(navs[lo]).mul(D(frac)));
+    if (days[lowerIndex] === day) return navs[lowerIndex];
+    const upperIndex = lowerIndex + 1;
+    const lowerTime = new Date(`${days[lowerIndex]}T00:00:00Z`).getTime();
+    const upperTime = new Date(`${days[upperIndex]}T00:00:00Z`).getTime();
+    const requestedTime = new Date(`${day}T00:00:00Z`).getTime();
+    const fraction = (requestedTime - lowerTime) / (upperTime - lowerTime);
+    return navs[lowerIndex].add(
+      navs[upperIndex].sub(navs[lowerIndex]).mul(D(fraction)),
+    );
   };
+}
+
+function dayDistance(from: string, to: string): number {
+  const fromTime = new Date(`${from}T00:00:00Z`).getTime();
+  const toTime = new Date(`${to}T00:00:00Z`).getTime();
+  return Math.max(0, Math.round((toTime - fromTime) / 86_400_000));
 }
 
 export async function getPortfolioSeries(
@@ -209,14 +211,39 @@ export async function getPortfolioSeries(
   from?: string,
   to?: string,
 ): Promise<{ series: SeriesPoint[]; profitInRange: number; firstActivityDate: string }> {
-  const [entries, snapshots, { nav: currentNav }] = await Promise.all([
-    prisma.ledgerEntry.findMany({ where: { userId }, orderBy: { createdAt: "asc" } }),
-    prisma.navSnapshot.findMany({ orderBy: { day: "asc" }, select: { day: true, nav: true } }),
-    getCurrentNav(),
-  ]);
+  const [entries, snapshots, poolEvents, unitEvents, { nav: currentNav }] =
+    await Promise.all([
+      prisma.ledgerEntry.findMany({
+        where: { userId },
+        orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+      }),
+      prisma.navSnapshot.findMany({
+        orderBy: { day: "asc" },
+        select: { day: true, nav: true },
+      }),
+      prisma.tradingAccountEntry.findMany({
+        orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+        select: {
+          id: true,
+          balanceBefore: true,
+          balanceAfter: true,
+          createdAt: true,
+        },
+      }),
+      prisma.ledgerEntry.findMany({
+        where: { units: { not: null } },
+        orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+        select: { id: true, units: true, createdAt: true },
+      }),
+      getCurrentNav(),
+    ]);
 
-  const today = dayKey(new Date());
-  const firstActivity = entries.length > 0 ? dayKey(entries[0].createdAt) : today;
+  const today = reportingDayKey();
+  const firstDeposit = entries.find((entry) => entry.type === "DEPOSIT");
+  const firstActivityEntry = firstDeposit ?? entries[0];
+  const firstActivity = firstActivityEntry
+    ? reportingDayKey(firstActivityEntry.createdAt)
+    : today;
 
   let start = from && /^\d{4}-\d{2}-\d{2}$/.test(from) ? from : firstActivity;
   let end = to && /^\d{4}-\d{2}-\d{2}$/.test(to) ? to : today;
@@ -224,67 +251,110 @@ export async function getPortfolioSeries(
   if (end > today) end = today;
   if (end < start) end = start;
 
-  const navOn = buildNavLookup(snapshots, currentNav);
-
-  const startDate = new Date(start + "T00:00:00Z");
-  const endDate = new Date(end + "T00:00:00Z");
-  const totalDays = Math.max(0, Math.round((endDate.getTime() - startDate.getTime()) / 86400000));
-  // Keep the payload sane on long ranges; always include the final day.
+  const legacyNavOn = buildNavLookup(snapshots, currentNav);
+  const startInstant = reportingDayStart(start);
+  const totalDays = dayDistance(start, end);
   const step = Math.max(1, Math.ceil((totalDays + 1) / 400));
 
-  const s = freshState();
-  let cursor = 0;
-  while (cursor < entries.length && entries[cursor].createdAt < startDate) {
-    applyEntry(s, entries[cursor]);
-    cursor++;
+  const state = freshState();
+  let entryCursor = 0;
+  let poolCursor = 0;
+  let unitCursor = 0;
+  let poolBalance =
+    poolEvents.length > 0 ? D(poolEvents[0].balanceBefore) : ZERO;
+  let poolUnits = ZERO;
+
+  while (
+    entryCursor < entries.length &&
+    entries[entryCursor].createdAt < startInstant
+  ) {
+    applyEntry(state, entries[entryCursor]);
+    entryCursor += 1;
+  }
+  while (
+    poolCursor < poolEvents.length &&
+    poolEvents[poolCursor].createdAt < startInstant
+  ) {
+    poolBalance = D(poolEvents[poolCursor].balanceAfter);
+    poolCursor += 1;
+  }
+  while (
+    unitCursor < unitEvents.length &&
+    unitEvents[unitCursor].createdAt < startInstant
+  ) {
+    poolUnits = poolUnits.add(D(unitEvents[unitCursor].units ?? 0));
+    unitCursor += 1;
   }
 
-  // Use the account state immediately before the selected range as the P/L
-  // baseline. Subtracting the first end-of-day point hid every same-day gain.
-  const baselineNav = navOn(dayKey(addDays(startDate, -1)));
-  const baselineProfit = s.queued
-    .add(s.units.mul(baselineNav))
-    .add(s.netWithdrawals)
-    .sub(s.totalDeposits)
-    .sub(s.netAdjustments);
-
-  const series: SeriesPoint[] = [];
-  for (let i = 0; i <= totalDays; i += step) {
-    const day = dayKey(addDays(startDate, i));
-    const dayEnd = new Date(day + "T23:59:59.999Z");
-    while (cursor < entries.length && entries[cursor].createdAt <= dayEnd) {
-      applyEntry(s, entries[cursor]);
-      cursor++;
+  function navFromEvents(day: string): Dec {
+    if (day === today) return currentNav;
+    if (poolUnits.gt(0) && poolBalance.gt(0)) {
+      return poolBalance.div(poolUnits);
     }
-    const nav = day === today ? currentNav : navOn(day);
-    const value = s.queued.add(s.units.mul(nav));
-    series.push({
+    return legacyNavOn(day);
+  }
+
+  function advanceThrough(day: string): void {
+    const dayEnd = reportingDayEnd(day);
+    while (
+      entryCursor < entries.length &&
+      entries[entryCursor].createdAt <= dayEnd
+    ) {
+      applyEntry(state, entries[entryCursor]);
+      entryCursor += 1;
+    }
+    while (
+      poolCursor < poolEvents.length &&
+      poolEvents[poolCursor].createdAt <= dayEnd
+    ) {
+      poolBalance = D(poolEvents[poolCursor].balanceAfter);
+      poolCursor += 1;
+    }
+    while (
+      unitCursor < unitEvents.length &&
+      unitEvents[unitCursor].createdAt <= dayEnd
+    ) {
+      poolUnits = poolUnits.add(D(unitEvents[unitCursor].units ?? 0));
+      unitCursor += 1;
+    }
+  }
+
+  const baselineNav = navFromEvents(shiftReportingDay(start, -1));
+  const baselineProfit = state.queued
+    .add(state.units.mul(baselineNav))
+    .add(state.netWithdrawals)
+    .sub(state.totalDeposits)
+    .sub(state.netAdjustments);
+
+  function buildPoint(day: string): SeriesPoint {
+    advanceThrough(day);
+    const nav = navFromEvents(day);
+    const value = state.queued.add(state.units.mul(nav));
+    return {
       date: day,
       value: toNumber(value),
-      invested: toNumber(s.queued.add(s.basis)),
-      profit: toNumber(value.add(s.netWithdrawals).sub(s.totalDeposits).sub(s.netAdjustments).sub(baselineProfit)),
-    });
+      invested: toNumber(state.queued.add(state.basis)),
+      profit: toNumber(
+        value
+          .add(state.netWithdrawals)
+          .sub(state.totalDeposits)
+          .sub(state.netAdjustments)
+          .sub(baselineProfit),
+      ),
+    };
   }
-  // Make sure the last point is the end day even when stepping.
+
+  const series: SeriesPoint[] = [];
+  for (let index = 0; index <= totalDays; index += step) {
+    series.push(buildPoint(shiftReportingDay(start, index)));
+  }
   if (series.length === 0 || series[series.length - 1].date !== end) {
-    while (cursor < entries.length && entries[cursor].createdAt <= new Date(end + "T23:59:59.999Z")) {
-      applyEntry(s, entries[cursor]);
-      cursor++;
-    }
-    const nav = end === today ? currentNav : navOn(end);
-    const value = s.queued.add(s.units.mul(nav));
-    series.push({
-      date: end,
-      value: toNumber(value),
-      invested: toNumber(s.queued.add(s.basis)),
-      profit: toNumber(value.add(s.netWithdrawals).sub(s.totalDeposits).sub(s.netAdjustments).sub(baselineProfit)),
-    });
+    series.push(buildPoint(end));
   }
 
-  const last = series[series.length - 1];
-  // Profit over the window = growth in value not explained by net contributions.
-  // A one-day range can still contain real trading P/L.
-  const profitInRange = last?.profit ?? 0;
-
-  return { series, profitInRange, firstActivityDate: firstActivity };
+  return {
+    series,
+    profitInRange: series.at(-1)?.profit ?? 0,
+    firstActivityDate: firstActivity,
+  };
 }

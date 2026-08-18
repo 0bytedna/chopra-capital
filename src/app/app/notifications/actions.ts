@@ -12,6 +12,10 @@ export async function markAllNotificationsRead(): Promise<void> {
     where: { userId: user.id, isRead: false },
     data: { isRead: true, readAt: new Date() },
   });
+
+  revalidatePath("/app");
+  revalidatePath("/app", "layout");
+  revalidatePath("/app/notifications");
 }
 
 export async function markNotificationReadAndOpen(formData: FormData): Promise<void> {
