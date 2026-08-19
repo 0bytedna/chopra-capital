@@ -973,18 +973,6 @@ async function reconcileSelectedQueuedDepositAccounting(
     const delta = expected.sub(recorded);
     if (delta.eq(0)) continue;
 
-    const wallet = await tx.wallet.upsert({
-      where: { userId: deposit.userId },
-      update: {},
-      create: { userId: deposit.userId },
-    });
-    const repairedQueue = D(wallet.queued).add(delta);
-    if (repairedQueue.lt(0)) {
-      throw new Error(
-        "This deposit's accounting history is over-credited. Review its transaction audit before investing it",
-      );
-    }
-
     await tx.ledgerEntry.create({
       data: {
         userId: deposit.userId,
@@ -993,10 +981,6 @@ async function reconcileSelectedQueuedDepositAccounting(
         reference: deposit.id,
         note: "Automatic queued-deposit accounting reconciliation before broker deposit",
       },
-    });
-    await tx.wallet.update({
-      where: { id: wallet.id },
-      data: { queued: repairedQueue },
     });
     await createFinancialAudit(tx, {
       adminId,
@@ -1007,6 +991,65 @@ async function reconcileSelectedQueuedDepositAccounting(
       beforeState: recorded.toFixed(8),
       afterState: expected.toFixed(8),
       reason: "Repaired legacy undo/reject queue drift before broker deposit",
+    });
+  }
+
+  // Wallet.queued is a materialized balance used by operational mutations;
+  // the append-only ledger is the accounting source of truth. Older builds
+  // could update one without the other during undo/reject. Rebuild the queue
+  // for only the users participating in this broker batch before validating.
+  const depositsByUser = new Map<string, QueuedDepositAccountingSource[]>();
+  for (const deposit of deposits) {
+    const userDeposits = depositsByUser.get(deposit.userId) ?? [];
+    userDeposits.push(deposit);
+    depositsByUser.set(deposit.userId, userDeposits);
+  }
+
+  for (const [userId, userDeposits] of depositsByUser) {
+    const entries = await tx.ledgerEntry.findMany({
+      where: { userId },
+      select: { type: true, amount: true, units: true, navPrice: true },
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+    });
+    let ledgerQueue = ZERO;
+    for (const entry of entries) {
+      const amount = D(entry.amount);
+      if (entry.type === "DEPOSIT") {
+        ledgerQueue = ledgerQueue.add(amount);
+      } else if (entry.type === "INVEST") {
+        ledgerQueue = ledgerQueue.sub(amount);
+      } else if (
+        (entry.type === "WITHDRAWAL" || entry.type === "FEE" || entry.type === "ADJUSTMENT") &&
+        (entry.units === null || entry.navPrice === null)
+      ) {
+        ledgerQueue = ledgerQueue.add(amount);
+      }
+    }
+    if (ledgerQueue.lt(0)) {
+      throw new Error("The investor ledger has a negative queued balance. Review its audit trail before investing");
+    }
+
+    const wallet = await tx.wallet.upsert({
+      where: { userId },
+      update: {},
+      create: { userId },
+    });
+    const walletQueue = D(wallet.queued);
+    if (walletQueue.eq(ledgerQueue)) continue;
+
+    await tx.wallet.update({
+      where: { id: wallet.id },
+      data: { queued: ledgerQueue },
+    });
+    await createFinancialAudit(tx, {
+      adminId,
+      userId,
+      sourceType: "DEPOSIT",
+      sourceId: userDeposits[0].id,
+      action: "WALLET_QUEUE_REBUILT_FROM_LEDGER",
+      beforeState: walletQueue.toFixed(8),
+      afterState: ledgerQueue.toFixed(8),
+      reason: "Rebuilt the operational wallet queue from the append-only ledger before broker deposit",
     });
   }
 }
