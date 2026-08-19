@@ -364,6 +364,8 @@ export async function investQueuedDepositBatch(
       throw new Error("Broker-received USDT cannot exceed the selected company-wallet queue");
     }
 
+    await reconcileSelectedQueuedDepositAccounting(tx, deposits, adminId);
+
     const queuedByUser = new Map<string, Dec>();
     for (let index = 0; index < deposits.length; index += 1) {
       const deposit = deposits[index];
@@ -935,6 +937,80 @@ async function createFinancialAudit(
   await tx.financialOperationAudit.create({ data });
 }
 
+type QueuedDepositAccountingSource = {
+  id: string;
+  userId: string;
+  queuedUsdtAmount: Prisma.Decimal | null;
+};
+
+/**
+ * Repairs legacy queue drift for the selected deposits only.
+ *
+ * QUEUED deposits are the trusted source for the amount that entered the
+ * company wallet. Older undo/reject builds could leave the deposit active
+ * after removing its DEPOSIT ledger row and wallet queue. Re-create only the
+ * missing per-deposit delta, record the repair, and leave unrelated queued
+ * funds (internal transfers, withdrawals, and manual corrections) untouched.
+ */
+async function reconcileSelectedQueuedDepositAccounting(
+  tx: Prisma.TransactionClient,
+  deposits: QueuedDepositAccountingSource[],
+  adminId: string,
+) {
+  for (const deposit of deposits) {
+    const expected = D(deposit.queuedUsdtAmount ?? 0);
+    if (expected.lte(0)) continue;
+
+    const ledger = await tx.ledgerEntry.aggregate({
+      where: {
+        userId: deposit.userId,
+        type: "DEPOSIT",
+        reference: deposit.id,
+      },
+      _sum: { amount: true },
+    });
+    const recorded = D(ledger._sum.amount ?? 0);
+    const delta = expected.sub(recorded);
+    if (delta.eq(0)) continue;
+
+    const wallet = await tx.wallet.upsert({
+      where: { userId: deposit.userId },
+      update: {},
+      create: { userId: deposit.userId },
+    });
+    const repairedQueue = D(wallet.queued).add(delta);
+    if (repairedQueue.lt(0)) {
+      throw new Error(
+        "This deposit's accounting history is over-credited. Review its transaction audit before investing it",
+      );
+    }
+
+    await tx.ledgerEntry.create({
+      data: {
+        userId: deposit.userId,
+        type: "DEPOSIT",
+        amount: delta,
+        reference: deposit.id,
+        note: "Automatic queued-deposit accounting reconciliation before broker deposit",
+      },
+    });
+    await tx.wallet.update({
+      where: { id: wallet.id },
+      data: { queued: repairedQueue },
+    });
+    await createFinancialAudit(tx, {
+      adminId,
+      userId: deposit.userId,
+      sourceType: "DEPOSIT",
+      sourceId: deposit.id,
+      action: "QUEUE_ACCOUNTING_RECONCILED",
+      beforeState: recorded.toFixed(8),
+      afterState: expected.toFixed(8),
+      reason: "Repaired legacy undo/reject queue drift before broker deposit",
+    });
+  }
+}
+
 export async function undoConfirmedInrDeposit(
   depositId: string,
   adminId: string,
@@ -1094,8 +1170,14 @@ export async function rejectQueuedDeposit(
       where: { id: wallet.id },
       data: { queued: { decrement: queuedAmount } },
     });
-    await tx.ledgerEntry.deleteMany({
-      where: { userId: deposit.userId, type: "DEPOSIT", reference: deposit.id },
+    await tx.ledgerEntry.create({
+      data: {
+        userId: deposit.userId,
+        type: "DEPOSIT",
+        amount: queuedAmount.neg(),
+        reference: deposit.id,
+        note: "Queued deposit rejected by administrator before broker deposit",
+      },
     });
     await createFinancialAudit(tx, {
       adminId,

@@ -284,6 +284,7 @@ export async function adminSetInvestorBalances(_prev: AdminFormState, formData: 
       const wallet = await tx.wallet.findUniqueOrThrow({ where: { userId } });
       const currentInvested = D(wallet.units).mul(navState.nav);
       const delta = targetInvested.sub(currentInvested);
+      const queuedDelta = targetQueued.sub(D(wallet.queued));
       const targetUnits = targetInvested.div(navState.nav);
       const unitDelta = targetUnits.sub(D(wallet.units));
       const pool = await tx.poolState.findUniqueOrThrow({ where: { id: "pool" } });
@@ -292,7 +293,12 @@ export async function adminSetInvestorBalances(_prev: AdminFormState, formData: 
       if (newBalance.lt(0) || newEquity.lt(0)) throw new Error("This correction would make the trading account negative.");
       await tx.wallet.update({ where: { id: wallet.id }, data: { queued: targetQueued, units: targetUnits } });
       await tx.poolState.update({ where: { id: "pool" }, data: { totalUnits: { increment: unitDelta }, tradingBalance: newBalance, tradingEquity: newEquity } });
-      await tx.ledgerEntry.create({ data: { userId, type: "ADJUSTMENT", amount: delta.add(targetQueued.sub(D(wallet.queued))), units: unitDelta, navPrice: navState.nav, note } });
+      if (!queuedDelta.eq(0)) {
+        await tx.ledgerEntry.create({ data: { userId, type: "ADJUSTMENT", amount: queuedDelta, note: `Queued balance correction: ${note}` } });
+      }
+      if (!unitDelta.eq(0)) {
+        await tx.ledgerEntry.create({ data: { userId, type: "ADJUSTMENT", amount: delta, units: unitDelta, navPrice: navState.nav, note: `Invested balance correction: ${note}` } });
+      }
       if (!delta.eq(0)) await tx.tradingAccountEntry.create({ data: { type: delta.gt(0) ? "OTHER_INCREASE" : "OTHER_DECREASE", amount: delta, balanceBefore: pool.tradingBalance, balanceAfter: newBalance, equityBefore: pool.tradingBalance, equityAfter: newEquity, note: `Investor correction: ${note}`, adminId: admin.id } });
     });
     revalidatePath(`/admin/investors/${userId}`); revalidatePath("/admin/investors"); revalidatePath("/admin"); revalidatePath("/app");
@@ -669,9 +675,31 @@ export async function adminEditDepositRecord(_prev: AdminFormState, formData: Fo
   try {
     const amount = D(String(formData.get("amount") ?? ""));
     if (amount.lt(0)) return { error: "Deposit amount cannot be negative." };
-    await prisma.deposit.update({ where: { id, userId }, data: { amount, status: status as (typeof statuses)[number], reference: String(formData.get("reference") ?? "").trim() || null, txHash: String(formData.get("txHash") ?? "").trim() || null, adminNote: String(formData.get("adminNote") ?? "").trim() || null } });
+    const existing = await prisma.deposit.findUnique({
+      where: { id },
+      select: { userId: true, status: true, amount: true },
+    });
+    if (!existing || existing.userId !== userId) return { error: "Deposit not found." };
+    if (status !== existing.status) {
+      return {
+        error: "Change deposit stages from Deposit operations so the wallet and audit trail remain synchronized.",
+      };
+    }
+    if (!amount.eq(D(existing.amount))) {
+      return {
+        error: "Change converted or broker-received values from the Transactions page instead of editing the deposit amount directly.",
+      };
+    }
+    await prisma.deposit.update({
+      where: { id, userId },
+      data: {
+        reference: String(formData.get("reference") ?? "").trim() || null,
+        txHash: String(formData.get("txHash") ?? "").trim() || null,
+        adminNote: String(formData.get("adminNote") ?? "").trim() || null,
+      },
+    });
     revalidatePath(`/admin/investors/${userId}`); revalidatePath("/admin/deposits"); revalidatePath("/admin/transactions"); revalidatePath("/app/history");
-    return { success: "Deposit record updated. Correct the investor balance separately if this changes credited value." };
+    return { success: "Deposit notes and references updated." };
   } catch (error) { return fail(error); }
 }
 
