@@ -346,100 +346,6 @@ export default async function AdminInvestorRecordPage({
         </section>
       </CollapsibleCard>
 
-      <section className="grid items-start gap-3 lg:grid-cols-3" aria-label="Investor details">
-        <CollapsibleCard title="Profile & compliance" Icon={Mail}>
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
-            <Detail label="Full name" value={display(investor.fullName)} />
-            <Detail label="Phone" value={display(investor.mobile)} />
-            <Detail label="Email" value={investor.email} wide />
-            <Detail
-              label="Account type"
-              value={investor.isCompanyAccount ? "Company trading account" : "Investor account"}
-            />
-            <Detail label="KYC status" value={kyc.label} />
-            <Detail label="KYC note" value={display(investor.kycNote)} wide />
-            <Detail
-              label="Two-factor authentication"
-              value={investor.twoFactorEnabled ? "Enabled" : "Not enabled"}
-            />
-            <Detail label="Account created" value={formatDate(investor.createdAt, true)} />
-            <Detail
-              label="Profile last updated"
-              value={formatDate(investor.updatedAt, true)}
-              wide
-            />
-          </dl>
-
-          <div className="mt-4 border-t border-gold-600/15 pt-4">
-            <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">KYC documents</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {investor.kycDocuments.length > 0 ? (
-                investor.kycDocuments.map((document) => (
-                  <a
-                    key={document.id}
-                    href={`/api/admin/kyc-file?id=${document.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-lg border border-gold-600/20 px-3 py-2 text-xs text-ink-dim transition-colors hover:border-gold-500/45 hover:text-ink"
-                  >
-                    <FileText className="size-3.5 text-gold-400" aria-hidden />
-                    {document.docType} · {formatDate(document.createdAt)}
-                  </a>
-                ))
-              ) : (
-                <p className="text-xs text-ink-faint">No KYC documents on file.</p>
-              )}
-            </div>
-          </div>
-        </CollapsibleCard>
-
-        <CollapsibleCard title="Banking details" Icon={Landmark}>
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
-            <Detail
-              label="Account number"
-              value={display(investor.bankingDetail?.accountNumber)}
-              mono
-            />
-            <Detail label="IFSC" value={display(investor.bankingDetail?.ifsc)} mono />
-            <Detail
-              label="Account type"
-              value={investor.bankingDetail?.accountType?.replaceAll("_", " ") ?? "Not provided"}
-            />
-            <Detail label="UPI ID" value={display(investor.bankingDetail?.upiId)} mono />
-          </dl>
-        </CollapsibleCard>
-
-        <CollapsibleCard title="Crypto & funding" Icon={WalletCards}>
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
-            <Detail
-              label="USDT wallet address"
-              value={display(investor.bankingDetail?.usdtAddress)}
-              mono
-              wide
-            />
-            <Detail label="USDT network" value={display(investor.bankingDetail?.usdtNetwork)} />
-            <Detail label="Crypto deposits" value="Enabled" />
-            <Detail
-              label="Bank access"
-              value={investor.bankTransferEnabled ? "Enabled" : "Disabled"}
-            />
-            <Detail
-              label="Cash access"
-              value={investor.cashEnabled ? "Enabled" : "Disabled"}
-            />
-          </dl>
-          <div className="mt-4 border-t border-gold-600/15 pt-4">
-            <p className="mb-3 text-xs uppercase tracking-[0.14em] text-ink-faint">
-              Deposit method access
-            </p>
-            <DepositMethodsToggle
-              userId={investor.id}
-              bankEnabled={investor.bankTransferEnabled}
-              cashEnabled={investor.cashEnabled}
-            />
-          </div>
-        </CollapsibleCard>
-      </section>
       <CollapsibleCard title="Profit and balance history" Icon={CircleDollarSign}>
         <PortfolioChart
           initialSeries={performance.series}
@@ -596,6 +502,100 @@ export default async function AdminInvestorRecordPage({
             ) : (
               <p className="py-8 text-center text-sm text-ink-faint">No internal transfers.</p>
             )}
+          </div>
+        </CollapsibleCard>
+      </section>
+      <section className="grid items-start gap-3 lg:grid-cols-3" aria-label="Investor details">
+        <CollapsibleCard title="Profile & compliance" Icon={Mail}>
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
+            <Detail label="Full name" value={display(investor.fullName)} />
+            <Detail label="Phone" value={display(investor.mobile)} />
+            <Detail label="Email" value={investor.email} wide />
+            <Detail
+              label="Account type"
+              value={investor.isCompanyAccount ? "Company trading account" : "Investor account"}
+            />
+            <Detail label="KYC status" value={kyc.label} />
+            <Detail label="KYC note" value={display(investor.kycNote)} wide />
+            <Detail
+              label="Two-factor authentication"
+              value={investor.twoFactorEnabled ? "Enabled" : "Not enabled"}
+            />
+            <Detail label="Account created" value={formatDate(investor.createdAt, true)} />
+            <Detail
+              label="Profile last updated"
+              value={formatDate(investor.updatedAt, true)}
+              wide
+            />
+          </dl>
+
+          <div className="mt-4 border-t border-gold-600/15 pt-4">
+            <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">KYC documents</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {investor.kycDocuments.length > 0 ? (
+                investor.kycDocuments.map((document) => (
+                  <a
+                    key={document.id}
+                    href={`/api/admin/kyc-file?id=${document.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg border border-gold-600/20 px-3 py-2 text-xs text-ink-dim transition-colors hover:border-gold-500/45 hover:text-ink"
+                  >
+                    <FileText className="size-3.5 text-gold-400" aria-hidden />
+                    {document.docType} · {formatDate(document.createdAt)}
+                  </a>
+                ))
+              ) : (
+                <p className="text-xs text-ink-faint">No KYC documents on file.</p>
+              )}
+            </div>
+          </div>
+        </CollapsibleCard>
+
+        <CollapsibleCard title="Banking details" Icon={Landmark}>
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
+            <Detail
+              label="Account number"
+              value={display(investor.bankingDetail?.accountNumber)}
+              mono
+            />
+            <Detail label="IFSC" value={display(investor.bankingDetail?.ifsc)} mono />
+            <Detail
+              label="Account type"
+              value={investor.bankingDetail?.accountType?.replaceAll("_", " ") ?? "Not provided"}
+            />
+            <Detail label="UPI ID" value={display(investor.bankingDetail?.upiId)} mono />
+          </dl>
+        </CollapsibleCard>
+
+        <CollapsibleCard title="Crypto & funding" Icon={WalletCards}>
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
+            <Detail
+              label="USDT wallet address"
+              value={display(investor.bankingDetail?.usdtAddress)}
+              mono
+              wide
+            />
+            <Detail label="USDT network" value={display(investor.bankingDetail?.usdtNetwork)} />
+            <Detail label="Crypto deposits" value="Enabled" />
+            <Detail
+              label="Bank access"
+              value={investor.bankTransferEnabled ? "Enabled" : "Disabled"}
+            />
+            <Detail
+              label="Cash access"
+              value={investor.cashEnabled ? "Enabled" : "Disabled"}
+            />
+          </dl>
+          <div className="mt-4 border-t border-gold-600/15 pt-4">
+            <p className="mb-3 text-xs uppercase tracking-[0.14em] text-ink-faint">
+              Deposit method access
+            </p>
+            <DepositMethodsToggle
+              userId={investor.id}
+              bankEnabled={investor.bankTransferEnabled}
+              cashEnabled={investor.cashEnabled}
+            />
           </div>
         </CollapsibleCard>
       </section>

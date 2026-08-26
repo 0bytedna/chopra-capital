@@ -33,11 +33,12 @@ type Props = {
 };
 
 const PRESETS = [
-  { key: "1W" },
-  { key: "1M" },
-  { key: "3M" },
-  { key: "1Y" },
-  { key: "ALL" },
+  { key: "TODAY", label: "Today" },
+  { key: "1W", label: "1W" },
+  { key: "1M", label: "1M" },
+  { key: "3M", label: "3M" },
+  { key: "1Y", label: "1Y" },
+  { key: "ALL", label: "All" },
 ] as const;
 
 type PresetKey = (typeof PRESETS)[number]["key"];
@@ -160,7 +161,9 @@ function GraphCard({
 
   function applyPreset(key: PresetKey) {
     const requestedFrom =
-      key === "1W"
+      key === "TODAY"
+        ? today
+        : key === "1W"
         ? reportingWeekStart(today)
         : key === "1M"
           ? reportingMonthStart(today)
@@ -251,7 +254,7 @@ function GraphCard({
                   : "text-ink-faint hover:text-ink",
               )}
             >
-              {item.key}
+              {item.label}
             </button>
           ))}
         </div>
