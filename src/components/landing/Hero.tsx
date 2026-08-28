@@ -25,9 +25,12 @@ export function Hero() {
           transition={{ duration: 0.7 }}
           className="mx-auto max-w-5xl text-center"
         >
-          <h1 className="text-balance text-[3.2rem] font-extrabold leading-[0.98] tracking-[-0.055em] text-ink sm:text-7xl lg:text-[6rem]">
-            We don’t predict gold
-            <span className="gold-text block">We arbitrage it</span>
+          <h1 className="text-balance text-[3.2rem] font-extrabold leading-[1.04] tracking-[-0.055em] text-ink sm:text-7xl lg:text-[6rem]">
+            <span className="block">
+              We don’t predict{" "}
+              <span className="gold-text inline-block pb-[0.1em]">gold</span>
+            </span>
+            <span className="block">We arbitrage it</span>
           </h1>
 
           <div className="mx-auto mt-10 grid max-w-6xl gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
