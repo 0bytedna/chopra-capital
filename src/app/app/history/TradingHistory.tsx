@@ -73,15 +73,6 @@ export function TradingHistory({ activity }: { activity: TradingHistoryItem[] })
                 {item.amount} USD
               </p>
             </div>
-
-            <p className="mt-3 text-xs leading-relaxed text-ink-dim sm:text-sm">
-              Your {item.sharePercent}% share of a {item.poolAmount} USD pool movement.
-            </p>
-            {item.note.trim() ? (
-              <p className="mt-1 text-xs leading-relaxed text-ink-dim sm:text-sm">
-                {item.note}
-              </p>
-            ) : null}
           </article>
         );
       })}

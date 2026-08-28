@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from "framer-motion";
 
 const highlights = [
   { value: "1–3%", label: "Monthly Profit*" },
+  { value: "70:30", label: "You Keep 70%" },
   { value: "No lock-in", label: "Period" },
   { value: "Weekly", label: "Withdrawals" },
 ];
@@ -29,7 +30,7 @@ export function Hero() {
             <span className="gold-text block">We arbitrage it</span>
           </h1>
 
-          <div className="mx-auto mt-10 grid max-w-4xl gap-3 sm:grid-cols-3 sm:gap-4">
+          <div className="mx-auto mt-10 grid max-w-6xl gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
             {highlights.map((highlight) => (
               <article
                 key={highlight.label}
@@ -45,8 +46,8 @@ export function Hero() {
             ))}
           </div>
 
-          <p className="mt-4 text-xs leading-5 text-ink-faint sm:text-sm">
-            *Performance objective, not a guarantee. Capital is at risk.
+          <p className="mx-auto mt-4 max-w-4xl text-xs leading-5 text-ink-faint sm:text-sm">
+            *Performance objective, not a guarantee. Investors keep 70% of profits; 30% is deducted every Saturday for company share and server costs. Capital is at risk.
           </p>
         </motion.div>
       </div>
