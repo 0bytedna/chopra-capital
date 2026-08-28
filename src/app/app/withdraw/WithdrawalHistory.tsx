@@ -47,8 +47,8 @@ type MethodAvailability = {
 const statusClass: Record<Withdrawal["status"], string> = {
   REQUESTED: "border-gold-500/40 bg-gold-600/10 text-gold-300",
   APPROVED: "border-gold-500/40 bg-gold-600/10 text-gold-300",
-  BROKER_RECEIVED: "border-sky-400/40 bg-sky-400/10 text-sky-300",
-  INR_READY: "border-sky-400/40 bg-sky-400/10 text-sky-300",
+  BROKER_RECEIVED: "border-gold-400/40 bg-gold-400/10 text-gold-300",
+  INR_READY: "border-gold-400/40 bg-gold-400/10 text-gold-300",
   PAYOUT_DETAILS_REQUIRED: "border-amber-500/40 bg-amber-50 text-amber-800",
   PAYOUT_DETAILS_REVIEW: "border-amber-500/40 bg-amber-50 text-amber-800",
   PROCESSED: "border-positive/40 bg-positive/10 text-positive",

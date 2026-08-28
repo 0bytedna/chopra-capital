@@ -92,7 +92,7 @@ function statusClass(status: string) {
     return "border-positive/25 bg-positive/8 text-positive";
   }
   if (status === "CANCELLED") {
-    return "border-slate-300 bg-slate-100 text-ink-faint";
+    return "border-stone-300 bg-stone-100 text-ink-faint";
   }
   return "border-negative/25 bg-negative/8 text-negative";
 }
@@ -237,7 +237,7 @@ export default async function AdminTransactionsPage({ searchParams }: Props) {
       </header>
 
       <nav
-        className="grid grid-cols-4 gap-1 rounded-xl border border-slate-200 bg-white p-1"
+        className="grid grid-cols-4 gap-1 rounded-xl border border-stone-200 bg-white p-1"
         aria-label="Transaction history category"
       >
         {transactionTypes.map((type) => (
@@ -247,8 +247,8 @@ export default async function AdminTransactionsPage({ searchParams }: Props) {
             className={cn(
               "min-w-0 truncate rounded-lg px-1.5 py-2.5 text-center text-[11px] font-medium transition-colors sm:px-3 sm:text-sm",
               selectedType === type
-                ? "bg-blue-100 text-blue-700"
-                : "text-ink-dim hover:bg-slate-50",
+                ? "bg-gold-100 text-gold-700"
+                : "text-ink-dim hover:bg-stone-50",
             )}
             aria-current={selectedType === type ? "page" : undefined}
             title={typeLabels[type]}
@@ -263,7 +263,7 @@ export default async function AdminTransactionsPage({ searchParams }: Props) {
           action="/admin/transactions"
           method="get"
           className={cn(
-            "grid gap-2 rounded-xl border border-slate-200 bg-white p-2",
+            "grid gap-2 rounded-xl border border-stone-200 bg-white p-2",
             selectedType === "CONVERSIONS"
               ? "grid-cols-[minmax(0,1fr)_auto]"
               : "grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]",
@@ -274,7 +274,7 @@ export default async function AdminTransactionsPage({ searchParams }: Props) {
             name="method"
             defaultValue={activeMethod}
             aria-label="Payment method"
-            className="min-w-0 rounded-lg border border-slate-200 bg-white px-2 py-2 text-xs text-ink outline-none focus:border-blue-300 sm:text-sm"
+            className="min-w-0 rounded-lg border border-stone-200 bg-white px-2 py-2 text-xs text-ink outline-none focus:border-gold-300 sm:text-sm"
           >
             <option value="ALL">All methods</option>
             <option value="BANK">Bank</option>
@@ -289,7 +289,7 @@ export default async function AdminTransactionsPage({ searchParams }: Props) {
               name="status"
               defaultValue={selectedStatus}
               aria-label="Transaction status"
-              className="min-w-0 rounded-lg border border-slate-200 bg-white px-2 py-2 text-xs text-ink outline-none focus:border-blue-300 sm:text-sm"
+              className="min-w-0 rounded-lg border border-stone-200 bg-white px-2 py-2 text-xs text-ink outline-none focus:border-gold-300 sm:text-sm"
             >
               {statusFilters.map((status) => (
                 <option key={status.value} value={status.value}>
@@ -301,7 +301,7 @@ export default async function AdminTransactionsPage({ searchParams }: Props) {
 
           <button
             type="submit"
-            className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-blue-700 sm:text-sm"
+            className="rounded-lg bg-gold-600 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-gold-700 sm:text-sm"
           >
             Apply
           </button>
@@ -319,7 +319,7 @@ export default async function AdminTransactionsPage({ searchParams }: Props) {
                   <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-dim">
                     {group.label}
                   </h2>
-                  <ul className="divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 bg-white">
+                  <ul className="divide-y divide-stone-200 overflow-hidden rounded-xl border border-stone-200 bg-white">
                     {group.items.map((deposit) => {
                       const sourceAmount =
                         deposit.method === "CRYPTO"
@@ -362,7 +362,7 @@ export default async function AdminTransactionsPage({ searchParams }: Props) {
                           </p>
                           {details.length > 0 && (
                             <details className="mt-1.5 text-xs text-ink-dim">
-                              <summary className="cursor-pointer select-none text-blue-700">
+                              <summary className="cursor-pointer select-none text-gold-700">
                                 Details
                               </summary>
                               <p className="mt-1 break-all">{details.join(" · ")}</p>
@@ -390,7 +390,7 @@ export default async function AdminTransactionsPage({ searchParams }: Props) {
                 <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-dim">
                   {group.label}
                 </h2>
-                <ul className="divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 bg-white">
+                <ul className="divide-y divide-stone-200 overflow-hidden rounded-xl border border-stone-200 bg-white">
                   {group.items.map((withdrawal) => {
                     const paid =
                       withdrawal.status === "PROCESSED"
@@ -429,7 +429,7 @@ export default async function AdminTransactionsPage({ searchParams }: Props) {
                         </p>
                         {details.length > 0 && (
                           <details className="mt-1.5 text-xs text-ink-dim">
-                            <summary className="cursor-pointer select-none text-blue-700">
+                            <summary className="cursor-pointer select-none text-gold-700">
                               Details
                             </summary>
                             <p className="mt-1 break-all">{details.join(" · ")}</p>
@@ -454,7 +454,7 @@ export default async function AdminTransactionsPage({ searchParams }: Props) {
                   <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-dim">
                     {group.label}
                   </h2>
-                  <ul className="divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 bg-white">
+                  <ul className="divide-y divide-stone-200 overflow-hidden rounded-xl border border-stone-200 bg-white">
                     {group.items.map((batch) => (
                       <li key={batch.id} className="px-3 py-3 sm:px-4">
                         <div className="flex items-center justify-between gap-3">
@@ -462,7 +462,7 @@ export default async function AdminTransactionsPage({ searchParams }: Props) {
                             {formatUsdt(batch.totalUsdt)} USDT queued
                           </span>
                           <div className="flex shrink-0 items-center gap-2">
-                            <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs text-blue-700">
+                            <span className="rounded-full border border-gold-200 bg-gold-50 px-2.5 py-1 text-xs text-gold-700">
                               {methodLabel(batch.method)}
                             </span>
                             <TransactionBatchEditAction
@@ -496,7 +496,7 @@ export default async function AdminTransactionsPage({ searchParams }: Props) {
                 <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-dim">
                   {group.label}
                 </h2>
-                <ul className="divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 bg-white">
+                <ul className="divide-y divide-stone-200 overflow-hidden rounded-xl border border-stone-200 bg-white">
                   {group.items.map((batch) => (
                     <li key={batch.id} className="px-3 py-3 sm:px-4">
                       <div className="flex items-center justify-between gap-3">
@@ -530,7 +530,7 @@ export default async function AdminTransactionsPage({ searchParams }: Props) {
 
 function EmptyState({ children }: { children: React.ReactNode }) {
   return (
-    <p className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-8 text-center text-sm text-ink-faint">
+    <p className="rounded-xl border border-dashed border-stone-300 bg-white px-4 py-8 text-center text-sm text-ink-faint">
       {children}
     </p>
   );

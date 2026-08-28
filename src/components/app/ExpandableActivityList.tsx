@@ -35,7 +35,7 @@ export function ExpandableActivityList({
               type="button"
               aria-expanded={canCollapse}
               onClick={() => setVisibleBatches((current) => current + 1)}
-              className="flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700"
+              className="flex items-center justify-center gap-2 rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm font-semibold text-stone-700 transition-colors hover:border-gold-400 hover:bg-gold-50 hover:text-gold-700"
             >
               <Plus className="size-4" aria-hidden />
               Show {Math.min(batchSize, remaining)} more
@@ -45,7 +45,7 @@ export function ExpandableActivityList({
             <button
               type="button"
               onClick={() => setVisibleBatches(1)}
-              className="flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700"
+              className="flex items-center justify-center gap-2 rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm font-semibold text-stone-700 transition-colors hover:border-gold-400 hover:bg-gold-50 hover:text-gold-700"
             >
               <Minus className="size-4" aria-hidden />
               Collapse

@@ -107,7 +107,7 @@ export default async function AdminTradingPage() {
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px] text-left text-xs">
-            <thead className="border-y border-gold-600/15 bg-slate-50 text-ink-faint">
+            <thead className="border-y border-gold-600/15 bg-stone-50 text-ink-faint">
               <tr>
                 <th className="px-5 py-3">Time</th>
                 <th className="px-5 py-3">Reason</th>

@@ -37,7 +37,7 @@ function BatchEditDialog({ batch, onClose }: { batch: Props; onClose: () => void
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 p-4"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-950/45 p-4"
       role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && !pending) onClose();
@@ -57,7 +57,7 @@ function BatchEditDialog({ batch, onClose }: { batch: Props; onClose: () => void
             type="button"
             onClick={onClose}
             disabled={pending}
-            className="flex size-9 shrink-0 items-center justify-center rounded-full border border-slate-300 text-ink-dim hover:bg-slate-100 disabled:opacity-50"
+            className="flex size-9 shrink-0 items-center justify-center rounded-full border border-stone-300 text-ink-dim hover:bg-stone-100 disabled:opacity-50"
             aria-label="Close edit dialog"
           >
             <X className="size-4" aria-hidden />
@@ -79,7 +79,7 @@ function BatchEditDialog({ batch, onClose }: { batch: Props; onClose: () => void
               inputMode="decimal"
               defaultValue={batch.currentTotal}
               required
-              className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-ink"
+              className="h-11 w-full rounded-lg border border-stone-300 bg-white px-3 text-sm text-ink"
             />
           </label>
 
@@ -91,7 +91,7 @@ function BatchEditDialog({ batch, onClose }: { batch: Props; onClose: () => void
               rows={3}
               required
               placeholder="Why is this value being corrected?"
-              className="w-full resize-none rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-ink"
+              className="w-full resize-none rounded-lg border border-stone-300 bg-white px-3 py-2.5 text-sm text-ink"
             />
           </label>
 
@@ -127,7 +127,7 @@ export function TransactionBatchEditAction(props: Props) {
       <button
         type="button"
         onClick={() => setEditing(true)}
-        className="flex size-9 shrink-0 items-center justify-center rounded-full border border-blue-300 text-blue-700 transition-colors hover:bg-blue-50"
+        className="flex size-9 shrink-0 items-center justify-center rounded-full border border-gold-300 text-gold-700 transition-colors hover:bg-gold-50"
         aria-label={props.kind === "CONVERSION" ? "Edit conversion batch" : "Edit broker transfer"}
         title="Edit"
       >

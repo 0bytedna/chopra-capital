@@ -115,7 +115,7 @@ export default async function AdminOverviewPage() {
                 "flex size-16 shrink-0 items-center justify-center rounded-full border font-mono text-2xl font-semibold shadow-lg sm:size-20 sm:text-3xl lg:size-14 lg:text-2xl",
                 queue.count > 0
                   ? "border-gold-600 bg-gold-600 text-white shadow-gold-600/20"
-                  : "border-slate-200 bg-slate-100 text-ink-faint shadow-slate-200/40",
+                  : "border-stone-200 bg-stone-100 text-ink-faint shadow-stone-200/40",
               )}
               aria-label={`${queue.count} pending`}
             >

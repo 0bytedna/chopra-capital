@@ -7,7 +7,7 @@ import { cn } from "@/lib/cn";
 const standardInputClass =
   "min-w-0 w-full rounded-lg border border-gold-600/20 bg-vault-900/80 py-2.5 pl-3.5 pr-12 text-sm text-ink placeholder:text-ink-faint transition-colors focus:border-gold-500/50 focus:outline-none focus:ring-2 focus:ring-gold-500/25";
 const lightInputClass =
-  "min-w-0 h-11 w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-3 pr-12 text-sm text-ink outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
+  "min-w-0 h-11 w-full rounded-xl border border-stone-300 bg-white py-2.5 pl-3 pr-12 text-sm text-ink outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-100";
 
 type OtpFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, "type"> & {
   label: string;
@@ -69,7 +69,7 @@ export function OtpField({
         <button
           type="button"
           onClick={pasteCode}
-          className="absolute right-1.5 top-1/2 inline-flex size-9 -translate-y-1/2 items-center justify-center rounded-lg text-ink-dim transition-colors hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          className="absolute right-1.5 top-1/2 inline-flex size-9 -transtone-y-1/2 items-center justify-center rounded-lg text-ink-dim transition-colors hover:bg-gold-50 hover:text-gold-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500"
           aria-label="Paste authentication code"
           title="Paste code"
         >

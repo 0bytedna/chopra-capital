@@ -105,7 +105,7 @@ export function AccountMetricCards({
 
   return (
     <section
-      className="glass-card grid grid-cols-2 divide-x divide-slate-200 overflow-hidden rounded-xl"
+      className="glass-card grid grid-cols-2 divide-x divide-stone-200 overflow-hidden rounded-xl"
       aria-label="Account figures"
     >
       <MetricSummary label="Balance" Icon={WalletCards}>

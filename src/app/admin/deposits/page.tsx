@@ -202,7 +202,7 @@ function StageMethodTabs<TMethod extends DepositMethod>({
   return (
     <nav
       className={cn(
-        "grid gap-1 rounded-xl border border-slate-200 bg-white p-1",
+        "grid gap-1 rounded-xl border border-stone-200 bg-white p-1",
         stageMethods.length === 3 ? "grid-cols-3" : "grid-cols-2",
         className,
       )}
@@ -218,8 +218,8 @@ function StageMethodTabs<TMethod extends DepositMethod>({
             className={cn(
               "min-w-0 rounded-lg px-2 py-2 text-center text-xs transition-colors sm:text-sm",
               selected
-                ? "bg-blue-100 text-blue-700"
-                : "text-ink-dim hover:bg-slate-50 hover:text-ink",
+                ? "bg-gold-100 text-gold-700"
+                : "text-ink-dim hover:bg-stone-50 hover:text-ink",
             )}
             aria-current={selected ? "page" : undefined}
           >
@@ -227,7 +227,7 @@ function StageMethodTabs<TMethod extends DepositMethod>({
             <span
               className={cn(
                 "ml-1.5 rounded-full bg-white/75 px-1.5 py-0.5 font-mono text-[11px]",
-                count > 0 ? "text-blue-700" : "text-ink-faint",
+                count > 0 ? "text-gold-700" : "text-ink-faint",
               )}
               aria-label={`${count} requests`}
             >

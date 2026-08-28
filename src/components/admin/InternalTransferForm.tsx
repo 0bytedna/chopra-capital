@@ -125,7 +125,7 @@ export function InternalTransferForm({
       </div>
 
       {source && (
-        <dl className="grid gap-2 rounded-xl border border-gold-600/15 bg-slate-50 p-3 sm:grid-cols-3">
+        <dl className="grid gap-2 rounded-xl border border-gold-600/15 bg-stone-50 p-3 sm:grid-cols-3">
           <div>
             <dt className="text-xs uppercase tracking-[0.14em] text-ink-faint">
               Available balance

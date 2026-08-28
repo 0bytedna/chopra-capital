@@ -353,7 +353,7 @@ export function PortfolioChart({
   return (
     <section className="min-w-0 space-y-3" aria-label={ariaLabel}>
       <div
-        className="grid grid-cols-2 rounded-xl border border-slate-200 bg-white p-1 shadow-sm"
+        className="grid grid-cols-2 rounded-xl border border-stone-200 bg-white p-1 shadow-sm"
         role="tablist"
         aria-label="Select account graph"
       >
@@ -367,8 +367,8 @@ export function PortfolioChart({
           className={cn(
             "rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors",
             showingProfit
-              ? "bg-blue-600 text-white shadow-sm"
-              : "text-ink-dim hover:bg-blue-50 hover:text-blue-700",
+              ? "bg-gold-600 text-white shadow-sm"
+              : "text-ink-dim hover:bg-gold-50 hover:text-gold-700",
           )}
         >
           Profits
@@ -383,8 +383,8 @@ export function PortfolioChart({
           className={cn(
             "rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors",
             !showingProfit
-              ? "bg-blue-600 text-white shadow-sm"
-              : "text-ink-dim hover:bg-blue-50 hover:text-blue-700",
+              ? "bg-gold-600 text-white shadow-sm"
+              : "text-ink-dim hover:bg-gold-50 hover:text-gold-700",
           )}
         >
           Balance
@@ -410,7 +410,7 @@ export function PortfolioChart({
           dataKey={activeGraph}
           initialSeries={initialSeries}
           firstActivityDate={firstActivityDate}
-          stroke={showingProfit ? "#38bdf8" : "#2563eb"}
+          stroke={showingProfit ? "#c89a35" : "#8d5a13"}
           gradientId={showingProfit ? "profitGoldFill" : "balanceGreenFill"}
           endpoint={endpoint}
           signed={showingProfit}

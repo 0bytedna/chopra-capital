@@ -70,7 +70,7 @@ const tabs: Array<{ id: Method; label: string }> = [
 ];
 
 const inputClass =
-  "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:border-blue-400 focus:outline-none";
+  "w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:border-gold-400 focus:outline-none";
 
 function formatInr(value: string) {
   const amount = Number(value);
@@ -84,7 +84,7 @@ function formatInr(value: string) {
 
 function EmptyPanel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-3 text-center text-sm text-ink-faint">
+    <p className="rounded-xl border border-dashed border-stone-300 bg-white px-4 py-3 text-center text-sm text-ink-faint">
       {children}
     </p>
   );
@@ -98,8 +98,8 @@ function ConversionEditForm({
   currentAmount: string;
 }) {
   return (
-    <details className="rounded-xl border border-slate-200 bg-white p-3">
-      <summary className="cursor-pointer text-sm font-medium text-blue-700">
+    <details className="rounded-xl border border-stone-200 bg-white p-3">
+      <summary className="cursor-pointer text-sm font-medium text-gold-700">
         Edit conversion value
       </summary>
       <AdminActionForm
@@ -297,7 +297,7 @@ function PayoutCards({
           </div>
 
           {method === "BANK" ? (
-            <dl className="mt-3 grid gap-3 rounded-xl border border-slate-200 bg-white p-4 text-xs sm:grid-cols-2">
+            <dl className="mt-3 grid gap-3 rounded-xl border border-stone-200 bg-white p-4 text-xs sm:grid-cols-2">
               <div>
                 <dt className="text-ink-faint">Account number</dt>
                 <dd className="mt-0.5 break-all font-mono text-ink">
@@ -326,7 +326,7 @@ function PayoutCards({
               </div>
             </dl>
           ) : (
-            <div className="mt-3 rounded-xl border border-slate-200 bg-white p-4 text-sm text-ink-dim">
+            <div className="mt-3 rounded-xl border border-stone-200 bg-white p-4 text-sm text-ink-dim">
               Cash payout · Mobile{" "}
               {withdrawal.user.mobile ?? "not provided"}
             </div>
@@ -425,7 +425,7 @@ export function WithdrawalDistributionPanels({
   return (
     <div>
       <div
-        className="mb-3 grid grid-cols-3 gap-1 rounded-xl border border-slate-200 bg-white p-1"
+        className="mb-3 grid grid-cols-3 gap-1 rounded-xl border border-stone-200 bg-white p-1"
         role="tablist"
         aria-label="Fund distribution method"
       >
@@ -439,8 +439,8 @@ export function WithdrawalDistributionPanels({
             className={cn(
               "min-w-0 rounded-lg px-2 py-2 text-xs transition-colors sm:text-sm",
               active === tab.id
-                ? "bg-blue-100 text-blue-700"
-                : "text-ink-dim hover:bg-slate-50 hover:text-ink",
+                ? "bg-gold-100 text-gold-700"
+                : "text-ink-dim hover:bg-stone-50 hover:text-ink",
             )}
           >
             {tab.label}

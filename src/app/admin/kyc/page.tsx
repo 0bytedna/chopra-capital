@@ -47,7 +47,7 @@ export default async function AdminKycPage() {
             "flex size-20 shrink-0 items-center justify-center rounded-full border font-mono text-3xl font-semibold shadow-lg sm:size-24 sm:text-4xl",
             pending.length > 0
               ? "border-gold-600 bg-gold-600 text-white shadow-gold-600/20"
-              : "border-slate-200 bg-slate-100 text-ink-faint shadow-slate-200/40",
+              : "border-stone-200 bg-stone-100 text-ink-faint shadow-stone-200/40",
           )}
           aria-label={`${pending.length} pending KYC reviews`}
         >

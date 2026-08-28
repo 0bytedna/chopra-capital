@@ -27,11 +27,11 @@ type PendingOperation =
   | null;
 
 const inputClass =
-  "mt-2 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-ink outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
+  "mt-2 h-11 w-full rounded-xl border border-stone-300 bg-white px-3 text-sm text-ink outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-100";
 const labelClass =
   "text-xs font-semibold uppercase tracking-[0.12em] text-ink-dim";
 const fileInputClass =
-  "mt-2 block w-full text-sm text-ink-dim file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:font-semibold file:text-ink";
+  "mt-2 block w-full text-sm text-ink-dim file:mr-3 file:rounded-lg file:border-0 file:bg-stone-100 file:px-3 file:py-2 file:font-semibold file:text-ink";
 
 export function SystemFilesPanel({
   twoFactorEnabled,
@@ -271,7 +271,7 @@ export function SystemFilesPanel({
 
   return (
     <section className="glass-card rounded-2xl p-5 sm:p-7">
-      <div className="border-b border-slate-200 pb-5">
+      <div className="border-b border-stone-200 pb-5">
         <p className="eyebrow">Server recovery</p>
         <h2 className="mt-2 font-serif text-2xl text-ink">Backup and restore</h2>
       </div>
@@ -339,9 +339,9 @@ export function SystemFilesPanel({
         </div>
       </div>
 
-      <article className="mt-5 rounded-xl border border-cyan-200 bg-cyan-50/50 p-4">
+      <article className="mt-5 rounded-xl border border-gold-200 bg-gold-50/50 p-4">
         <div className="flex items-center gap-3">
-          <span className="flex size-9 items-center justify-center rounded-lg bg-white text-cyan-700">
+          <span className="flex size-9 items-center justify-center rounded-lg bg-white text-gold-700">
             <Server className="size-4" aria-hidden />
           </span>
           <div className="min-w-0">
@@ -443,7 +443,7 @@ export function SystemFilesPanel({
         </div>
       </div>
 
-      <article className="mt-7 rounded-xl border border-slate-200 bg-white p-4">
+      <article className="mt-7 rounded-xl border border-stone-200 bg-white p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h3 className="font-semibold text-ink">Edit .env in browser</h3>
@@ -453,7 +453,7 @@ export function SystemFilesPanel({
             <button
               type="button"
               onClick={hideEnvironment}
-              className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-ink"
+              className="inline-flex items-center gap-2 rounded-lg border border-stone-300 px-3 py-2 text-sm font-semibold text-ink"
             >
               <EyeOff className="size-4" aria-hidden />
               Hide
@@ -463,7 +463,7 @@ export function SystemFilesPanel({
               type="button"
               onClick={loadEnvironment}
               disabled={pending !== null || credentialsMissing}
-              className="inline-flex items-center gap-2 rounded-lg border border-blue-300 px-3 py-2 text-sm font-semibold text-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-lg border border-gold-300 px-3 py-2 text-sm font-semibold text-gold-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Eye className="size-4" aria-hidden />
               {pending === "load-environment" ? "Loading…" : "Load .env"}
@@ -482,7 +482,7 @@ export function SystemFilesPanel({
                 autoCapitalize="none"
                 spellCheck={false}
                 rows={18}
-                className="mt-2 w-full resize-y rounded-xl border border-slate-300 bg-slate-950 p-4 font-mono text-xs leading-5 text-slate-100 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                className="mt-2 w-full resize-y rounded-xl border border-stone-300 bg-stone-950 p-4 font-mono text-xs leading-5 text-stone-100 outline-none focus:border-gold-500 focus:ring-2 focus:ring-gold-100"
               />
             </label>
             <button

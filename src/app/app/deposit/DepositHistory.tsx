@@ -31,7 +31,7 @@ type Props = { deposits: Deposit[] };
 const statusClass: Record<Deposit["status"], string> = {
   PENDING: "border-gold-500/40 bg-gold-600/10 text-gold-300",
   NEEDS_CORRECTION: "border-negative/40 bg-negative/10 text-negative",
-  RECEIVED: "border-sky-400/35 bg-sky-400/10 text-sky-300",
+  RECEIVED: "border-gold-400/35 bg-gold-400/10 text-gold-300",
   QUEUED: "border-gold-500/40 bg-gold-600/10 text-gold-300",
   CONFIRMED: "border-positive/40 bg-positive/10 text-positive",
   REJECTED: "border-negative/40 bg-negative/10 text-negative",

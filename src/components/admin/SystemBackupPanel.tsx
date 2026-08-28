@@ -11,7 +11,7 @@ import {
 import { OtpField } from "@/components/ui/OtpField";
 
 const inputClass =
-  "mt-2 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-ink outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
+  "mt-2 h-11 w-full rounded-xl border border-stone-300 bg-white px-3 text-sm text-ink outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-100";
 const labelClass =
   "text-xs font-semibold uppercase tracking-[0.12em] text-ink-dim";
 
@@ -161,7 +161,7 @@ export function SystemBackupPanel({
 
   return (
     <section className="glass-card rounded-2xl p-5 sm:p-7">
-      <div className="border-b border-slate-200 pb-5">
+      <div className="border-b border-stone-200 pb-5">
         <p className="eyebrow">Server recovery</p>
         <h2 className="mt-2 font-serif text-2xl text-ink">Backup and restore</h2>
       </div>
@@ -204,9 +204,9 @@ export function SystemBackupPanel({
       </div>
 
       <div className="mt-5 grid gap-4 lg:grid-cols-3">
-        <article className="rounded-xl border border-slate-200 bg-white p-4">
+        <article className="rounded-xl border border-stone-200 bg-white p-4">
           <div className="flex items-center gap-3">
-            <span className="flex size-10 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+            <span className="flex size-10 items-center justify-center rounded-xl bg-gold-50 text-gold-700">
               <DatabaseBackup className="size-5" aria-hidden />
             </span>
             <div>
@@ -225,9 +225,9 @@ export function SystemBackupPanel({
           </button>
         </article>
 
-        <article className="rounded-xl border border-slate-200 bg-white p-4">
+        <article className="rounded-xl border border-stone-200 bg-white p-4">
           <div className="flex items-center gap-3">
-            <span className="flex size-10 items-center justify-center rounded-xl bg-cyan-50 text-cyan-700">
+            <span className="flex size-10 items-center justify-center rounded-xl bg-gold-50 text-gold-700">
               <DatabaseBackup className="size-5" aria-hidden />
             </span>
             <div>
@@ -265,7 +265,7 @@ export function SystemBackupPanel({
               onChange={(event) =>
                 setRestoreFile(event.target.files?.[0] ?? null)
               }
-              className="mt-2 block w-full text-sm text-ink-dim file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:font-semibold file:text-ink"
+              className="mt-2 block w-full text-sm text-ink-dim file:mr-3 file:rounded-lg file:border-0 file:bg-stone-100 file:px-3 file:py-2 file:font-semibold file:text-ink"
             />
           </label>
           <label className="mt-4 block">

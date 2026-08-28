@@ -39,7 +39,7 @@ export default async function DashboardPage() {
         initialSeries={performance.series}
         firstActivityDate={performance.firstActivityDate}
       />
-      <p className="rounded-xl border border-gold-600/15 bg-slate-50 px-4 py-3 text-xs leading-5 text-ink-faint">
+      <p className="rounded-xl border border-gold-600/15 bg-stone-50 px-4 py-3 text-xs leading-5 text-ink-faint">
         Balance is maintained by the operations team from verified deposits, withdrawals,
         trading results, fees and company profit-share entries. Every administrator change
         is recorded in the audit trail.
@@ -48,7 +48,7 @@ export default async function DashboardPage() {
         className="glass-card overflow-hidden rounded-2xl"
         aria-labelledby="trading-account-title"
       >
-        <div className="border-b border-slate-200 px-5 py-4">
+        <div className="border-b border-stone-200 px-5 py-4">
           <p className="eyebrow">Company trading account</p>
           <h2 id="trading-account-title" className="mt-1 font-serif text-lg text-ink">
             MT5 live account details

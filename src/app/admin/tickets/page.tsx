@@ -65,7 +65,7 @@ export default async function AdminTicketsPage() {
                   "flex size-12 shrink-0 items-center justify-center rounded-full border font-mono text-xl font-semibold shadow-lg sm:size-16 sm:text-2xl",
                   needsAttention
                     ? "border-gold-600 bg-gold-600 text-white shadow-gold-600/20"
-                    : "border-slate-200 bg-slate-100 text-ink-faint shadow-slate-200/40",
+                    : "border-stone-200 bg-stone-100 text-ink-faint shadow-stone-200/40",
                 )}
                 aria-label={`${item.count} ${item.label.toLowerCase()}`}
               >

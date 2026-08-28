@@ -128,7 +128,7 @@ export function InvestorDirectory({ rows }: { rows: InvestorDirectoryRow[] }) {
             </span>
             <span className="relative block">
               <Search
-                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
+                className="pointer-events-none absolute left-3 top-1/2 size-4 -transtone-y-1/2 text-ink-faint"
                 aria-hidden
               />
               <input
@@ -207,7 +207,7 @@ export function InvestorDirectory({ rows }: { rows: InvestorDirectoryRow[] }) {
               <col className="w-[12%]" />
               <col className="w-[4%]" />
             </colgroup>
-            <thead className="border-b border-gold-600/15 bg-slate-50">
+            <thead className="border-b border-gold-600/15 bg-stone-50">
               <tr className="text-xs uppercase tracking-[0.14em] text-ink-faint">
                 <th scope="col" className="px-5 py-3 font-medium">Name</th>
                 <th scope="col" className="px-5 py-3 font-medium">Email</th>

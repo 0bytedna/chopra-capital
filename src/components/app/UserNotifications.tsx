@@ -26,13 +26,13 @@ const notificationStyle: Record<
   },
   UPDATE: {
     icon: Info,
-    iconClass: "bg-blue-100 text-blue-700",
-    surfaceClass: "border-blue-200 bg-blue-50/70",
+    iconClass: "bg-gold-100 text-gold-700",
+    surfaceClass: "border-gold-200 bg-gold-50/70",
   },
   RECOMMENDATION: {
     icon: ShieldCheck,
-    iconClass: "bg-slate-100 text-slate-700",
-    surfaceClass: "border-slate-200 bg-white",
+    iconClass: "bg-stone-100 text-stone-700",
+    surfaceClass: "border-stone-200 bg-white",
   },
 };
 
@@ -44,15 +44,15 @@ const journeyStyle = {
     label: "Complete",
   },
   CURRENT: {
-    card: "border-blue-300 bg-blue-50/80 shadow-sm",
-    number: "bg-blue-600 text-white",
-    badge: "bg-blue-100 text-blue-800",
+    card: "border-gold-300 bg-gold-50/80 shadow-sm",
+    number: "bg-gold-600 text-white",
+    badge: "bg-gold-100 text-gold-800",
     label: "Next step",
   },
   UPCOMING: {
-    card: "border-slate-200 bg-slate-50",
-    number: "bg-slate-200 text-slate-700",
-    badge: "bg-slate-200 text-slate-700",
+    card: "border-stone-200 bg-stone-50",
+    number: "bg-stone-200 text-stone-700",
+    badge: "bg-stone-200 text-stone-700",
     label: "Coming up",
   },
 } as const;
@@ -79,11 +79,11 @@ export function AccountJourney({ steps }: { steps: UserJourneyStep[] }) {
             </div>
             <h3 className="mt-3 font-serif text-lg text-ink">{step.title}</h3>
             {step.state === "UPCOMING" ? (
-              <span className="mt-3 text-sm font-semibold text-slate-500">Available later</span>
+              <span className="mt-3 text-sm font-semibold text-stone-500">Available later</span>
             ) : (
               <Link
                 href={step.href}
-                className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:text-blue-900"
+                className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-gold-700 hover:text-gold-900"
               >
                 {step.actionLabel}
                 <ArrowRight className="size-4" aria-hidden />
@@ -128,14 +128,14 @@ export function NotificationList({
         const Icon = style.icon;
         const isReadUpdate = item.kind === "UPDATE" && item.isUnread === false;
         const surfaceClass = isReadUpdate
-          ? "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/80"
+          ? "border-stone-200 bg-white hover:border-stone-300 hover:bg-stone-50/80"
           : style.surfaceClass;
         const iconClass = isReadUpdate
-          ? "bg-slate-100 text-slate-600"
+          ? "bg-stone-100 text-stone-600"
           : style.iconClass;
         const actionClass = isReadUpdate
-          ? "border-slate-300 bg-slate-50 text-slate-700 group-hover:border-slate-400 group-hover:bg-slate-100"
-          : "border-blue-300 bg-white text-blue-700 group-hover:border-blue-500 group-hover:bg-blue-50";
+          ? "border-stone-300 bg-stone-50 text-stone-700 group-hover:border-stone-400 group-hover:bg-stone-100"
+          : "border-gold-300 bg-white text-gold-700 group-hover:border-gold-500 group-hover:bg-gold-50";
 
         const information = (
           <div className={compact ? "contents" : "flex min-w-0 flex-1 items-start gap-3"}>
@@ -150,14 +150,14 @@ export function NotificationList({
                   {item.title}
                 </h3>
                 {item.isUnread && !compact && (
-                  <span className="rounded-full bg-blue-600 px-2.5 py-0.5 text-xs font-bold text-white">
+                  <span className="rounded-full bg-gold-600 px-2.5 py-0.5 text-xs font-bold text-white">
                     New
                   </span>
                 )}
                 {item.occurredAt && (
                   <time
                     dateTime={item.occurredAt.toISOString()}
-                    className={compact ? "block whitespace-nowrap text-xs font-medium text-slate-600" : "text-xs font-medium text-slate-600"}
+                    className={compact ? "block whitespace-nowrap text-xs font-medium text-stone-600" : "text-xs font-medium text-stone-600"}
                   >
                     {compact
                       ? formatCompactNotificationTime(item.occurredAt)
@@ -175,14 +175,14 @@ export function NotificationList({
             <form
               key={item.id}
               action={openNotification}
-              className={`group relative rounded-xl border transition-colors ${surfaceClass} ${item.isUnread ? "ring-2 ring-blue-200 shadow-sm" : ""}`}
+              className={`group relative rounded-xl border transition-colors ${surfaceClass} ${item.isUnread ? "ring-2 ring-gold-200 shadow-sm" : ""}`}
             >
               <input type="hidden" name="notificationId" value={item.notificationId} />
               <input type="hidden" name="href" value={item.href} />
               <button
                 type="submit"
                 aria-label={`${item.actionLabel}: ${item.title}`}
-                className="absolute inset-0 z-10 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                className="absolute inset-0 z-10 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 focus-visible:ring-offset-2"
               />
               <div
                 className={compact
@@ -194,7 +194,7 @@ export function NotificationList({
                   className={`inline-flex shrink-0 items-center justify-center rounded-full border font-semibold transition-colors ${compact ? "w-16 gap-1.5 px-2 py-1.5 text-xs sm:w-24" : "gap-2 px-4 py-2 text-sm"} ${actionClass}`}
                 >
                   {compact ? "View" : item.actionLabel}
-                  <ArrowRight className={`${compact ? "size-3.5" : "size-4"} transition-transform group-hover:translate-x-0.5`} aria-hidden />
+                  <ArrowRight className={`${compact ? "size-3.5" : "size-4"} transition-transform group-hover:transtone-x-0.5`} aria-hidden />
                 </span>
               </div>
             </form>
@@ -204,12 +204,12 @@ export function NotificationList({
         return (
           <article
             key={item.id}
-            className={`rounded-xl border ${compact ? "grid min-h-20 grid-cols-[1.75rem_minmax(0,1fr)_4rem] items-center gap-2.5 px-2.5 sm:grid-cols-[1.75rem_minmax(0,1fr)_6rem]" : "flex flex-col gap-4 p-4 sm:flex-row sm:items-center"} ${surfaceClass} ${item.isUnread ? "ring-2 ring-blue-200 shadow-sm" : ""}`}
+            className={`rounded-xl border ${compact ? "grid min-h-20 grid-cols-[1.75rem_minmax(0,1fr)_4rem] items-center gap-2.5 px-2.5 sm:grid-cols-[1.75rem_minmax(0,1fr)_6rem]" : "flex flex-col gap-4 p-4 sm:flex-row sm:items-center"} ${surfaceClass} ${item.isUnread ? "ring-2 ring-gold-200 shadow-sm" : ""}`}
           >
             {information}
             <Link
               href={item.href}
-              className={`inline-flex shrink-0 items-center justify-center rounded-full border border-blue-300 bg-white font-semibold text-blue-700 transition-colors hover:border-blue-500 hover:bg-blue-50 ${compact ? "w-16 gap-1.5 px-2 py-1.5 text-xs sm:w-24" : "gap-2 px-4 py-2 text-sm"}`}
+              className={`inline-flex shrink-0 items-center justify-center rounded-full border border-gold-300 bg-white font-semibold text-gold-700 transition-colors hover:border-gold-500 hover:bg-gold-50 ${compact ? "w-16 gap-1.5 px-2 py-1.5 text-xs sm:w-24" : "gap-2 px-4 py-2 text-sm"}`}
             >
               {compact ? "View" : item.actionLabel}
               <ArrowRight className={compact ? "size-3.5" : "size-4"} aria-hidden />
@@ -244,7 +244,7 @@ export function AttentionPanel({ center }: { center: UserNotificationCenter }) {
           </div>
           <Link
             href="/app/notifications"
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700"
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-gold-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold-700"
           >
             Open notification center
             <ArrowRight className="size-4" aria-hidden />
@@ -261,7 +261,7 @@ export function AttentionPanel({ center }: { center: UserNotificationCenter }) {
               <AlertTriangle className="size-4 shrink-0 text-amber-700" aria-hidden />
               <span className="min-w-0 flex-1 font-medium text-amber-950">{item.title}</span>
               <ArrowRight
-                className="size-4 shrink-0 text-amber-700 transition-transform group-hover:translate-x-0.5"
+                className="size-4 shrink-0 text-amber-700 transition-transform group-hover:transtone-x-0.5"
                 aria-hidden
               />
             </Link>
@@ -296,23 +296,23 @@ export function AttentionPanel({ center }: { center: UserNotificationCenter }) {
   return (
     <section
       aria-labelledby="guided-step-title"
-      className="flex flex-col gap-4 rounded-2xl border-2 border-blue-200 bg-blue-50 p-5 shadow-sm sm:flex-row sm:items-center"
+      className="flex flex-col gap-4 rounded-2xl border-2 border-gold-200 bg-gold-50 p-5 shadow-sm sm:flex-row sm:items-center"
     >
-      <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-blue-600 text-lg font-bold text-white">
+      <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-gold-600 text-lg font-bold text-white">
         {center.journey.findIndex((step) => step.id === currentStep.id) + 1}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold uppercase tracking-[0.12em] text-blue-700">
+        <p className="text-sm font-semibold uppercase tracking-[0.12em] text-gold-700">
           Your next step
         </p>
-        <h2 id="guided-step-title" className="mt-0.5 font-serif text-xl text-blue-950">
+        <h2 id="guided-step-title" className="mt-0.5 font-serif text-xl text-gold-950">
           {currentStep.title}
         </h2>
-        <p className="mt-1 text-sm leading-6 text-blue-900">{currentStep.message}</p>
+        <p className="mt-1 text-sm leading-6 text-gold-900">{currentStep.message}</p>
       </div>
       <Link
         href={currentStep.href}
-        className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700"
+        className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-gold-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold-700"
       >
         {currentStep.actionLabel}
         <ArrowRight className="size-4" aria-hidden />

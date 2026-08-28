@@ -159,7 +159,7 @@ export function BrokerTransferForm({ deposits }: Props) {
                             if (reasonRef.current) reasonRef.current.value = reason;
                             window.setTimeout(() => button.form?.requestSubmit(button), 0);
                           }}
-                          className="flex size-7 items-center justify-center rounded-full border border-slate-300 bg-white text-ink-dim hover:border-blue-400 hover:text-blue-700"
+                          className="flex size-7 items-center justify-center rounded-full border border-stone-300 bg-white text-ink-dim hover:border-gold-400 hover:text-gold-700"
                         >
                           <Pencil className="size-3.5" aria-hidden />
                         </button>

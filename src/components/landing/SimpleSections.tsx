@@ -83,7 +83,7 @@ function LiveHistory({ mt5 }: { mt5: LandingMt5Details }) {
         />
         <Reveal delay={0.08}>
           <div className="product-window mx-auto mt-7 max-w-4xl overflow-hidden">
-            <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
+            <div className="flex items-center justify-between gap-3 border-b border-stone-200 px-5 py-4">
               <div>
                 <p className="eyebrow text-sm">MT5 read-only account</p>
                 <p className="mt-1 text-lg font-medium text-ink-dim">Live account details</p>
@@ -145,7 +145,7 @@ function StrategyOverview() {
         <div className="mt-12 grid gap-4 sm:mt-14 lg:grid-cols-3">
           {tradingSteps.map((step, index) => (
             <Reveal key={step.title} delay={index * 0.05}>
-              <article className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-[#f6f6f5] p-5 shadow-sm sm:p-6">
+              <article className="overflow-hidden rounded-[1.75rem] border border-stone-200 bg-[#f6f6f5] p-5 shadow-sm sm:p-6">
                 <h3 className="text-center text-lg font-semibold text-ink sm:text-xl">{step.title}</h3>
                 <div className="relative mt-4 h-56 w-full overflow-hidden sm:h-64">
                   <Image
@@ -205,16 +205,16 @@ function InvestorJourney() {
 
         <div className="relative mt-9 grid gap-3 sm:grid-cols-2 md:grid-cols-5">
           <div
-            className="absolute left-[10%] right-[10%] top-7 hidden h-px bg-blue-200 md:block"
+            className="absolute left-[10%] right-[10%] top-7 hidden h-px bg-gold-200 md:block"
             aria-hidden
           />
           {investorSteps.map((step, index) => (
             <Reveal key={step.title} delay={index * 0.04}>
-              <article className="relative h-full rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                <span className="relative z-10 flex size-12 items-center justify-center rounded-xl border border-blue-200 bg-blue-50 text-blue-700">
+              <article className="relative h-full rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+                <span className="relative z-10 flex size-12 items-center justify-center rounded-xl border border-gold-200 bg-gold-50 text-gold-700">
                   <step.Icon className="size-5" aria-hidden />
                 </span>
-                <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-blue-700">
+                <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-gold-700">
                   Step 0{index + 1}
                 </p>
                 <h3 className="mt-2 text-lg font-bold text-ink">{step.title}</h3>
@@ -225,7 +225,7 @@ function InvestorJourney() {
         </div>
 
         <Reveal delay={0.12}>
-          <p className="mx-auto mt-7 max-w-3xl rounded-2xl border border-blue-200 bg-blue-50 px-5 py-4 text-center text-base font-semibold leading-7 text-blue-950">
+          <p className="mx-auto mt-7 max-w-3xl rounded-2xl border border-gold-200 bg-gold-50 px-5 py-4 text-center text-base font-semibold leading-7 text-gold-950">
             You never install anything. You never touch MT5 unless you want to inspect the account.
           </p>
         </Reveal>
@@ -260,8 +260,8 @@ function ThingsThatMatter() {
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           {operationalPoints.map((point, index) => (
             <Reveal key={point.title} delay={index * 0.06}>
-              <article className="h-full rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
-                <span className="flex size-11 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+              <article className="h-full rounded-2xl border border-stone-200 bg-white p-6 shadow-sm sm:p-7">
+                <span className="flex size-11 items-center justify-center rounded-xl bg-gold-50 text-gold-700">
                   <point.Icon className="size-5" aria-hidden />
                 </span>
                 <h3 className="mt-5 text-xl font-bold text-ink">{point.title}</h3>
@@ -322,10 +322,10 @@ function Faq() {
                     className="flex w-full items-center justify-between gap-4 px-5 py-5 text-left sm:px-6"
                   >
                     <span className="text-base font-bold text-ink sm:text-lg">{question}</span>
-                    <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white">
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-stone-200 bg-white">
                       <ChevronDown
                         className={cn(
-                          "size-4 text-blue-700 transition-transform",
+                          "size-4 text-gold-700 transition-transform",
                           active && "rotate-180",
                         )}
                         aria-hidden

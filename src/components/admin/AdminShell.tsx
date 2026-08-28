@@ -53,7 +53,7 @@ function Nav({ pathname, onNavigate }: { pathname: string; onNavigate?: () => vo
             )}
           >
             {active && (
-              <span aria-hidden className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-gold-500" />
+              <span aria-hidden className="absolute left-0 top-1/2 h-5 w-0.5 -transtone-y-1/2 rounded-full bg-gold-500" />
             )}
             <Icon className="size-4" aria-hidden />
             {label}
@@ -124,7 +124,7 @@ export function AdminShell({ email, children }: { email: string; children: React
       )}
 
       <div className="flex min-w-0 flex-1 flex-col lg:gap-3">
-        <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-vault-950/88 backdrop-blur-xl lg:top-3 lg:rounded-2xl lg:border lg:border-slate-200/80 lg:shadow-lg lg:shadow-black/20">
+        <header className="sticky top-0 z-40 border-b border-stone-200/80 bg-vault-950/88 backdrop-blur-xl lg:top-3 lg:rounded-2xl lg:border lg:border-stone-200/80 lg:shadow-lg lg:shadow-black/20">
           <div className="flex h-16 min-w-0 items-center gap-2 px-3 sm:gap-3 sm:px-6">
             <button
               type="button"
@@ -140,7 +140,7 @@ export function AdminShell({ email, children }: { email: string; children: React
             </div>
           </div>
         </header>
-        <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:rounded-2xl lg:border lg:border-slate-200/80 lg:bg-vault-900/20">{children}</main>
+        <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:rounded-2xl lg:border lg:border-stone-200/80 lg:bg-vault-900/20">{children}</main>
       </div>
     </div>
   );

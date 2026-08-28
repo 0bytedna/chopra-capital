@@ -90,7 +90,7 @@ export default async function AdminWithdrawalsPage() {
       <details className="glass-card rounded-xl p-4 sm:p-5">
         <summary className="flex cursor-pointer list-none flex-col items-start justify-between gap-1.5 sm:flex-row sm:items-center sm:gap-3">
           <span className="whitespace-nowrap text-sm font-medium text-ink">Withdrawal window</span>
-          <span className="whitespace-nowrap text-left text-xs text-blue-700 sm:text-right sm:text-sm">
+          <span className="whitespace-nowrap text-left text-xs text-gold-700 sm:text-right sm:text-sm">
             {withdrawalScheduleLabel(schedule)}
           </span>
         </summary>
@@ -99,7 +99,7 @@ export default async function AdminWithdrawalsPage() {
           showSuccess={false}
           submitLabel="Save schedule"
           pendingLabel="Saving…"
-          className="mt-4 border-t border-slate-200 pt-4"
+          className="mt-4 border-t border-stone-200 pt-4"
           submitClassName="w-full sm:w-auto"
         >
           <div className="grid gap-3 sm:grid-cols-3">
@@ -108,7 +108,7 @@ export default async function AdminWithdrawalsPage() {
               <select
                 name="weekday"
                 defaultValue={schedule.weekday}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm normal-case tracking-normal text-ink outline-none focus:border-blue-400"
+                className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm normal-case tracking-normal text-ink outline-none focus:border-gold-400"
               >
                 {WITHDRAWAL_WEEKDAYS.map((day) => (
                   <option key={day.value} value={day.value}>
@@ -124,7 +124,7 @@ export default async function AdminWithdrawalsPage() {
                 name="startTime"
                 defaultValue={schedule.startTime}
                 required
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm normal-case tracking-normal text-ink outline-none focus:border-blue-400"
+                className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm normal-case tracking-normal text-ink outline-none focus:border-gold-400"
               />
             </label>
             <label className="space-y-1 text-xs uppercase tracking-[0.12em] text-ink-dim">
@@ -134,7 +134,7 @@ export default async function AdminWithdrawalsPage() {
                 name="endTime"
                 defaultValue={schedule.endTime}
                 required
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm normal-case tracking-normal text-ink outline-none focus:border-blue-400"
+                className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm normal-case tracking-normal text-ink outline-none focus:border-gold-400"
               />
             </label>
           </div>

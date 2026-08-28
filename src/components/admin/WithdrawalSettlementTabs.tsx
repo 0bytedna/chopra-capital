@@ -338,7 +338,7 @@ export function WithdrawalSettlementTabs({ withdrawals }: Props) {
   return (
     <div>
       <div
-        className="mb-3 grid grid-cols-2 gap-1 rounded-xl border border-slate-200 bg-white p-1"
+        className="mb-3 grid grid-cols-2 gap-1 rounded-xl border border-stone-200 bg-white p-1"
         role="tablist"
         aria-label="INR conversion method"
       >
@@ -352,8 +352,8 @@ export function WithdrawalSettlementTabs({ withdrawals }: Props) {
             className={cn(
               "min-w-0 rounded-lg px-2 py-2 text-xs transition-colors sm:text-sm",
               active === tab.id
-                ? "bg-blue-100 text-blue-700"
-                : "text-ink-dim hover:bg-slate-50 hover:text-ink",
+                ? "bg-gold-100 text-gold-700"
+                : "text-ink-dim hover:bg-stone-50 hover:text-ink",
             )}
           >
             {tab.label}
