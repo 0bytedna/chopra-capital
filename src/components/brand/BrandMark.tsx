@@ -18,83 +18,17 @@ export function BrandMark({
         className="size-full"
         data-priority={priority || undefined}
       >
-        <defs>
-          <linearGradient
-            id="brand-bars-metallic-gold"
-            x1="175"
-            y1="420"
-            x2="408"
-            y2="175"
-            gradientUnits="userSpaceOnUse"
-          >
-            <stop offset="0%" stopColor="#8f5d07" />
-            <stop offset="20%" stopColor="#d2a128" />
-            <stop offset="38%" stopColor="#f8dd8a" />
-            <stop offset="50%" stopColor="#fff3bb" />
-            <stop offset="65%" stopColor="#e5b73f" />
-            <stop offset="82%" stopColor="#b87907" />
-            <stop offset="100%" stopColor="#efd079" />
-          </linearGradient>
-
-          <filter id="brand-bars-mask-filter" colorInterpolationFilters="sRGB">
-            <feColorMatrix
-              type="matrix"
-              values="
-                 0        0        0        0  1
-                 0        0        0        0  1
-                 0        0        0        0  1
-                -2.65625  1.328125  1.328125  0 -0.208333
-              "
-              result="bar-class"
-            />
-            <feComposite in="bar-class" in2="SourceAlpha" operator="in" />
-          </filter>
-
-          <filter id="brand-c-only-filter" colorInterpolationFilters="sRGB">
-            <feColorMatrix
-              type="matrix"
-              values="
-                 0        0        0        0  1
-                 0        0        0        0  1
-                 0        0        0        0  1
-                -2.65625  1.328125  1.328125  0 -0.208333
-              "
-              result="bar-class"
-            />
-            <feComposite
-              in="bar-class"
-              in2="SourceAlpha"
-              operator="in"
-              result="bar-mask"
-            />
-            <feComposite in="SourceGraphic" in2="bar-mask" operator="out" />
-          </filter>
-
-          <mask id="brand-bars-mask">
-            <image
-              href="/brand/chopra-capital-mark-c2-green.png"
-              width="512"
-              height="512"
-              filter="url(#brand-bars-mask-filter)"
-            />
-          </mask>
-        </defs>
-
-        <rect
-          width="512"
-          height="512"
-          fill="url(#brand-bars-metallic-gold)"
-          mask="url(#brand-bars-mask)"
-        />
-        <image
-          href="/brand/chopra-capital-mark-c2-green.png"
-          width="512"
-          height="512"
-          filter="url(#brand-c-only-filter)"
-        />
+        <g fill="#d4af37">
+          <path d="M 184 300 L 239 274 L 239 390 L 184 390 Z" />
+          <path d="M 252 251 L 307 225 L 307 390 L 252 390 Z" />
+          <path d="M 320 207 L 375 181 L 375 390 L 320 390 Z" />
+        </g>
         <path
-          d="M 394 349 L 443 391 L 410 424 L 361 381 Z"
-          fill="#0f192d"
+          d="M 377 145 A 153 181 0 1 0 373 372"
+          fill="none"
+          stroke="#0f192d"
+          strokeWidth="66"
+          strokeLinecap="butt"
         />
       </svg>
     </span>
