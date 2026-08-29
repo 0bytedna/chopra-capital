@@ -49,11 +49,11 @@ function Nav({ pathname, onNavigate }: { pathname: string; onNavigate?: () => vo
             aria-current={active ? "page" : undefined}
             className={cn(
               "relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
-              active ? "bg-gold-600/12 text-gold-300" : "text-ink-dim hover:bg-ink/5 hover:text-ink",
+              active ? "bg-gold-100 text-ink font-semibold shadow-sm ring-1 ring-inset ring-gold-300" : "text-ink-dim hover:bg-ink/5 hover:text-ink",
             )}
           >
             {active && (
-              <span aria-hidden className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-gold-500" />
+              <span aria-hidden className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-gold-600" />
             )}
             <Icon className="size-4" aria-hidden />
             {label}
