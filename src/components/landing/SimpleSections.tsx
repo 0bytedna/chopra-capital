@@ -281,7 +281,7 @@ const faqs = [
     "No. Chopra Capital manages the trading operation. You never install a bot or configure MT5. The read-only MT5 account is available only if you want to inspect the trading history.",
   ],
   [
-    "Is the 1–3% monthly return guaranteed?",
+    "Is the 1–4% monthly return guaranteed?",
     "No. It is a performance objective, not a guarantee. Some periods may be flat or negative, and capital can be lost.",
   ],
   [
