@@ -410,7 +410,7 @@ export function PortfolioChart({
           dataKey={activeGraph}
           initialSeries={initialSeries}
           firstActivityDate={firstActivityDate}
-          stroke={showingProfit ? "#c89a35" : "#8d5a13"}
+          stroke={showingProfit ? "#e0b43f" : "#b57d0c"}
           gradientId={showingProfit ? "profitGoldFill" : "balanceGreenFill"}
           endpoint={endpoint}
           signed={showingProfit}

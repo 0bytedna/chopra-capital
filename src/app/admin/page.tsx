@@ -63,6 +63,12 @@ export default async function AdminOverviewPage() {
     { href: "/admin/kyc", label: "KYCs", count: pendingKyc },
     { href: "/admin/tickets", label: "Tickets", count: openTickets },
   ];
+  const poolSnapshot = [
+    { label: "Balance", value: formatUsdt(poolNav.balance), suffix: "USD" },
+    { label: "Profits", value: formatUsdt(tradingProfit), suffix: "USD" },
+    { label: "Issued units", value: formatUsdt(poolNav.totalUnits, 6) },
+    { label: "NAV / unit", value: formatUsdt(poolNav.nav) },
+  ];
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">
@@ -77,24 +83,21 @@ export default async function AdminOverviewPage() {
         className="grid auto-rows-fr grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4"
         aria-label="Pool snapshot"
       >
-        {[
-          { label: "Balance", value: `${formatUsdt(poolNav.balance)} USD` },
-          { label: "Profits", value: `${formatUsdt(tradingProfit)} USD` },
-          {
-            label: "Issued units",
-            value: formatUsdt(poolNav.totalUnits, 6),
-          },
-          { label: "NAV / unit", value: formatUsdt(poolNav.nav) },
-        ].map((item) => (
+        {poolSnapshot.map((item) => (
           <div
             key={item.label}
-            className="glass-card flex h-28 flex-col justify-center rounded-xl p-4 sm:h-32 sm:p-5"
+            className="glass-card flex h-28 min-w-0 flex-col justify-center rounded-xl p-3 [container-type:inline-size] sm:h-32 sm:p-5"
           >
-            <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">
+            <p className="text-[clamp(0.68rem,7.5cqi,0.8125rem)] leading-tight uppercase tracking-[0.12em] text-ink-faint">
               {item.label}
             </p>
-            <p className="currency-value mt-2 break-words text-lg text-ink sm:text-xl">
+            <p className="currency-value mt-2 max-w-full whitespace-nowrap text-[clamp(0.72rem,9.5cqi,1.25rem)] leading-tight tracking-[-0.035em] text-ink">
               {item.value}
+              {item.suffix && (
+                <span className="ml-1 text-[0.7em] font-semibold tracking-normal text-ink-dim">
+                  {item.suffix}
+                </span>
+              )}
             </p>
           </div>
         ))}

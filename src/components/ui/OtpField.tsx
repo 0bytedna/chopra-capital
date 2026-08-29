@@ -69,7 +69,7 @@ export function OtpField({
         <button
           type="button"
           onClick={pasteCode}
-          className="absolute right-1.5 top-1/2 inline-flex size-9 -transtone-y-1/2 items-center justify-center rounded-lg text-ink-dim transition-colors hover:bg-gold-50 hover:text-gold-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500"
+          className="absolute inset-y-0 right-1.5 my-auto inline-flex size-9 items-center justify-center rounded-lg text-ink-dim transition-colors hover:bg-gold-50 hover:text-gold-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500"
           aria-label="Paste authentication code"
           title="Paste code"
         >

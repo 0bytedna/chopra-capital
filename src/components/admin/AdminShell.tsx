@@ -53,7 +53,7 @@ function Nav({ pathname, onNavigate }: { pathname: string; onNavigate?: () => vo
             )}
           >
             {active && (
-              <span aria-hidden className="absolute left-0 top-1/2 h-5 w-0.5 -transtone-y-1/2 rounded-full bg-gold-500" />
+              <span aria-hidden className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-gold-500" />
             )}
             <Icon className="size-4" aria-hidden />
             {label}

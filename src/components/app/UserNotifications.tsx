@@ -194,7 +194,7 @@ export function NotificationList({
                   className={`inline-flex shrink-0 items-center justify-center rounded-full border font-semibold transition-colors ${compact ? "w-16 gap-1.5 px-2 py-1.5 text-xs sm:w-24" : "gap-2 px-4 py-2 text-sm"} ${actionClass}`}
                 >
                   {compact ? "View" : item.actionLabel}
-                  <ArrowRight className={`${compact ? "size-3.5" : "size-4"} transition-transform group-hover:transtone-x-0.5`} aria-hidden />
+                  <ArrowRight className={`${compact ? "size-3.5" : "size-4"} transition-transform group-hover:translate-x-0.5`} aria-hidden />
                 </span>
               </div>
             </form>
@@ -261,7 +261,7 @@ export function AttentionPanel({ center }: { center: UserNotificationCenter }) {
               <AlertTriangle className="size-4 shrink-0 text-amber-700" aria-hidden />
               <span className="min-w-0 flex-1 font-medium text-amber-950">{item.title}</span>
               <ArrowRight
-                className="size-4 shrink-0 text-amber-700 transition-transform group-hover:transtone-x-0.5"
+                className="size-4 shrink-0 text-amber-700 transition-transform group-hover:translate-x-0.5"
                 aria-hidden
               />
             </Link>

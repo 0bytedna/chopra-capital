@@ -16,15 +16,15 @@ function SummaryCard({
   secondaryValue?: string;
 }) {
   return (
-    <article className="glass-card flex flex-col items-center justify-center rounded-xl px-3 py-4 text-center sm:py-5">
+    <article className="glass-card flex min-w-0 flex-col items-center justify-center rounded-xl px-3 py-4 text-center [container-type:inline-size] sm:py-5">
       <p className="text-[11px] uppercase tracking-[0.12em] text-ink-faint sm:text-xs">
         {label}
       </p>
-      <p className="currency-value mt-1.5 max-w-full break-words text-base text-ink sm:text-lg">
+      <p className="currency-value mt-1.5 max-w-full whitespace-nowrap text-[clamp(0.7rem,8.5cqi,1.125rem)] leading-tight tracking-[-0.03em] text-ink">
         {value}
       </p>
       {secondaryValue && (
-        <p className="currency-value mt-1 max-w-full break-words text-sm text-ink sm:text-base">
+        <p className="currency-value mt-1 max-w-full whitespace-nowrap text-[clamp(0.65rem,7.8cqi,1rem)] leading-tight tracking-[-0.03em] text-ink">
           {secondaryValue}
         </p>
       )}

@@ -19,7 +19,8 @@ export function TwoFactorForm() {
         autoFocus
         placeholder="000000"
         inputClassName="py-3 pl-12 text-center font-mono text-2xl tracking-[0.5em]"
-      />      <SubmitButton className="w-full" pendingLabel="Verifying…">
+      />
+      <SubmitButton className="w-full" pendingLabel="Verifying…">
         Verify and continue
       </SubmitButton>
     </form>

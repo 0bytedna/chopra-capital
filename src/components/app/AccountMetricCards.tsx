@@ -41,9 +41,9 @@ function MetricSummary({
   Icon: LucideIcon;
 }) {
   return (
-    <article className="min-w-0 p-4 sm:p-5">
+    <article className="min-w-0 p-3 [container-type:inline-size] sm:p-5">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-xs uppercase tracking-[0.14em] text-ink-faint">{label}</p>
+        <p className="min-w-0 text-[clamp(0.68rem,7.5cqi,0.8125rem)] leading-tight uppercase tracking-[0.12em] text-ink-faint">{label}</p>
         <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-gold-600/25 bg-gold-600/10">
           <Icon className="size-4 text-gold-400" aria-hidden />
         </span>
@@ -110,7 +110,7 @@ export function AccountMetricCards({
     >
       <MetricSummary label="Balance" Icon={WalletCards}>
         <p
-          className="currency-value mt-2 min-w-0 text-lg text-ink sm:text-2xl"
+          className="currency-value mt-2 max-w-full whitespace-nowrap text-[clamp(0.72rem,9.5cqi,1.5rem)] leading-tight tracking-[-0.035em] text-ink"
           aria-live="polite"
         >
           {formattedUsd(metrics.balance)}
@@ -119,11 +119,11 @@ export function AccountMetricCards({
       </MetricSummary>
       <MetricSummary label="In queue" Icon={Clock3}>
         <div className="mt-2 space-y-1" aria-live="polite">
-          <p className="currency-value min-w-0 text-lg text-ink sm:text-2xl">
+          <p className="currency-value max-w-full whitespace-nowrap text-[clamp(0.72rem,9.5cqi,1.5rem)] leading-tight tracking-[-0.035em] text-ink">
             {formattedUsd(metrics.queuedUsd)}
             <span className="ml-1 text-[0.65rem] text-ink-faint sm:text-xs">USD</span>
           </p>
-          <p className="currency-value min-w-0 text-lg text-ink sm:text-2xl">
+          <p className="currency-value max-w-full whitespace-nowrap text-[clamp(0.72rem,9.5cqi,1.5rem)] leading-tight tracking-[-0.035em] text-ink">
             {formattedInr(metrics.pendingInr)}
             <span className="ml-1 text-[0.65rem] text-ink-faint sm:text-xs">INR</span>
           </p>

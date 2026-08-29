@@ -30,7 +30,7 @@ export function CompositionDonut({ principal, profit }: Props) {
       ];
 
   const empty = data.every((d) => d.amount <= 0);
-  const colors = inLoss ? ["#b27a19", "#fb7185"] : ["#b27a19", "#34d399"];
+  const colors = inLoss ? ["#cf9a18", "#fb7185"] : ["#cf9a18", "#34d399"];
 
   return (
     <div className="glass-card flex h-full flex-col rounded-2xl p-5 sm:p-6">

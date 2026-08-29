@@ -128,7 +128,7 @@ export function InvestorDirectory({ rows }: { rows: InvestorDirectoryRow[] }) {
             </span>
             <span className="relative block">
               <Search
-                className="pointer-events-none absolute left-3 top-1/2 size-4 -transtone-y-1/2 text-ink-faint"
+                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
                 aria-hidden
               />
               <input
