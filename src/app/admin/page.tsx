@@ -86,12 +86,19 @@ export default async function AdminOverviewPage() {
         {poolSnapshot.map((item) => (
           <div
             key={item.label}
-            className="glass-card flex h-28 min-w-0 flex-col justify-center rounded-xl p-3 [container-type:inline-size] sm:h-32 sm:p-5"
+            className="glass-card flex min-h-24 min-w-0 flex-col justify-center rounded-xl px-4 py-4 [container-type:inline-size] sm:min-h-28 sm:p-5"
           >
-            <p className="text-[clamp(0.68rem,7.5cqi,0.8125rem)] leading-tight uppercase tracking-[0.12em] text-ink-faint">
+            <p className="text-[clamp(0.75rem,7cqi,0.9rem)] leading-tight uppercase tracking-[0.12em] text-ink-faint">
               {item.label}
             </p>
-            <p className="currency-value mt-2 max-w-full whitespace-nowrap text-[clamp(0.72rem,9.5cqi,1.25rem)] leading-tight tracking-[-0.035em] text-ink">
+            <p
+              className={cn(
+                "currency-value mt-2 max-w-full whitespace-nowrap leading-none tracking-[-0.035em] text-ink",
+                item.value.length > 10
+                  ? "text-[clamp(0.95rem,9.5cqi,1.2rem)]"
+                  : "text-[clamp(1.15rem,12cqi,1.65rem)]",
+              )}
+            >
               {item.value}
               {item.suffix && (
                 <span className="ml-1 text-[0.7em] font-semibold tracking-normal text-ink-dim">
@@ -111,7 +118,7 @@ export default async function AdminOverviewPage() {
           <Link
             key={queue.href}
             href={queue.href}
-            className="glass-card glass-card-hover flex aspect-square flex-col items-center justify-center rounded-2xl p-4 text-center sm:p-6 lg:aspect-auto lg:min-h-32 lg:p-4"
+            className="glass-card glass-card-hover flex min-h-32 flex-col items-center justify-center rounded-2xl p-4 text-center sm:min-h-36 sm:p-5 lg:min-h-32 lg:p-4"
           >
             <span
               className={cn(
@@ -124,7 +131,7 @@ export default async function AdminOverviewPage() {
             >
               {queue.count}
             </span>
-            <p className="mt-4 text-base font-semibold leading-tight text-ink sm:text-lg lg:mt-3">
+            <p className="mt-3 text-lg font-semibold leading-tight text-ink">
               {queue.label}
             </p>
           </Link>
