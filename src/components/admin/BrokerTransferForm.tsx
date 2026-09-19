@@ -1,6 +1,6 @@
 "use client";
 
-import { startTransition, useActionState, useMemo, useRef, useState } from "react";
+import { startTransition, useActionState, useMemo, useState } from "react";
 import { Loader2, Pencil, X } from "lucide-react";
 import {
   adminEditQueuedDepositConversion,
@@ -32,7 +32,7 @@ function formatUsdt(value: number): string {
 
 export function BrokerTransferForm({ deposits }: Props) {
   const [state, formAction, pending] = useActionState<AdminFormState, FormData>(adminInvestQueuedDeposits, {});
-  const [editState, editAction] = useActionState<AdminFormState, FormData>(
+  const [editState, editAction, editPending] = useActionState<AdminFormState, FormData>(
     adminEditQueuedDepositConversion,
     {},
   );
@@ -40,8 +40,6 @@ export function BrokerTransferForm({ deposits }: Props) {
     adminRejectQueuedDeposit,
     {},
   );
-  const correctedAmountRef = useRef<HTMLInputElement>(null);
-  const reasonRef = useRef<HTMLInputElement>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [totalReceived, setTotalReceived] = useState("");
 
@@ -74,11 +72,11 @@ export function BrokerTransferForm({ deposits }: Props) {
         }
       }}
     >
-      <input ref={correctedAmountRef} type="hidden" name="newUsdtAmount" />
-      <input ref={reasonRef} type="hidden" name="reason" />
       {state.error && <Alert tone="error">{state.error}</Alert>}
       {editState.error && <Alert tone="error">{editState.error}</Alert>}
+      {editState.success && <Alert tone="success">{editState.success}</Alert>}
       {rejectState.error && <Alert tone="error">{rejectState.error}</Alert>}
+      {rejectState.success && <Alert tone="success">{rejectState.success}</Alert>}
 
       {deposits.length === 0 ? (
         <p className="rounded-xl border border-dashed border-gold-600/20 px-4 py-3 text-center text-sm text-ink-faint">
@@ -134,17 +132,11 @@ export function BrokerTransferForm({ deposits }: Props) {
                     <span className="col-start-4 flex justify-self-end gap-1">
                       {deposit.method !== "CRYPTO" && (
                         <button
-                          type="submit"
-                          formAction={editAction}
-                          formNoValidate
-                          name="id"
-                          value={deposit.id}
-                          data-intent="edit"
+                          type="button"
+                          disabled={editPending}
                           aria-label={"Edit conversion for " + deposit.investor}
                           title="Edit conversion value"
-                          onClick={(event) => {
-                            event.preventDefault();
-                            const button = event.currentTarget;
+                          onClick={() => {
                             const amount = window.prompt(
                               "Corrected USDT amount for this deposit",
                               queued.toFixed(8),
@@ -155,11 +147,13 @@ export function BrokerTransferForm({ deposits }: Props) {
                             if (!amount || !reason || !window.confirm("Save this corrected USDT conversion value?")) {
                               return;
                             }
-                            if (correctedAmountRef.current) correctedAmountRef.current.value = amount;
-                            if (reasonRef.current) reasonRef.current.value = reason;
-                            window.setTimeout(() => button.form?.requestSubmit(button), 0);
+                            const data = new FormData();
+                            data.set("id", deposit.id);
+                            data.set("newUsdtAmount", amount);
+                            data.set("reason", reason);
+                            startTransition(() => editAction(data));
                           }}
-                          className="flex size-7 items-center justify-center rounded-full border border-stone-300 bg-white text-ink-dim hover:border-gold-400 hover:text-gold-700"
+                          className="flex size-7 items-center justify-center rounded-full border border-stone-300 bg-white text-ink-dim hover:border-gold-400 hover:text-gold-700 disabled:opacity-50"
                         >
                           <Pencil className="size-3.5" aria-hidden />
                         </button>
