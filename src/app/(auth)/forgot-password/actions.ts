@@ -3,7 +3,7 @@
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { verifyTotp } from "@/lib/totp";
+import { verifyTotpOnce } from "@/lib/totp";
 import { signupSchema, totpCodeSchema } from "@/lib/validation";
 import { authRateLimit, rateLimitMessage } from "@/lib/rateLimit";
 
@@ -43,10 +43,6 @@ export async function resetPasswordWithTwoFactor(
   _previous: RecoveryState,
   formData: FormData,
 ): Promise<RecoveryState> {
-  const subject = String(formData.get("email") ?? "");
-  const retryAfter = await authRateLimit("password-recovery-2fa", subject, 8, 15 * 60_000);
-  if (retryAfter) return { stage: "two-factor", email: subject, error: rateLimitMessage(retryAfter) };
-
   const emailResult = signupSchema.shape.email.safeParse(formData.get("email"));
   const codeResult = totpCodeSchema.safeParse({ code: formData.get("code") });
   const passwordResult = signupSchema.shape.password.safeParse(formData.get("password"));
@@ -64,13 +60,16 @@ export async function resetPasswordWithTwoFactor(
   if (!user || user.role !== "USER" || !user.twoFactorEnabled || !user.twoFactorSecret) {
     redirect(WHATSAPP_RECOVERY_URL);
   }
-  if (!(await verifyTotp(codeResult.data.code, user.twoFactorSecret))) {
+  if (!(await verifyTotpOnce(user.id, codeResult.data.code, user.twoFactorSecret))) {
     return { stage: "two-factor", email: emailResult.data, error: "That authenticator code is incorrect or has expired." };
   }
 
   await prisma.user.update({
     where: { id: user.id },
-    data: { passwordHash: await bcrypt.hash(passwordResult.data, 12) },
+    data: {
+      passwordHash: await bcrypt.hash(passwordResult.data, 12),
+      sessionVersion: { increment: 1 },
+    },
   });
 
   return { stage: "done", success: "Your password has been reset. You can now sign in with the new password." };

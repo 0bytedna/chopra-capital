@@ -47,3 +47,6 @@ prisma/dev.db-journal
 # private user uploads, including KYC and ticket attachments (never commit)
 /uploads/
 
+# private security assessment evidence (may contain credentials and exploit payloads)
+/chopracapital-pentest-reports/
+

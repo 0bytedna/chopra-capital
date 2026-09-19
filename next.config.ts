@@ -42,6 +42,7 @@ const nextConfig: NextConfig = {
       "./prisma/**/*",
       "./scripts/**/*",
       "./uploads/**/*",
+      "./chopracapital-pentest-reports/**/*",
       "./.git/**/*",
       "./.env*",
       "./*.log",

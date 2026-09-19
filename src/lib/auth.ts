@@ -25,6 +25,7 @@ export type SessionPayload = {
   sub: string;
   role: "USER" | "ADMIN";
   stage: "full" | "2fa";
+  sessionVersion: number;
 };
 
 export async function createSessionToken(payload: SessionPayload): Promise<string> {
@@ -42,11 +43,18 @@ export async function verifySessionToken(token: string): Promise<SessionPayload 
     if (
       typeof payload.sub !== "string" ||
       (payload.role !== "ADMIN" && payload.role !== "USER") ||
-      (payload.stage !== "full" && payload.stage !== "2fa")
+      (payload.stage !== "full" && payload.stage !== "2fa") ||
+      !Number.isInteger(payload.sessionVersion) ||
+      (payload.sessionVersion as number) < 0
     ) {
       return null;
     }
-    return { sub: payload.sub, role: payload.role, stage: payload.stage };
+    return {
+      sub: payload.sub,
+      role: payload.role,
+      stage: payload.stage,
+      sessionVersion: payload.sessionVersion as number,
+    };
   } catch {
     return null;
   }
@@ -74,7 +82,14 @@ export async function getSession(): Promise<SessionPayload | null> {
   const store = await cookies();
   const token = store.get(SESSION_COOKIE)?.value;
   if (!token) return null;
-  return verifySessionToken(token);
+  const session = await verifySessionToken(token);
+  if (!session) return null;
+  const user = await prisma.user.findUnique({
+    where: { id: session.sub },
+    select: { role: true, sessionVersion: true },
+  });
+  if (!user || user.role !== session.role || user.sessionVersion !== session.sessionVersion) return null;
+  return session;
 }
 
 /** Full session or null — never a half-finished 2FA login. */

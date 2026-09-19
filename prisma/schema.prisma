@@ -52,6 +52,8 @@ model User {
 
   twoFactorSecret  String?
   twoFactorEnabled Boolean @default(false)
+  lastTotpStep     Int?
+  sessionVersion   Int     @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -118,6 +120,15 @@ model AccountNotification {
   @@index([userId, isRead, createdAt])
   @@index([userId, createdAt])
   @@index([sourceType, sourceId])
+}
+
+model AuthRateLimit {
+  key       String   @id
+  count     Int      @default(0)
+  resetAt   DateTime
+  updatedAt DateTime @updatedAt
+
+  @@index([resetAt])
 }
 
 model KycDocument {
@@ -352,6 +363,7 @@ model Deposit {
   reportedUsdtAmount    Decimal? // original crypto amount; preserved after allocation
   network               String? // TRC20 | ERC20 | BEP20 — only for CRYPTO
   txHash                String? // on-chain hash — only for CRYPTO
+  txHashFingerprint     String?                 @unique
   reference             String? // UTR / receipt reference — BANK & CASH
   status                DepositStatus           @default(PENDING)
   adminNote             String?

@@ -25,13 +25,14 @@
     "framer-motion": "^12.40.0",
     "jose": "^6.2.3",
     "lucide-react": "^1.17.0",
-    "next": "^16.2.12",
+    "next": "16.3.5",
     "otplib": "^13.4.1",
     "qrcode": "^1.5.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "recharts": "^3.8.1",
     "server-only": "^0.0.1",
+    "sharp": "0.35.4",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -49,7 +50,8 @@
     "typescript": "^5"
   },
   "overrides": {
-    "postcss": "8.5.18",
-    "sharp": "0.35.0"
+    "deepmerge-ts": "8.0.0",
+    "postcss": "8.5.28",
+    "sharp": "0.35.4"
   }
 }

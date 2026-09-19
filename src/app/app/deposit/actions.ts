@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { depositSchema } from "@/lib/validation";
 import { D } from "@/lib/money";
 import { getDepositEligibility, type FinancialRestriction } from "@/lib/financialEligibility";
+import { isDuplicateTransactionHash, transactionHashFingerprint } from "@/lib/depositSecurity";
 
 export type DepositFormState = { error?: string; success?: string; restriction?: FinancialRestriction };
 
@@ -35,18 +36,26 @@ export async function submitDeposit(_prev: DepositFormState, formData: FormData)
     return { error: "Cash deposits are not enabled on your account. Contact support." };
   }
 
-  await prisma.deposit.create({
-    data: {
-      userId: user.id,
-      method,
-      amount: method === "CRYPTO" ? D(amount) : D(0),
-      reportedUsdtAmount: method === "CRYPTO" ? D(amount) : null,
-      inrAmount: method === "CRYPTO" ? null : D(amount),
-      network: method === "CRYPTO" ? (network || null) : null,
-      txHash: method === "CRYPTO" ? (txHash || null) : null,
-      reference: method === "BANK" ? reference : null,
-    },
-  });
+  try {
+    await prisma.deposit.create({
+      data: {
+        userId: user.id,
+        method,
+        amount: method === "CRYPTO" ? D(amount) : D(0),
+        reportedUsdtAmount: method === "CRYPTO" ? D(amount) : null,
+        inrAmount: method === "CRYPTO" ? null : D(amount),
+        network: method === "CRYPTO" ? (network || null) : null,
+        txHash: method === "CRYPTO" ? (txHash || null) : null,
+        txHashFingerprint: method === "CRYPTO" ? transactionHashFingerprint(network ?? "", txHash ?? "") : null,
+        reference: method === "BANK" ? reference : null,
+      },
+    });
+  } catch (error) {
+    if (isDuplicateTransactionHash(error)) {
+      return { error: "This transaction hash has already been submitted." };
+    }
+    throw error;
+  }
 
   revalidatePath("/app/deposit");
   revalidatePath("/app/history");
@@ -93,13 +102,20 @@ export async function editDeposit(_prev: DepositFormState, formData: FormData): 
     }
     if (method === "CRYPTO" && !txHash) return { error: "Enter the corrected transaction hash." };
 
-    await prisma.deposit.update({
-      where: { id: deposit.id },
-      data: {
-        ...(method === "CRYPTO" ? { txHash } : { reference }),
-        status: "PENDING",
-      },
-    });
+    try {
+      await prisma.deposit.update({
+        where: { id: deposit.id },
+        data: {
+          ...(method === "CRYPTO"
+            ? { txHash, txHashFingerprint: transactionHashFingerprint(network ?? "", txHash ?? "") }
+            : { reference }),
+          status: "PENDING",
+        },
+      });
+    } catch (error) {
+      if (isDuplicateTransactionHash(error)) return { error: "This transaction hash has already been submitted." };
+      throw error;
+    }
 
     revalidatePath("/app/deposit");
     revalidatePath("/app/history");
@@ -109,17 +125,23 @@ export async function editDeposit(_prev: DepositFormState, formData: FormData): 
     return { success: "Corrected payment details submitted for review." };
   }
 
-  await prisma.deposit.update({
-    where: { id: deposit.id },
-    data: {
-      amount: method === "CRYPTO" ? D(amount) : D(0),
-      reportedUsdtAmount: method === "CRYPTO" ? D(amount) : null,
-      inrAmount: method === "CRYPTO" ? null : D(amount),
-      network: method === "CRYPTO" ? (network || null) : null,
-      txHash: method === "CRYPTO" ? (txHash || null) : null,
-      reference: method === "BANK" ? reference : null,
-    },
-  });
+  try {
+    await prisma.deposit.update({
+      where: { id: deposit.id },
+      data: {
+        amount: method === "CRYPTO" ? D(amount) : D(0),
+        reportedUsdtAmount: method === "CRYPTO" ? D(amount) : null,
+        inrAmount: method === "CRYPTO" ? null : D(amount),
+        network: method === "CRYPTO" ? (network || null) : null,
+        txHash: method === "CRYPTO" ? (txHash || null) : null,
+        txHashFingerprint: method === "CRYPTO" ? transactionHashFingerprint(network ?? "", txHash ?? "") : null,
+        reference: method === "BANK" ? reference : null,
+      },
+    });
+  } catch (error) {
+    if (isDuplicateTransactionHash(error)) return { error: "This transaction hash has already been submitted." };
+    throw error;
+  }
 
   revalidatePath("/app/deposit");
   revalidatePath("/app/history");

@@ -41,10 +41,7 @@ export async function GET(request: Request, context: RouteContext<"/api/ticket-a
     return NextResponse.json({ error: "File missing on disk" }, { status: 404 });
   }
 
-  const inline =
-    attachment.mimeType.startsWith("image/") ||
-    attachment.mimeType.startsWith("video/") ||
-    attachment.mimeType === "application/pdf";
+  const inline = attachment.mimeType.startsWith("image/") || attachment.mimeType.startsWith("video/");
 
   const commonHeaders = {
     "Content-Type": attachment.mimeType,

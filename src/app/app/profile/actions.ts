@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
-import { requireUser } from "@/lib/auth";
+import { requireUser, setSessionCookie } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
   profileSchema,
@@ -11,7 +11,7 @@ import {
   changePasswordSchema,
   totpCodeSchema,
 } from "@/lib/validation";
-import { generateTotpSecret, totpEnrolmentQr, verifyTotp } from "@/lib/totp";
+import { generateTotpSecret, totpEnrolmentQr, verifyTotpOnce } from "@/lib/totp";
 import { stageRequiredBankPayoutCorrections } from "@/lib/payoutDetails";
 import { removeStoredKycFiles, storeKycFiles } from "@/lib/kycFiles";
 
@@ -72,7 +72,7 @@ export async function updateBanking(
     if (!code.success) {
       return { error: code.error.issues[0]?.message ?? "Enter the 6-digit authenticator code." };
     }
-    if (!(await verifyTotp(code.data.code, user.twoFactorSecret))) {
+    if (!(await verifyTotpOnce(user.id, code.data.code, user.twoFactorSecret))) {
       return { error: "That authenticator code is incorrect or has expired." };
     }
   }
@@ -220,7 +220,7 @@ export async function startTotpEnrolment(): Promise<TotpEnrolState> {
   const secret = generateTotpSecret();
   await prisma.user.update({
     where: { id: user.id },
-    data: { twoFactorSecret: secret, twoFactorEnabled: false },
+    data: { twoFactorSecret: secret, twoFactorEnabled: false, lastTotpStep: null },
   });
   const qr = await totpEnrolmentQr(user.email, secret);
   return { qr, secret };
@@ -233,7 +233,7 @@ export async function enableTotp(_prev: ProfileFormState, formData: FormData): P
   const parsed = totpCodeSchema.safeParse({ code: formData.get("code") });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Enter the 6-digit code" };
 
-  if (!(await verifyTotp(parsed.data.code, user.twoFactorSecret))) {
+  if (!(await verifyTotpOnce(user.id, parsed.data.code, user.twoFactorSecret))) {
     return { error: "That code didn't match — scan the QR again and use the current code." };
   }
 
@@ -251,13 +251,13 @@ export async function disableTotp(_prev: ProfileFormState, formData: FormData): 
   const parsed = totpCodeSchema.safeParse({ code: formData.get("code") });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Enter the 6-digit code" };
 
-  if (!(await verifyTotp(parsed.data.code, user.twoFactorSecret))) {
+  if (!(await verifyTotpOnce(user.id, parsed.data.code, user.twoFactorSecret))) {
     return { error: "That code didn't match." };
   }
 
   await prisma.user.update({
     where: { id: user.id },
-    data: { twoFactorEnabled: false, twoFactorSecret: null },
+    data: { twoFactorEnabled: false, twoFactorSecret: null, lastTotpStep: null },
   });
   revalidatePath("/app/profile");
   revalidatePath("/app", "layout");
@@ -279,6 +279,16 @@ export async function changePassword(_prev: ProfileFormState, formData: FormData
   if (!ok) return { error: "Your current password is incorrect." };
 
   const passwordHash = await bcrypt.hash(parsed.data.newPassword, 12);
-  await prisma.user.update({ where: { id: user.id }, data: { passwordHash } });
+  const updated = await prisma.user.update({
+    where: { id: user.id },
+    data: { passwordHash, sessionVersion: { increment: 1 } },
+    select: { id: true, role: true, sessionVersion: true },
+  });
+  await setSessionCookie({
+    sub: updated.id,
+    role: updated.role,
+    stage: "full",
+    sessionVersion: updated.sessionVersion,
+  });
   return { success: "Password changed." };
 }

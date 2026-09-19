@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { randomUUID } from "node:crypto";
 import bcrypt from "bcryptjs";
+import { isDuplicateTransactionHash, transactionHashFingerprint } from "@/lib/depositSecurity";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { D, formatInr } from "@/lib/money";
@@ -43,6 +44,7 @@ import {
   type EditableTradingAdjustmentType,
 } from "@/lib/tradingAccount";
 import { stageRequiredBankPayoutCorrections } from "@/lib/payoutDetails";
+import { bankingDetailsSchema, cryptoWalletSchema } from "@/lib/validation";
 import {
   WITHDRAWAL_SCHEDULE_SETTING_KEYS,
   isWithdrawalWeekday,
@@ -190,11 +192,28 @@ export async function adminUpdateInvestorProfile(_prev: AdminFormState, formData
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   if (!userId || !email) return { error: "Investor and email are required." };
 
+  const parsedBank = bankingDetailsSchema.safeParse({
+    accountNumber: formData.get("accountNumber"),
+    ifsc: String(formData.get("ifsc") ?? "").trim().toUpperCase(),
+    upiId: formData.get("upiId"),
+    accountType: formData.get("accountType") || "SAVINGS",
+  });
+  if (!parsedBank.success) return { error: parsedBank.error.issues[0]?.message ?? "Check the banking details." };
+  const parsedWallet = cryptoWalletSchema.safeParse({
+    usdtAddress: formData.get("usdtAddress"),
+    usdtNetwork: formData.get("usdtNetwork") || "TRC20",
+  });
+  if (!parsedWallet.success) return { error: parsedWallet.error.issues[0]?.message ?? "Check the crypto wallet." };
+
   const bankDetails = {
-    accountNumber: String(formData.get("accountNumber") ?? "").trim() || null,
-    ifsc: String(formData.get("ifsc") ?? "").trim().toUpperCase() || null,
-    upiId: String(formData.get("upiId") ?? "").trim() || null,
-    accountType: String(formData.get("accountType") ?? "").trim() || null,
+    accountNumber: parsedBank.data.accountNumber || null,
+    ifsc: parsedBank.data.ifsc?.toUpperCase() || null,
+    upiId: parsedBank.data.upiId || null,
+    accountType: parsedBank.data.accountType,
+  };
+  const walletDetails = {
+    usdtAddress: parsedWallet.data.usdtAddress || null,
+    usdtNetwork: parsedWallet.data.usdtAddress ? parsedWallet.data.usdtNetwork : null,
   };
   let submittedForReview = 0;
 
@@ -215,13 +234,11 @@ export async function adminUpdateInvestorProfile(_prev: AdminFormState, formData
             upsert: {
               create: {
                 ...bankDetails,
-                usdtAddress: String(formData.get("usdtAddress") ?? "").trim() || null,
-                usdtNetwork: String(formData.get("usdtNetwork") ?? "").trim() || null,
+                ...walletDetails,
               },
               update: {
                 ...bankDetails,
-                usdtAddress: String(formData.get("usdtAddress") ?? "").trim() || null,
-                usdtNetwork: String(formData.get("usdtNetwork") ?? "").trim() || null,
+                ...walletDetails,
               },
             },
           },
@@ -263,8 +280,14 @@ export async function adminResetInvestorPassword(_prev: AdminFormState, formData
   const userId = String(formData.get("userId") ?? "");
   const password = String(formData.get("password") ?? "");
   if (password.length < 8) return { error: "The temporary password must be at least 8 characters." };
+  if (new TextEncoder().encode(password).length > 72) {
+    return { error: "The temporary password must be 72 bytes or less." };
+  }
   try {
-    await prisma.user.update({ where: { id: userId, role: "USER" }, data: { passwordHash: await bcrypt.hash(password, 12) } });
+    await prisma.user.update({
+      where: { id: userId, role: "USER" },
+      data: { passwordHash: await bcrypt.hash(password, 12), sessionVersion: { increment: 1 } },
+    });
     return { success: "Password reset. Send the temporary password to the investor securely." };
   } catch (error) { return fail(error); }
 }
@@ -677,7 +700,7 @@ export async function adminEditDepositRecord(_prev: AdminFormState, formData: Fo
     if (amount.lt(0)) return { error: "Deposit amount cannot be negative." };
     const existing = await prisma.deposit.findUnique({
       where: { id },
-      select: { userId: true, status: true, amount: true },
+      select: { userId: true, status: true, amount: true, method: true, network: true },
     });
     if (!existing || existing.userId !== userId) return { error: "Deposit not found." };
     if (status !== existing.status) {
@@ -690,17 +713,25 @@ export async function adminEditDepositRecord(_prev: AdminFormState, formData: Fo
         error: "Change converted or broker-received values from the Transactions page instead of editing the deposit amount directly.",
       };
     }
+    const txHash = String(formData.get("txHash") ?? "").trim() || null;
     await prisma.deposit.update({
       where: { id, userId },
       data: {
         reference: String(formData.get("reference") ?? "").trim() || null,
-        txHash: String(formData.get("txHash") ?? "").trim() || null,
+        txHash,
+        txHashFingerprint:
+          existing.method === "CRYPTO" && existing.network && txHash
+            ? transactionHashFingerprint(existing.network, txHash)
+            : null,
         adminNote: String(formData.get("adminNote") ?? "").trim() || null,
       },
     });
     revalidatePath(`/admin/investors/${userId}`); revalidatePath("/admin/deposits"); revalidatePath("/admin/transactions"); revalidatePath("/app/history");
     return { success: "Deposit notes and references updated." };
-  } catch (error) { return fail(error); }
+  } catch (error) {
+    if (isDuplicateTransactionHash(error)) return { error: "This transaction hash has already been submitted." };
+    return fail(error);
+  }
 }
 
 export async function adminEditWithdrawalRecord(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {

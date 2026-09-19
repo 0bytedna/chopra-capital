@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { setSessionCookie, clearSessionCookie, getSession } from "@/lib/auth";
-import { verifyTotp } from "@/lib/totp";
+import { verifyTotpOnce } from "@/lib/totp";
 import { signupSchema, signinSchema, totpCodeSchema } from "@/lib/validation";
 import { BUILTIN_ADMIN_EMAIL, ensureBuiltinAdminForSignin } from "@/lib/builtinAdmin";
 import { authRateLimit, rateLimitMessage } from "@/lib/rateLimit";
@@ -29,18 +29,18 @@ export async function signup(_prev: AuthFormState, formData: FormData): Promise<
   }
   const { fullName, email, password } = parsed.data;
 
-  if (email === BUILTIN_ADMIN_EMAIL) return { error: "This email is reserved for administration." };
-
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) return { error: "An account with this email already exists. Try signing in." };
-
   const passwordHash = await bcrypt.hash(password, 12);
-  const user = await prisma.user.create({
-    data: { email, passwordHash, fullName, wallet: { create: {} } },
-  });
-
-  await setSessionCookie({ sub: user.id, role: user.role, stage: "full" });
-  redirect("/app");
+  const existing = await prisma.user.findUnique({ where: { email }, select: { id: true } });
+  if (email !== BUILTIN_ADMIN_EMAIL && !existing) {
+    try {
+      await prisma.user.create({
+        data: { email, passwordHash, fullName, wallet: { create: {} } },
+      });
+    } catch (error) {
+      if ((error as { code?: string }).code !== "P2002") throw error;
+    }
+  }
+  redirect("/signin?registered=1");
 }
 
 export async function signin(_prev: AuthFormState, formData: FormData): Promise<AuthFormState> {
@@ -70,20 +70,17 @@ export async function signin(_prev: AuthFormState, formData: FormData): Promise<
   if (!user || !ok) return { error: "Incorrect email or password." };
 
   if (user.twoFactorEnabled) {
-    await setSessionCookie({ sub: user.id, role: user.role, stage: "2fa" });
+    await setSessionCookie({ sub: user.id, role: user.role, stage: "2fa", sessionVersion: user.sessionVersion });
     redirect("/signin/2fa");
   }
 
-  await setSessionCookie({ sub: user.id, role: user.role, stage: "full" });
+  await setSessionCookie({ sub: user.id, role: user.role, stage: "full", sessionVersion: user.sessionVersion });
   redirect(user.role === "ADMIN" ? "/admin" : "/app");
 }
 
 export async function verifyTwoFactor(_prev: AuthFormState, formData: FormData): Promise<AuthFormState> {
   const session = await getSession();
   if (!session || session.stage !== "2fa") redirect("/signin");
-
-  const retryAfter = await authRateLimit("signin-2fa", session.sub, 8, 10 * 60_000);
-  if (retryAfter) return { error: rateLimitMessage(retryAfter) };
 
   const parsed = totpCodeSchema.safeParse({ code: formData.get("code") });
   if (!parsed.success) {
@@ -93,15 +90,26 @@ export async function verifyTwoFactor(_prev: AuthFormState, formData: FormData):
   const user = await prisma.user.findUnique({ where: { id: session.sub } });
   if (!user || !user.twoFactorEnabled || !user.twoFactorSecret) redirect("/signin");
 
-  if (!(await verifyTotp(parsed.data.code, user.twoFactorSecret))) {
+  if (!(await verifyTotpOnce(user.id, parsed.data.code, user.twoFactorSecret))) {
     return { error: "That code didn't match. Codes rotate every 30 seconds — try the current one." };
   }
 
-  await setSessionCookie({ sub: user.id, role: user.role, stage: "full" });
+  await setSessionCookie({ sub: user.id, role: user.role, stage: "full", sessionVersion: user.sessionVersion });
   redirect(user.role === "ADMIN" ? "/admin" : "/app");
 }
 
 export async function signout(): Promise<void> {
+  const session = await getSession();
+  if (session) {
+    try {
+      await prisma.user.updateMany({
+        where: { id: session.sub, sessionVersion: session.sessionVersion },
+        data: { sessionVersion: { increment: 1 } },
+      });
+    } catch {
+      // Always clear the local cookie even if the database is temporarily unavailable.
+    }
+  }
   await clearSessionCookie();
   redirect("/");
 }

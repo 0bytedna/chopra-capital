@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { totpCodeSchema, withdrawSchema } from "@/lib/validation";
-import { currentWeekKey, NETWORKS } from "@/lib/config";
+import { cryptoWalletSchema, totpCodeSchema, withdrawSchema } from "@/lib/validation";
+import { currentWeekKey } from "@/lib/config";
 import { getPortfolioMetrics } from "@/lib/portfolio";
 import {
   getWithdrawalSchedule,
@@ -12,7 +12,7 @@ import {
   withdrawalsOpenNow,
 } from "@/lib/withdrawalSchedule";
 import { D, toNumber } from "@/lib/money";
-import { verifyTotp } from "@/lib/totp";
+import { verifyTotpOnce } from "@/lib/totp";
 import {
   getDepositEligibility,
   getWithdrawalEligibility,
@@ -37,7 +37,7 @@ export type WithdrawFormState = {
 };
 
 async function withdrawalTwoFactorError(
-  user: { twoFactorEnabled: boolean; twoFactorSecret: string | null },
+  user: { id: string; twoFactorEnabled: boolean; twoFactorSecret: string | null },
   formData: FormData,
 ): Promise<string | null> {
   if (!user.twoFactorEnabled) return null;
@@ -45,7 +45,7 @@ async function withdrawalTwoFactorError(
 
   const parsed = totpCodeSchema.safeParse({ code: formData.get("code") });
   if (!parsed.success) return parsed.error.issues[0]?.message ?? "Enter the 6-digit authenticator code.";
-  if (!(await verifyTotp(parsed.data.code, user.twoFactorSecret))) {
+  if (!(await verifyTotpOnce(user.id, parsed.data.code, user.twoFactorSecret))) {
     return "That authenticator code is incorrect or has expired. Enter the current 6-digit code.";
   }
   return null;
@@ -57,8 +57,9 @@ function profileDestination(method: WithdrawalMethod, banking: BankingDetail | n
   if (method === "CRYPTO") {
     const network = banking.usdtNetwork?.trim() ?? "";
     const address = banking.usdtAddress?.trim() ?? "";
-    if (!address || !(NETWORKS as readonly string[]).includes(network)) return null;
-    return { network, address };
+    const wallet = cryptoWalletSchema.safeParse({ usdtAddress: address, usdtNetwork: network });
+    if (!wallet.success || !wallet.data.usdtAddress) return null;
+    return { network: wallet.data.usdtNetwork, address: wallet.data.usdtAddress };
   }
 
   const accountNumber = banking.accountNumber?.trim() ?? "";
@@ -119,7 +120,7 @@ function parsedRequest(formData: FormData) {
 
 
 function requestedUsdAmount(amount: number) {
-  return D(amount).toDecimalPlaces(8);
+  return D(amount).toDecimalPlaces(6);
 }
 
 export async function requestWithdrawal(_prev: WithdrawFormState, formData: FormData): Promise<WithdrawFormState> {

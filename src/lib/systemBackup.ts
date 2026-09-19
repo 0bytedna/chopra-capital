@@ -18,7 +18,7 @@ import path from "node:path";
 import { gunzipSync, gzipSync } from "node:zlib";
 import { getFullSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { verifyTotp } from "@/lib/totp";
+import { verifyTotpOnce } from "@/lib/totp";
 
 const BACKUP_FORMAT = "chopra-capital-system-backup";
 const BACKUP_VERSION = 1;
@@ -135,6 +135,7 @@ export async function verifyAdminBackupAccess(formData: FormData): Promise<void>
   const admin = await prisma.user.findFirst({
     where: { id: session.sub, role: "ADMIN" },
     select: {
+      id: true,
       passwordHash: true,
       twoFactorEnabled: true,
       twoFactorSecret: true,
@@ -145,13 +146,14 @@ export async function verifyAdminBackupAccess(formData: FormData): Promise<void>
   const passwordValid =
     admin !== null &&
     password.length > 0 &&
+    new TextEncoder().encode(password).length <= 72 &&
     (await bcrypt.compare(password, admin.passwordHash));
   const twoFactorValid =
     admin !== null &&
     (!admin.twoFactorEnabled ||
       (admin.twoFactorSecret !== null &&
         /^\d{6}$/.test(code) &&
-        (await verifyTotp(code, admin.twoFactorSecret))));
+        (await verifyTotpOnce(admin.id, code, admin.twoFactorSecret))));
 
   if (!passwordValid || !twoFactorValid) {
     throw new SystemBackupError(

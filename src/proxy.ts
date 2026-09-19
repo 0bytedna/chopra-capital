@@ -19,7 +19,9 @@ async function readSession(request: NextRequest): Promise<TokenInfo> {
     const { payload } = await jwtVerify(token, new TextEncoder().encode(secret));
     if (
       (payload.role !== "ADMIN" && payload.role !== "USER") ||
-      (payload.stage !== "full" && payload.stage !== "2fa")
+      (payload.stage !== "full" && payload.stage !== "2fa") ||
+      !Number.isInteger(payload.sessionVersion) ||
+      (payload.sessionVersion as number) < 0
     ) {
       return null;
     }

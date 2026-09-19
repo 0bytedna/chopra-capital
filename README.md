@@ -34,6 +34,8 @@ Run `npm run check:production` before a production build. The check reports miss
 
 This project currently uses SQLite and local private uploads. Run exactly one application instance and keep the database and `uploads/` directory on persistent storage. Put Nginx or another reverse proxy in front of Next.js for HTTPS, request-size enforcement, authentication rate limits, and access logging.
 
+Use [`deploy/nginx/chopra-capital.conf.example`](deploy/nginx/chopra-capital.conf.example) as the proxy-header baseline. The application deliberately ignores `X-Forwarded-For`; the proxy must overwrite `X-Real-IP` with the connection address and must not expose the Next.js port directly to the internet.
+
 The `uploads/` path must be a real directory inside the project, not a symlink. KYC documents and ticket attachments remain private because this directory is not under `public/` and is ignored by Git. If an older deployment links `uploads/` or files beneath it to external storage, localize them before building:
 
 ```bash

@@ -8,6 +8,9 @@ export async function ensureBuiltinAdminForSignin(email: string) {
   if (email.trim().toLowerCase() !== BUILTIN_ADMIN_EMAIL) return null;
   const password = process.env.ADMIN_PASSWORD;
   if (!password || password.length < 12) throw new Error("The built-in administrator is locked until ADMIN_PASSWORD is set to at least 12 characters on the server.");
+  if (new TextEncoder().encode(password).length > 72) {
+    throw new Error("The built-in administrator is locked because ADMIN_PASSWORD exceeds bcrypt's 72-byte limit.");
+  }
 
   const existing = await prisma.user.findUnique({ where: { email: BUILTIN_ADMIN_EMAIL } });
   if (!existing) {
@@ -15,7 +18,14 @@ export async function ensureBuiltinAdminForSignin(email: string) {
   }
   const passwordMatchesEnvironment = await bcrypt.compare(password, existing.passwordHash);
   if (existing.role !== "ADMIN" || !passwordMatchesEnvironment) {
-    return prisma.user.update({ where: { id: existing.id }, data: { role: "ADMIN", passwordHash: await bcrypt.hash(password, 12) } });
+    return prisma.user.update({
+      where: { id: existing.id },
+      data: {
+        role: "ADMIN",
+        passwordHash: await bcrypt.hash(password, 12),
+        sessionVersion: { increment: 1 },
+      },
+    });
   }
   return existing;
 }
