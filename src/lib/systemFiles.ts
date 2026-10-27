@@ -31,7 +31,8 @@ export type SeparateServerBackup = {
 };
 
 function projectPath(...segments: string[]): string {
-  return path.join(process.cwd(), ...segments);
+  // These runtime-managed files are deliberately outside Turbopack's bundle.
+  return path.join(/* turbopackIgnore: true */ process.cwd(), ...segments);
 }
 
 function environmentPath(): string {
@@ -52,8 +53,12 @@ function databasePath(): string {
   const candidates = path.isAbsolute(normalized)
     ? [normalized]
     : [
-        path.resolve(process.cwd(), "prisma", normalized),
-        path.resolve(process.cwd(), normalized),
+        path.resolve(
+          /* turbopackIgnore: true */ process.cwd(),
+          "prisma",
+          normalized,
+        ),
+        path.resolve(/* turbopackIgnore: true */ process.cwd(), normalized),
       ];
   const selected =
     candidates.find((candidate) => path.basename(candidate) === "production.db") ??

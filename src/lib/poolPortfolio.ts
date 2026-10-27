@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { TradingAdjustmentType } from "@/generated/prisma/client";
+import type { TradingAdjustmentType } from "@prisma/client";
 import { D, ZERO, toNumber, type Dec } from "@/lib/money";
 import { getCurrentNav } from "@/lib/nav";
 import { prisma } from "@/lib/prisma";

@@ -33,8 +33,8 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   deploymentId: process.env.NEXT_DEPLOYMENT_ID,
   poweredByHeader: false,
-  // Prisma's generated fallback lookup is dynamic and otherwise makes the
-  // file tracer include the entire repository (including private runtime data).
+  // Keep dynamic backup-file lookups from pulling unrelated source and private
+  // runtime data into every server trace.
   outputFileTracingExcludes: {
     "/*": [
       "./src/**/*",
@@ -55,13 +55,6 @@ const nextConfig: NextConfig = {
       "./prisma.config.ts",
       "./next.config.ts",
       "./tsconfig.json",
-    ],
-  },
-  outputFileTracingIncludes: {
-    "/*": [
-      "./src/generated/prisma/**/*query_engine*.node",
-      "./src/generated/prisma/schema.prisma",
-      "./src/generated/prisma/package.json",
     ],
   },
   reactStrictMode: true,

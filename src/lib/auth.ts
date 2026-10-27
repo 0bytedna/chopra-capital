@@ -7,7 +7,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { SignJWT, jwtVerify } from "jose";
 import { prisma } from "@/lib/prisma";
-import type { User } from "@/generated/prisma";
+import type { User } from "@prisma/client";
 
 export const SESSION_COOKIE = "gf_session";
 const USER_SESSION_DAYS = 7;

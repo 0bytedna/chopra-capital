@@ -1,5 +1,5 @@
 import { ArrowDownToLine, ArrowUpFromLine, Layers, Percent, Wrench } from "lucide-react";
-import type { LedgerEntry } from "@/generated/prisma";
+import type { LedgerEntry } from "@prisma/client";
 import { formatSignedUsdt, toNumber } from "@/lib/money";
 import { cn } from "@/lib/cn";
 

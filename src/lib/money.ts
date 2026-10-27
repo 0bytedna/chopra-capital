@@ -2,7 +2,7 @@
 // the ONLY place Decimal becomes a JS number — at the display/serialization
 // edge.
 
-import { Prisma } from "@/generated/prisma";
+import { Prisma } from "@prisma/client";
 
 export type Dec = Prisma.Decimal;
 

@@ -1,7 +1,7 @@
 // No user or administrator accounts are seeded.
 // The built-in administrator is created on first sign-in from ADMIN_EMAIL and
 // ADMIN_PASSWORD. This seed only creates non-sensitive application defaults.
-import { PrismaClient } from "../src/generated/prisma/index.js";
+import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 async function main() {
   await prisma.poolState.upsert({ where: { id: "pool" }, update: {}, create: { id: "pool" } });

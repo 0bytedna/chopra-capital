@@ -5,7 +5,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/prisma";
-import type { Prisma } from "@/generated/prisma";
+import type { Prisma } from "@prisma/client";
 import { D, ZERO, type Dec } from "@/lib/money";
 import { getCurrentNav, getSettingDecimal, upsertDailySnapshot, snapshotDayKey } from "@/lib/nav";
 

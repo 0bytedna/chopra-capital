@@ -1,5 +1,5 @@
 import "server-only";
-import type { TradingAdjustmentType } from "@/generated/prisma/client";
+import type { TradingAdjustmentType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { D, type Dec } from "@/lib/money";
 import { snapshotDayKey } from "@/lib/nav";

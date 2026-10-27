@@ -12,7 +12,7 @@ import {
   reportingDayStart,
   shiftReportingDay,
 } from "@/lib/reportingCalendar";
-import type { LedgerEntry } from "@/generated/prisma";
+import type { LedgerEntry } from "@prisma/client";
 
 export type PortfolioMetrics = {
   queued: Dec;

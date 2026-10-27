@@ -1,4 +1,4 @@
-import type { BankingDetail, User } from "@/generated/prisma";
+import type { BankingDetail, User } from "@prisma/client";
 import { NETWORKS } from "@/lib/config";
 
 type EligibilityUser = Pick<User, "kycStatus" | "bankTransferEnabled" | "cashEnabled">;
