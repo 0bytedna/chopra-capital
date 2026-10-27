@@ -50,7 +50,7 @@ export default async function WithdrawPage() {
           Withdraw <em className="gold-text italic">weekly</em>
         </h1>
         <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-dim">
-          Choose a payout method and request an amount in USD. Approved requests are processed on Monday.
+          Choose a payout method and request an amount in USD. Our team can process approved requests at any time.
         </p>
       </header>
 
@@ -65,7 +65,7 @@ export default async function WithdrawPage() {
           <CalendarClock className="mt-0.5 size-4 shrink-0 text-gold-500" aria-hidden />
           <p className="leading-5">
             Requests: <strong className="text-ink">{withdrawalScheduleLabel(schedule)}</strong>
-            <br />Processed: <strong className="text-ink">Monday</strong>
+            <br />Admin processing: <strong className="text-ink">Any day</strong>
           </p>
         </div>
       </section>

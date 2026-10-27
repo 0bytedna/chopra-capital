@@ -8,10 +8,21 @@ import { HistoryTabs } from "./HistoryTabs";
 
 export const metadata: Metadata = { title: "Transactions" };
 
-export default async function HistoryPage() {
+function requestedPage(value: string | string[] | undefined): number {
+  const raw = Array.isArray(value) ? value[0] : value;
+  const parsed = Number.parseInt(raw ?? "1", 10);
+  return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : 1;
+}
+
+export default async function HistoryPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tradingPage?: string | string[] }>;
+}) {
   const user = await requireUser();
-  const [tradingActivity, deposits, withdrawals, currentInrRate] = await Promise.all([
-    getUserTradingActivity(user.id),
+  const query = await searchParams;
+  const [tradingActivityPage, deposits, withdrawals, currentInrRate] = await Promise.all([
+    getUserTradingActivity(user.id, { page: requestedPage(query.tradingPage) }),
     prisma.deposit.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "desc" },
@@ -40,7 +51,7 @@ export default async function HistoryPage() {
 
       <section className="glass-card rounded-2xl p-4 sm:p-7">
         <HistoryTabs
-          tradingActivity={tradingActivity.map((entry) => ({
+          tradingActivity={tradingActivityPage.activity.map((entry) => ({
             id: entry.id,
             type: entry.type,
             amount: formatSignedUsdt(entry.userAmount),
@@ -49,6 +60,11 @@ export default async function HistoryPage() {
             note: entry.note,
             createdAt: entry.createdAt.toISOString(),
           }))}
+          tradingPagination={{
+            page: tradingActivityPage.page,
+            hasNextPage: tradingActivityPage.hasNextPage,
+            hasPreviousPage: tradingActivityPage.hasPreviousPage,
+          }}
           twoFactorEnabled={user.twoFactorEnabled}
           withdrawalMethods={{ bank: user.bankTransferEnabled, cash: user.cashEnabled }}
           deposits={deposits.map((deposit) => ({

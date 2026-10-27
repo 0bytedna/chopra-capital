@@ -23,14 +23,29 @@ export type UserTradingActivity = {
   createdAt: Date;
 };
 
+export type UserTradingActivityPage = {
+  activity: UserTradingActivity[];
+  page: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+};
+
 export async function getUserTradingActivity(
   userId: string,
-  limit = 50,
-): Promise<UserTradingActivity[]> {
+  options: { page?: number; pageSize?: number } = {},
+): Promise<UserTradingActivityPage> {
+  const requestedPage = Math.max(1, Math.trunc(options.page ?? 1));
+  const pageSize = Math.min(100, Math.max(1, Math.trunc(options.pageSize ?? 25)));
+  const visibleEntryCount = await prisma.tradingAccountEntry.count({
+    where: { type: { in: [...USER_VISIBLE_TRADING_TYPES] } },
+  });
+  const pageCount = Math.max(1, Math.ceil(visibleEntryCount / pageSize));
+  const page = Math.min(requestedPage, pageCount);
   const recentEntries = await prisma.tradingAccountEntry.findMany({
     where: { type: { in: [...USER_VISIBLE_TRADING_TYPES] } },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-    take: limit,
+    skip: (page - 1) * pageSize,
+    take: pageSize + 1,
     select: {
       id: true,
       type: true,
@@ -40,9 +55,18 @@ export async function getUserTradingActivity(
     },
   });
 
-  if (recentEntries.length === 0) return [];
+  const hasNextPage = recentEntries.length > pageSize;
+  const pageEntries = recentEntries.slice(0, pageSize);
+  if (pageEntries.length === 0) {
+    return {
+      activity: [],
+      page,
+      hasNextPage: false,
+      hasPreviousPage: page > 1,
+    };
+  }
 
-  const entries = recentEntries.reverse();
+  const entries = pageEntries.reverse();
   const latestEntryAt = entries[entries.length - 1].createdAt;
   const [userUnitEvents, poolUnitEvents] = await Promise.all([
     prisma.ledgerEntry.findMany({
@@ -100,5 +124,10 @@ export async function getUserTradingActivity(
     });
   }
 
-  return activity.reverse();
+  return {
+    activity: activity.reverse(),
+    page,
+    hasNextPage,
+    hasPreviousPage: page > 1,
+  };
 }

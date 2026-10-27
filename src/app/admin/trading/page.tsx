@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentNav } from "@/lib/nav";
 import { D, toNumber, formatUsdt } from "@/lib/money";
@@ -27,24 +28,41 @@ const reasonLabels: Record<string, string> = {
 };
 
 const editableTradingTypes = new Set<string>(EDITABLE_TRADING_TYPES);
+const AUDIT_PAGE_SIZE = 25;
 
-export default async function AdminTradingPage() {
-  const [poolNav, walletAgg, entries] = await Promise.all([
+function requestedPage(value: string | string[] | undefined): number {
+  const raw = Array.isArray(value) ? value[0] : value;
+  const parsed = Number.parseInt(raw ?? "1", 10);
+  return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : 1;
+}
+
+export default async function AdminTradingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string | string[] }>;
+}) {
+  const query = await searchParams;
+  const [poolNav, walletAgg, entryCount] = await Promise.all([
     getCurrentNav(),
     prisma.wallet.aggregate({ _sum: { units: true } }),
-    prisma.tradingAccountEntry.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 12,
-      include: {
-        admin: {
-          select: {
-            fullName: true,
-            email: true,
-          },
+    prisma.tradingAccountEntry.count(),
+  ]);
+
+  const pageCount = Math.max(1, Math.ceil(entryCount / AUDIT_PAGE_SIZE));
+  const page = Math.min(requestedPage(query.page), pageCount);
+  const entries = await prisma.tradingAccountEntry.findMany({
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    skip: (page - 1) * AUDIT_PAGE_SIZE,
+    take: AUDIT_PAGE_SIZE,
+    include: {
+      admin: {
+        select: {
+          fullName: true,
+          email: true,
         },
       },
-    }),
-  ]);
+    },
+  });
 
   const investorUnits = D(walletAgg._sum.units ?? 0);
   const unitsDrift = toNumber(D(poolNav.totalUnits).sub(investorUnits));
@@ -90,9 +108,15 @@ export default async function AdminTradingPage() {
         <div className="flex items-center justify-between gap-4 px-5 py-4">
           <div>
             <p className="eyebrow">Audit trail</p>
-            <h2 className="mt-1 font-serif text-xl text-ink">
-              Recent account changes
-            </h2>
+            <h2 className="mt-1 font-serif text-xl text-ink">Account changes</h2>
+            <p className="mt-1 text-xs text-ink-faint">
+              {entryCount === 0
+                ? "No entries"
+                : `${(page - 1) * AUDIT_PAGE_SIZE + 1}–${Math.min(
+                    page * AUDIT_PAGE_SIZE,
+                    entryCount,
+                  )} of ${entryCount}`}
+            </p>
           </div>
           <span
             className={cn(
@@ -171,6 +195,36 @@ export default async function AdminTradingPage() {
             </tbody>
           </table>
         </div>
+        {pageCount > 1 && (
+          <nav
+            className="flex items-center justify-between gap-4 border-t border-gold-600/15 px-5 py-4"
+            aria-label="Trading audit trail pages"
+          >
+            {page > 1 ? (
+              <Link
+                href={`/admin/trading?page=${page - 1}`}
+                className="rounded-lg border border-gold-600/25 px-4 py-2 text-xs font-semibold text-ink transition hover:bg-gold-600/10"
+              >
+                Newer entries
+              </Link>
+            ) : (
+              <span aria-hidden className="w-28" />
+            )}
+            <span className="text-xs text-ink-faint">
+              Page {page} of {pageCount}
+            </span>
+            {page < pageCount ? (
+              <Link
+                href={`/admin/trading?page=${page + 1}`}
+                className="rounded-lg border border-gold-600/25 px-4 py-2 text-xs font-semibold text-ink transition hover:bg-gold-600/10"
+              >
+                Older entries
+              </Link>
+            ) : (
+              <span aria-hidden className="w-28" />
+            )}
+          </nav>
+        )}
       </section>
     </div>
   );

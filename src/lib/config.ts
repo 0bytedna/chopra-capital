@@ -42,33 +42,10 @@ export const cashDepositInstruction: string =
 
 export const WITHDRAWAL_TIME_ZONE = "Asia/Kolkata";
 
-function withdrawalTimeParts(date = new Date()): { weekday: string; hour: number } {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: WITHDRAWAL_TIME_ZONE,
-    weekday: "short",
-    hour: "2-digit",
-    hourCycle: "h23",
-  }).formatToParts(date);
-
-  return {
-    weekday: parts.find((part) => part.type === "weekday")?.value ?? "",
-    hour: Number(parts.find((part) => part.type === "hour")?.value ?? -1),
-  };
-}
-
 // The bypass is deliberately opt-in and should only be enabled in a local test
 // environment. Production keeps the configured withdrawal window unless explicitly bypassed.
 export function withdrawalWindowTestMode(): boolean {
   return process.env.WITHDRAWAL_WINDOW_TEST_MODE === "true";
-}
-
-export function withdrawalProcessingWindowMessage(): string {
-  return "Withdrawals are processed on Mondays (IST).";
-}
-
-export function withdrawalsProcessableNow(date = new Date()): boolean {
-  if (withdrawalWindowTestMode()) return true;
-  return withdrawalTimeParts(date).weekday === "Mon";
 }
 
 // ISO week key like "2026-W24" — used to group withdrawal processing runs.

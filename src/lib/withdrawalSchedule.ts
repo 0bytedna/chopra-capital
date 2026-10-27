@@ -96,7 +96,7 @@ export function withdrawalScheduleLabel(schedule: WithdrawalSchedule): string {
 export function withdrawalRequestWindowMessage(
   schedule: WithdrawalSchedule,
 ): string {
-  return `Withdrawal requests are open ${withdrawalScheduleLabel(schedule)}. Withdrawals are processed on Mondays.`;
+  return `Withdrawal requests are open ${withdrawalScheduleLabel(schedule)}.`;
 }
 
 function timeParts(date: Date): {

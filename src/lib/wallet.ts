@@ -8,7 +8,6 @@ import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/generated/prisma";
 import { D, ZERO, type Dec } from "@/lib/money";
 import { getCurrentNav, getSettingDecimal, upsertDailySnapshot, snapshotDayKey } from "@/lib/nav";
-import { withdrawalProcessingWindowMessage, withdrawalsProcessableNow } from "@/lib/config";
 
 export async function ensureWallet(userId: string) {
   return prisma.wallet.upsert({
@@ -634,8 +633,6 @@ export async function approveWithdrawal(
  * move every request to its individual wallet or INR payout stage.
  */
 export async function recordBrokerWithdrawalBatch(withdrawalIds: string[], adminId: string) {
-  if (!withdrawalsProcessableNow()) throw new Error(withdrawalProcessingWindowMessage());
-
   const uniqueIds = [...new Set(withdrawalIds.map((id) => id.trim()).filter(Boolean))];
   if (uniqueIds.length === 0) throw new Error("Select at least one approved withdrawal");
 

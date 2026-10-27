@@ -58,7 +58,7 @@ export default function RiskPage() {
 
       <h2>Liquidity and scheduling</h2>
       <p>
-        Withdrawals follow a weekly cycle: requests during the configured window shown in the investor portal, with processing on Monday. While there
+        Withdrawal requests are accepted during the configured window shown in the investor portal. Approved requests may be processed by our team on any day. While there
         is no lock-in, your funds are not available instantly at all times, and processing values
         depend on the NAV at the time of settlement.
       </p>

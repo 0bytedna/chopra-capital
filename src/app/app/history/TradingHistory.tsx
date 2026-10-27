@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { cn } from "@/lib/cn";
 
 export type TradingHistoryItem = {
@@ -37,18 +38,34 @@ function formatDate(value: string): string {
   });
 }
 
-export function TradingHistory({ activity }: { activity: TradingHistoryItem[] }) {
+type TradingPagination = {
+  page: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+};
+
+export function TradingHistory({
+  activity,
+  pagination,
+}: {
+  activity: TradingHistoryItem[];
+  pagination: TradingPagination;
+}) {
   if (activity.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-stone-200 px-5 py-10 text-center text-sm text-ink-dim">
-        No trading activity has affected your account yet.
+      <div>
+        <div className="rounded-xl border border-dashed border-stone-200 px-5 py-10 text-center text-sm text-ink-dim">
+          No trading activity has affected your account on this page.
+        </div>
+        <TradingPagination pagination={pagination} />
       </div>
     );
   }
 
   return (
-    <div className="space-y-3">
-      {activity.map((item) => {
+    <div>
+      <div className="space-y-3">
+        {activity.map((item) => {
         const positive = item.amount.startsWith("+");
         return (
           <article
@@ -75,7 +92,42 @@ export function TradingHistory({ activity }: { activity: TradingHistoryItem[] })
             </div>
           </article>
         );
-      })}
+        })}
+      </div>
+      <TradingPagination pagination={pagination} />
     </div>
+  );
+}
+
+function TradingPagination({ pagination }: { pagination: TradingPagination }) {
+  if (!pagination.hasNextPage && !pagination.hasPreviousPage) return null;
+
+  return (
+    <nav
+      className="mt-5 flex items-center justify-between gap-3"
+      aria-label="Trading activity pages"
+    >
+      {pagination.hasPreviousPage ? (
+        <Link
+          href={`/app/history?tradingPage=${pagination.page - 1}`}
+          className="rounded-lg border border-gold-600/25 px-3 py-2 text-xs font-semibold text-ink transition hover:bg-gold-600/10"
+        >
+          Newer entries
+        </Link>
+      ) : (
+        <span aria-hidden />
+      )}
+      <span className="text-xs text-ink-faint">Page {pagination.page}</span>
+      {pagination.hasNextPage ? (
+        <Link
+          href={`/app/history?tradingPage=${pagination.page + 1}`}
+          className="rounded-lg border border-gold-600/25 px-3 py-2 text-xs font-semibold text-ink transition hover:bg-gold-600/10"
+        >
+          Older entries
+        </Link>
+      ) : (
+        <span aria-hidden />
+      )}
+    </nav>
   );
 }

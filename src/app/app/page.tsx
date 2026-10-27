@@ -19,6 +19,7 @@ export default async function DashboardPage() {
     getUserNotificationCenter(user.id),
   ]);
   const balance = metrics.units.mul(metrics.nav);
+  const totalProfit = metrics.bookedProfit.add(metrics.unrealizedProfit);
   const mt5 = mt5InvestorAccount();
   const accountDetails: Mt5Detail[] = [
     ["Broker Name", mt5.brokerName],
@@ -31,7 +32,10 @@ export default async function DashboardPage() {
     <div className="mx-auto max-w-5xl space-y-6">
       <AttentionPanel center={notifications} />
       <AccountMetricCards
+        initialProfit={toNumber(totalProfit)}
         initialBalance={toNumber(balance)}
+        initialDeposits={toNumber(metrics.totalDeposits)}
+        initialWithdrawals={toNumber(metrics.netWithdrawals)}
         initialQueued={toNumber(metrics.queued)}
         initialPendingInr={toNumber(metrics.pendingInr)}
       />

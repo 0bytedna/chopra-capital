@@ -99,7 +99,7 @@ function PayoutDetailsCard({ method, payout }: { method: Method; payout: PayoutD
   return (
     <div className="rounded-xl border border-gold-600/20 bg-vault-950/60 px-4 py-3">
       <p className="text-sm leading-relaxed text-ink-dim">
-        Our team will confirm your approved cash collection and arrange it for Monday. Keep your request reference ready when collecting.
+        Our team will confirm your approved cash collection and arrange it after approval. Keep your request reference ready when collecting.
       </p>
     </div>
   );

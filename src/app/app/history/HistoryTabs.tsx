@@ -18,12 +18,14 @@ type WithdrawalItems = ComponentProps<typeof WithdrawalHistory>["withdrawals"];
 
 export function HistoryTabs({
   tradingActivity,
+  tradingPagination,
   deposits,
   withdrawals,
   twoFactorEnabled,
   withdrawalMethods,
 }: {
   tradingActivity: TradingItems;
+  tradingPagination: ComponentProps<typeof TradingHistory>["pagination"];
   deposits: DepositItems;
   withdrawals: WithdrawalItems;
   twoFactorEnabled: boolean;
@@ -96,7 +98,7 @@ export function HistoryTabs({
 
       <div className="mt-6" role="tabpanel">
         {tab === "TRADING" ? (
-          <TradingHistory activity={tradingActivity} />
+          <TradingHistory activity={tradingActivity} pagination={tradingPagination} />
         ) : tab === "DEPOSITS" ? (
           <DepositHistory deposits={deposits} />
         ) : (
