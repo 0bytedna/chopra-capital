@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState, useRef } from "react";
-import { AlertTriangle, Check, Loader2, X } from "lucide-react";
+import { startTransition, useActionState, useState } from "react";
+import { AlertTriangle, Check, Loader2, ShieldCheck, X } from "lucide-react";
 import type { AdminFormState } from "@/app/admin/actions";
 
 type Action = (
@@ -14,11 +14,15 @@ function IconButton({
   tone,
   pending,
   children,
+  type = "submit",
+  onClick,
 }: {
   label: string;
   tone: "approve" | "reject" | "correct";
   pending: boolean;
   children: React.ReactNode;
+  type?: "submit" | "button";
+  onClick?: () => void;
 }) {
   const toneClass =
     tone === "approve"
@@ -29,7 +33,8 @@ function IconButton({
 
   return (
     <button
-      type="submit"
+      type={type}
+      onClick={onClick}
       title={label}
       aria-label={label}
       disabled={pending}
@@ -37,6 +42,40 @@ function IconButton({
     >
       {pending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : children}
     </button>
+  );
+}
+
+function FinancialDecisionDialog({
+  title,
+  message,
+  tone,
+  noteLabel,
+  note,
+  onNoteChange,
+  onCancel,
+  onConfirm,
+}: {
+  title: string;
+  message: string;
+  tone: "approve" | "reject" | "correct";
+  noteLabel?: string;
+  note: string;
+  onNoteChange: (value: string) => void;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
+      <button type="button" aria-label="Cancel action" onClick={onCancel} className="absolute inset-0 bg-black/55 backdrop-blur-sm" />
+      <section role="dialog" aria-modal="true" className="product-window relative z-10 w-full max-w-md rounded-2xl p-5 shadow-2xl">
+        <div className="flex items-center justify-between gap-3"><span className="flex size-10 items-center justify-center rounded-full bg-gold-100 text-gold-700"><ShieldCheck className="size-5" /></span><button type="button" onClick={onCancel} aria-label="Close" className="rounded-full border border-stone-200 p-2"><X className="size-4" /></button></div>
+        <h2 className="mt-4 font-serif text-xl text-ink">{title}</h2>
+        <p className="mt-2 text-sm leading-6 text-ink-dim">{message}</p>
+        {noteLabel && <label className="mt-4 block text-xs font-medium uppercase tracking-[0.12em] text-ink-faint">{noteLabel}<textarea value={note} onChange={(event) => onNoteChange(event.target.value)} rows={3} className="mt-2 w-full rounded-lg border border-stone-300 bg-white p-3 text-sm normal-case tracking-normal text-ink" /></label>}
+        <p className="mt-3 rounded-lg border border-gold-600/15 bg-gold-50 px-3 py-2 text-xs text-gold-800">This action is recorded against the signed-in administrator.</p>
+        <div className="mt-5 grid grid-cols-2 gap-3"><button type="button" onClick={onCancel} className="h-11 rounded-lg border border-stone-300 bg-white text-sm font-semibold text-ink">Cancel</button><button type="button" onClick={onConfirm} className={`h-11 rounded-lg text-sm font-semibold text-white ${tone === "reject" ? "bg-rose-600" : tone === "correct" ? "bg-amber-600" : "bg-emerald-600"}`}>Confirm</button></div>
+      </section>
+    </div>
   );
 }
 
@@ -67,52 +106,21 @@ export function WithdrawalReviewActions({
     AdminFormState,
     FormData
   >(rejectAction, {});
-  const rejectNoteRef = useRef<HTMLInputElement>(null);
+  const [decision, setDecision] = useState<"approve" | "reject" | null>(null);
+  const [note, setNote] = useState("");
 
   return (
     <div>
       <div className="flex justify-end gap-2">
-        <form
-          action={approveFormAction}
-          onSubmit={(event) => {
-            if (
-              !window.confirm(
-                `Approve this ${grossUsd} USD withdrawal and reserve it for the broker batch?`,
-              )
-            ) {
-              event.preventDefault();
-            }
-          }}
-        >
-          <input type="hidden" name="id" value={id} />
-          <input type="hidden" name="grossUsd" value={grossUsd} />
-          <IconButton label="Approve withdrawal" tone="approve" pending={approving}>
+          <IconButton type="button" onClick={() => setDecision("approve")} label="Approve withdrawal" tone="approve" pending={approving}>
             <Check className="size-5" aria-hidden />
           </IconButton>
-        </form>
-
-        <form
-          action={rejectFormAction}
-          onSubmit={(event) => {
-            const note = window.prompt(
-              "Reason for rejection (optional). This will be shown to the investor:",
-              "",
-            );
-            if (note === null) {
-              event.preventDefault();
-              return;
-            }
-            if (rejectNoteRef.current) rejectNoteRef.current.value = note.trim();
-          }}
-        >
-          <input type="hidden" name="id" value={id} />
-          <input ref={rejectNoteRef} type="hidden" name="note" />
-          <IconButton label="Reject withdrawal" tone="reject" pending={rejecting}>
+          <IconButton type="button" onClick={() => setDecision("reject")} label="Reject withdrawal" tone="reject" pending={rejecting}>
             <X className="size-5" aria-hidden />
           </IconButton>
-        </form>
       </div>
       <InlineError>{approveState.error ?? rejectState.error}</InlineError>
+      {decision && <FinancialDecisionDialog title={decision === "approve" ? "Approve withdrawal" : "Reject withdrawal"} message={decision === "approve" ? `Approve ${grossUsd} USD and reserve it for the broker batch?` : "Reject this withdrawal request? The investor will see the reason entered below."} tone={decision} noteLabel={decision === "reject" ? "Reason (optional)" : undefined} note={note} onNoteChange={setNote} onCancel={() => { setDecision(null); setNote(""); }} onConfirm={() => { const data = new FormData(); data.set("id", id); if (decision === "approve") { data.set("grossUsd", grossUsd); startTransition(() => approveFormAction(data)); } else { data.set("note", note.trim()); startTransition(() => rejectFormAction(data)); } setDecision(null); setNote(""); }} />}
     </div>
   );
 }
@@ -144,87 +152,36 @@ export function DepositReviewActions({
     AdminFormState,
     FormData
   >(rejectAction, {});
-  const correctionNoteRef = useRef<HTMLInputElement>(null);
-  const rejectNoteRef = useRef<HTMLInputElement>(null);
+  const [decision, setDecision] = useState<"approve" | "correct" | "reject" | null>(null);
+  const [note, setNote] = useState("");
 
   return (
     <div>
       <div className="flex justify-end gap-2">
-        <form
-          action={approveFormAction}
-          onSubmit={(event) => {
-            const destination =
-              method === "CRYPTO" ? "the company-wallet queue" : "INR conversion";
-            if (
-              !window.confirm(
-                `Confirm that the funds were received and move this request to ${destination}?`,
-              )
-            ) {
-              event.preventDefault();
-            }
-          }}
-        >
-          <input type="hidden" name="id" value={id} />
-          <IconButton label="Confirm funds received" tone="approve" pending={approving}>
+          <IconButton type="button" onClick={() => setDecision("approve")} label="Confirm funds received" tone="approve" pending={approving}>
             <Check className="size-5" aria-hidden />
           </IconButton>
-        </form>
 
         {method !== "CASH" && allowCorrection && (
-          <form
-            action={correctionFormAction}
-            onSubmit={(event) => {
-              const note = window.prompt(
-                method === "BANK"
-                  ? "What must the investor correct about the UTR?"
-                  : "What must the investor correct about the transaction hash?",
-                "",
-              );
-              if (!note?.trim()) {
-                event.preventDefault();
-                return;
-              }
-              if (correctionNoteRef.current) {
-                correctionNoteRef.current.value = note.trim();
-              }
-            }}
-          >
-            <input type="hidden" name="id" value={id} />
-            <input ref={correctionNoteRef} type="hidden" name="note" />
             <IconButton
+              type="button"
+              onClick={() => setDecision("correct")}
               label="Request corrected payment details"
               tone="correct"
               pending={correcting}
             >
               <AlertTriangle className="size-4" aria-hidden />
             </IconButton>
-          </form>
         )}
 
-        <form
-          action={rejectFormAction}
-          onSubmit={(event) => {
-            const note = window.prompt(
-              "Reason for rejection (optional). This will be shown to the investor:",
-              "",
-            );
-            if (note === null) {
-              event.preventDefault();
-              return;
-            }
-            if (rejectNoteRef.current) rejectNoteRef.current.value = note.trim();
-          }}
-        >
-          <input type="hidden" name="id" value={id} />
-          <input ref={rejectNoteRef} type="hidden" name="note" />
-          <IconButton label="Reject deposit" tone="reject" pending={rejecting}>
+          <IconButton type="button" onClick={() => setDecision("reject")} label="Reject deposit" tone="reject" pending={rejecting}>
             <X className="size-5" aria-hidden />
           </IconButton>
-        </form>
       </div>
       <InlineError>
         {approveState.error ?? correctionState.error ?? rejectState.error}
       </InlineError>
+      {decision && <FinancialDecisionDialog title={decision === "approve" ? "Confirm deposit" : decision === "correct" ? "Request correction" : "Reject deposit"} message={decision === "approve" ? `Confirm receipt and move this deposit to ${method === "CRYPTO" ? "the company-wallet queue" : "INR conversion"}?` : decision === "correct" ? "Explain what payment detail the investor must correct." : "Reject this deposit request? The investor will see the reason entered below."} tone={decision} noteLabel={decision === "approve" ? undefined : decision === "correct" ? "Correction required" : "Reason (optional)"} note={note} onNoteChange={setNote} onCancel={() => { setDecision(null); setNote(""); }} onConfirm={() => { if (decision === "correct" && !note.trim()) return; const data = new FormData(); data.set("id", id); if (decision !== "approve") data.set("note", note.trim()); startTransition(() => decision === "approve" ? approveFormAction(data) : decision === "correct" ? correctionFormAction(data) : rejectFormAction(data)); setDecision(null); setNote(""); }} />}
     </div>
   );
 }

@@ -62,7 +62,7 @@ export default async function ReferralsPage() {
   const totalEarned = user.commissionWallet?.totalEarned ?? 0;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="mx-auto w-full max-w-7xl space-y-6">
       <header>
         <p className="eyebrow">Referral programme</p>
         <h1 className="mt-2 font-serif text-3xl text-ink">

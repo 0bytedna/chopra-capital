@@ -222,6 +222,24 @@ export function NotificationList({
 }
 export function AttentionPanel({ center }: { center: UserNotificationCenter }) {
   if (center.actionItems.length > 0) {
+    if (center.actionItems.length === 1) {
+      const item = center.actionItems[0];
+      return (
+        <section className="flex items-center gap-3 rounded-xl border-2 border-amber-300 bg-amber-50 p-3 shadow-sm">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-amber-600 text-white">
+            <AlertTriangle className="size-5" aria-hidden />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-amber-800">Action required</p>
+            <p className="mt-0.5 truncate text-sm font-semibold text-amber-950">{item.title}</p>
+          </div>
+          <Link href={item.href} className="inline-flex shrink-0 items-center gap-2 rounded-full bg-gold-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-gold-700">
+            {item.actionLabel}
+            <ArrowRight className="size-4" aria-hidden />
+          </Link>
+        </section>
+      );
+    }
     const visibleItems = center.actionItems.slice(0, 3);
     const remaining = Math.max(0, center.actionItems.length - visibleItems.length);
 

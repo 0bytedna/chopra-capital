@@ -14,6 +14,9 @@ import {
 } from "@/lib/tradingAccount";
 import { adminRecordTradingAdjustment } from "../actions";
 import { reportingDayKey } from "@/lib/reportingCalendar";
+import { reportingDayEnd, reportingDayStart } from "@/lib/reportingCalendar";
+import type { Prisma, TradingAdjustmentType } from "@prisma/client";
+import { AdminTablePreferences } from "@/components/admin/AdminTablePreferences";
 
 export const metadata: Metadata = { title: "Admin · Trading" };
 
@@ -41,18 +44,47 @@ function requestedPage(value: string | string[] | undefined): number {
 export default async function AdminTradingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string | string[] }>;
+  searchParams: Promise<{
+    page?: string | string[];
+    type?: string | string[];
+    admin?: string | string[];
+    from?: string | string[];
+    to?: string | string[];
+  }>;
 }) {
   const query = await searchParams;
-  const [poolNav, walletAgg, entryCount] = await Promise.all([
+  const one = (value: string | string[] | undefined) => typeof value === "string" ? value : "";
+  const selectedType = one(query.type);
+  const selectedAdmin = one(query.admin);
+  const from = /^\d{4}-\d{2}-\d{2}$/.test(one(query.from)) ? one(query.from) : "";
+  const to = /^\d{4}-\d{2}-\d{2}$/.test(one(query.to)) ? one(query.to) : "";
+  const allowedTypes = Object.keys(reasonLabels) as TradingAdjustmentType[];
+  const where: Prisma.TradingAccountEntryWhereInput = {
+    ...(allowedTypes.includes(selectedType as TradingAdjustmentType) ? { type: selectedType as TradingAdjustmentType } : {}),
+    ...(selectedAdmin ? { adminId: selectedAdmin } : {}),
+    ...(from || to ? { createdAt: { ...(from ? { gte: reportingDayStart(from) } : {}), ...(to ? { lte: reportingDayEnd(to) } : {}) } } : {}),
+  };
+  const auditHref = (targetPage: number) => {
+    const params = new URLSearchParams();
+    if (selectedType) params.set("type", selectedType);
+    if (selectedAdmin) params.set("admin", selectedAdmin);
+    if (from) params.set("from", from);
+    if (to) params.set("to", to);
+    if (targetPage > 1) params.set("page", String(targetPage));
+    const value = params.toString();
+    return value ? `/admin/trading?${value}` : "/admin/trading";
+  };
+  const [poolNav, walletAgg, entryCount, admins] = await Promise.all([
     getCurrentNav(),
     prisma.wallet.aggregate({ _sum: { units: true } }),
-    prisma.tradingAccountEntry.count(),
+    prisma.tradingAccountEntry.count({ where }),
+    prisma.user.findMany({ where: { role: "ADMIN" }, orderBy: { fullName: "asc" }, select: { id: true, fullName: true, email: true } }),
   ]);
 
   const pageCount = Math.max(1, Math.ceil(entryCount / AUDIT_PAGE_SIZE));
   const page = Math.min(requestedPage(query.page), pageCount);
   const entries = await prisma.tradingAccountEntry.findMany({
+    where,
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     skip: (page - 1) * AUDIT_PAGE_SIZE,
     take: AUDIT_PAGE_SIZE,
@@ -156,6 +188,21 @@ export default async function AdminTradingPage({
             unit drift {unitsDrift.toFixed(6)}
           </span>
         </div>
+        <form method="get" className="grid gap-3 border-t border-gold-600/15 bg-white px-5 py-4 sm:grid-cols-2 xl:grid-cols-[1fr_1fr_0.8fr_0.8fr_auto_auto]">
+          <select name="type" defaultValue={selectedType} className="h-10 rounded-lg border border-stone-200 bg-white px-3 text-sm text-ink">
+            <option value="">All entry types</option>
+            {allowedTypes.map((type) => <option key={type} value={type}>{reasonLabels[type]}</option>)}
+          </select>
+          <select name="admin" defaultValue={selectedAdmin} className="h-10 rounded-lg border border-stone-200 bg-white px-3 text-sm text-ink">
+            <option value="">All administrators</option>
+            {admins.map((admin) => <option key={admin.id} value={admin.id}>{admin.fullName ?? admin.email}</option>)}
+          </select>
+          <input name="from" type="date" defaultValue={from} className="h-10 rounded-lg border border-stone-200 bg-white px-3 font-mono text-xs text-ink" />
+          <input name="to" type="date" defaultValue={to} className="h-10 rounded-lg border border-stone-200 bg-white px-3 font-mono text-xs text-ink" />
+          <button type="submit" className="h-10 rounded-lg bg-gold-600 px-4 text-sm font-semibold text-white">Apply</button>
+          <Link href={`/api/admin/trading/export?${new URLSearchParams({ ...(selectedType ? { type: selectedType } : {}), ...(selectedAdmin ? { admin: selectedAdmin } : {}), ...(from ? { from } : {}), ...(to ? { to } : {}) }).toString()}`} className="inline-flex h-10 items-center justify-center rounded-lg border border-gold-600/25 px-4 text-sm font-semibold text-gold-700">Export CSV</Link>
+        </form>
+        <AdminTablePreferences storageKey="admin-trading-table-v1" allowNotesToggle>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px] text-left text-xs">
             <thead className="border-y border-gold-600/15 bg-stone-50 text-ink-faint">
@@ -164,7 +211,8 @@ export default async function AdminTradingPage({
                 <th className="px-5 py-3">Reason</th>
                 <th className="px-5 py-3">Change</th>
                 <th className="px-5 py-3">Balance after</th>
-                <th className="px-5 py-3">Note</th>
+                <th className="optional-note px-5 py-3">Note</th>
+                <th className="px-5 py-3">Administrator</th>
                 <th className="px-5 py-3">Actions</th>
               </tr>
             </thead>
@@ -191,9 +239,10 @@ export default async function AdminTradingPage({
                   <td className="currency-value px-5 py-3 text-ink">
                     {formatUsdt(entry.balanceAfter)}
                   </td>
-                  <td className="max-w-xs px-5 py-3 text-ink-dim">
+                  <td className="optional-note max-w-xs px-5 py-3 text-ink-dim">
                     {entry.note}
                   </td>
+                  <td className="px-5 py-3 text-ink-dim">{entry.admin.fullName ?? entry.admin.email}</td>
                   <td className="px-5 py-3">
                     {editableTradingTypes.has(entry.type) &&
                     !entry.note.startsWith("Investor correction:") ? (
@@ -212,7 +261,7 @@ export default async function AdminTradingPage({
               {entries.length === 0 && (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={7}
                     className="px-5 py-10 text-center text-ink-faint"
                   >
                     No account changes yet.
@@ -222,6 +271,7 @@ export default async function AdminTradingPage({
             </tbody>
           </table>
         </div>
+        </AdminTablePreferences>
         {pageCount > 1 && (
           <nav
             className="flex items-center justify-between gap-4 border-t border-gold-600/15 px-5 py-4"
@@ -229,7 +279,7 @@ export default async function AdminTradingPage({
           >
             {page > 1 ? (
               <Link
-                href={`/admin/trading?page=${page - 1}`}
+                href={auditHref(page - 1)}
                 className="rounded-lg border border-gold-600/25 px-4 py-2 text-xs font-semibold text-ink transition hover:bg-gold-600/10"
               >
                 Newer entries
@@ -242,7 +292,7 @@ export default async function AdminTradingPage({
             </span>
             {page < pageCount ? (
               <Link
-                href={`/admin/trading?page=${page + 1}`}
+                href={auditHref(page + 1)}
                 className="rounded-lg border border-gold-600/25 px-4 py-2 text-xs font-semibold text-ink transition hover:bg-gold-600/10"
               >
                 Older entries

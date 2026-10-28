@@ -11,11 +11,13 @@ export type TradingHistoryItem = {
     | "SERVER_FEE"
     | "ADMIN_SHARE"
     | "OTHER_INCREASE"
-    | "OTHER_DECREASE";
+    | "OTHER_DECREASE"
+    | "DEPOSIT"
+    | "WITHDRAWAL"
+    | "FEE"
+    | "ADJUSTMENT";
   amount: string;
-  poolAmount: string;
-  sharePercent: string;
-  note: string;
+  balanceAfter: string;
   createdAt: string;
 };
 
@@ -26,6 +28,10 @@ const LABELS: Record<TradingHistoryItem["type"], string> = {
   ADMIN_SHARE: "Company share",
   OTHER_INCREASE: "Other increase",
   OTHER_DECREASE: "Other decrease",
+  DEPOSIT: "Approved deposit",
+  WITHDRAWAL: "Processed withdrawal",
+  FEE: "Account fee",
+  ADJUSTMENT: "Account adjustment",
 };
 
 type TradingHistoryFilters = {
@@ -45,6 +51,10 @@ const FILTER_OPTIONS: Array<{
   { value: "ADMIN_SHARE", label: "Company share" },
   { value: "OTHER_INCREASE", label: "Other increase" },
   { value: "OTHER_DECREASE", label: "Other decrease" },
+  { value: "DEPOSIT", label: "Approved deposits" },
+  { value: "WITHDRAWAL", label: "Processed withdrawals" },
+  { value: "FEE", label: "Account fees" },
+  { value: "ADJUSTMENT", label: "Account adjustments" },
 ];
 
 function formatDate(value: string): string {
@@ -104,7 +114,7 @@ export function TradingHistory({
           <div>
             <p className="eyebrow">Audit trail</p>
             <h2 id="user-audit-heading" className="mt-1 font-serif text-xl text-ink">
-              Your account changes
+              Your complete account history
             </h2>
           </div>
           <p className="text-xs text-ink-faint">
@@ -181,8 +191,7 @@ export function TradingHistory({
                   <th className="px-4 py-3 font-medium">Time</th>
                   <th className="px-4 py-3 font-medium">Entry</th>
                   <th className="px-4 py-3 text-right font-medium">Your change</th>
-                  <th className="px-4 py-3 text-right font-medium">Pool change</th>
-                  <th className="px-4 py-3 text-right font-medium">Your share</th>
+                  <th className="px-4 py-3 text-right font-medium">Balance after</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gold-600/10">
@@ -202,11 +211,8 @@ export function TradingHistory({
                       >
                         {item.amount} USD
                       </td>
-                      <td className="currency-value whitespace-nowrap px-4 py-3 text-right text-ink-dim">
-                        {item.poolAmount} USD
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-right font-mono text-ink-dim">
-                        {item.sharePercent}%
+                      <td className="currency-value whitespace-nowrap px-4 py-3 text-right font-semibold text-ink">
+                        {item.balanceAfter} USD
                       </td>
                     </tr>
                   );
@@ -237,14 +243,10 @@ export function TradingHistory({
                       {item.amount} USD
                     </p>
                   </div>
-                  <dl className="mt-3 grid grid-cols-2 gap-3 border-t border-gold-600/10 pt-3 text-xs">
+                  <dl className="mt-3 border-t border-gold-600/10 pt-3 text-xs">
                     <div>
-                      <dt className="text-ink-faint">Pool change</dt>
-                      <dd className="currency-value mt-1 text-ink-dim">{item.poolAmount} USD</dd>
-                    </div>
-                    <div className="text-right">
-                      <dt className="text-ink-faint">Your share</dt>
-                      <dd className="mt-1 font-mono text-ink-dim">{item.sharePercent}%</dd>
+                      <dt className="text-ink-faint">Balance after</dt>
+                      <dd className="currency-value mt-1 font-semibold text-ink">{item.balanceAfter} USD</dd>
                     </div>
                   </dl>
                 </article>

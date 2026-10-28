@@ -140,6 +140,10 @@ export function AdminShell({ email, children }: { email: string; children: React
               <BrandMark className="size-7" />
               <p className="eyebrow">Chopra Capital · Staff</p>
             </div>
+            <div className="ml-auto hidden items-center gap-2 rounded-full border border-positive/25 bg-positive/8 px-3 py-1.5 md:flex">
+              <ShieldCheck className="size-3.5 text-positive" aria-hidden />
+              <span className="max-w-56 truncate text-xs font-medium text-positive">Audited session · {email}</span>
+            </div>
           </div>
         </header>
         <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:rounded-2xl lg:border lg:border-stone-200/80 lg:bg-vault-900/20">{children}</main>

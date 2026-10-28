@@ -6,44 +6,53 @@ import { formatUsdt } from "@/lib/money";
 import { cn } from "@/lib/cn";
 import { PortfolioChart } from "@/components/app/PortfolioChart";
 import { getPoolPortfolioSeries } from "@/lib/poolPortfolio";
+import {
+  ArrowDownToLine,
+  ArrowRight,
+  ArrowUpFromLine,
+  CircleAlert,
+  Gift,
+  Landmark,
+  RefreshCcw,
+  WalletCards,
+} from "lucide-react";
+import {
+  calculateReferralCommissionPreview,
+  getReferralCommissionRate,
+} from "@/lib/referrals";
+import {
+  reportingDayEnd,
+  reportingDayKey,
+  reportingDayStart,
+  reportingWeekStart,
+} from "@/lib/reportingCalendar";
 
 export const metadata: Metadata = { title: "Admin · Overview" };
 
 export default async function AdminOverviewPage() {
+  const today = reportingDayKey();
+  const weekStart = reportingWeekStart(today);
+  const commissionRate = await getReferralCommissionRate();
   const [
     poolNav,
     tradingProfitAgg,
-    pendingDeposits,
-    activeWithdrawals,
     pendingKyc,
     openTickets,
     poolPortfolio,
+    depositApproval,
+    depositConversion,
+    depositBroker,
+    withdrawalApproval,
+    withdrawalBroker,
+    withdrawalPayout,
+    depositExceptions,
+    withdrawalExceptions,
+    commissionPreview,
   ] = await Promise.all([
     getCurrentNav(),
     prisma.tradingAccountEntry.aggregate({
       where: { type: { in: ["TRADING_PROFIT", "TRADING_LOSS"] } },
       _sum: { amount: true },
-    }),
-    prisma.deposit.count({
-      where: {
-        status: {
-          in: ["PENDING", "NEEDS_CORRECTION", "RECEIVED", "QUEUED"],
-        },
-      },
-    }),
-    prisma.withdrawal.count({
-      where: {
-        status: {
-          in: [
-            "REQUESTED",
-            "APPROVED",
-            "BROKER_RECEIVED",
-            "INR_READY",
-            "PAYOUT_DETAILS_REQUIRED",
-            "PAYOUT_DETAILS_REVIEW",
-          ],
-        },
-      },
     }),
     prisma.user.count({
       where: {
@@ -54,12 +63,31 @@ export default async function AdminOverviewPage() {
     }),
     prisma.ticket.count({ where: { status: "OPEN" } }),
     getPoolPortfolioSeries(),
+    prisma.deposit.count({ where: { status: "PENDING" } }),
+    prisma.deposit.count({ where: { status: "RECEIVED" } }),
+    prisma.deposit.count({ where: { status: "QUEUED" } }),
+    prisma.withdrawal.count({ where: { status: "REQUESTED" } }),
+    prisma.withdrawal.count({ where: { status: "APPROVED" } }),
+    prisma.withdrawal.count({
+      where: {
+        status: {
+          in: ["BROKER_RECEIVED", "INR_READY", "PAYOUT_DETAILS_REVIEW"],
+        },
+      },
+    }),
+    prisma.deposit.count({ where: { status: "NEEDS_CORRECTION" } }),
+    prisma.withdrawal.count({ where: { status: "PAYOUT_DETAILS_REQUIRED" } }),
+    calculateReferralCommissionPreview({
+      periodStart: weekStart,
+      periodEnd: today,
+      from: reportingDayStart(weekStart),
+      to: reportingDayEnd(today),
+      rate: commissionRate,
+    }),
   ]);
 
   const tradingProfit = tradingProfitAgg._sum.amount ?? 0;
   const queues = [
-    { href: "/admin/deposits", label: "Deposits", count: pendingDeposits },
-    { href: "/admin/withdrawals", label: "Withdrawals", count: activeWithdrawals },
     { href: "/admin/kyc", label: "KYCs", count: pendingKyc },
     { href: "/admin/tickets", label: "Tickets", count: openTickets },
   ];
@@ -69,6 +97,26 @@ export default async function AdminOverviewPage() {
     { label: "Issued units", value: formatUsdt(poolNav.totalUnits, 6) },
     { label: "NAV / unit", value: formatUsdt(poolNav.nav) },
   ];
+  const operationStages = [
+    { href: "/admin/deposits", label: "Deposit approvals", count: depositApproval, Icon: ArrowDownToLine },
+    { href: "/admin/deposits", label: "INR conversions", count: depositConversion, Icon: RefreshCcw },
+    { href: "/admin/deposits", label: "Broker deposits", count: depositBroker, Icon: WalletCards },
+    { href: "/admin/withdrawals", label: "Withdrawal approvals", count: withdrawalApproval, Icon: ArrowUpFromLine },
+    { href: "/admin/withdrawals", label: "Broker withdrawals", count: withdrawalBroker, Icon: Landmark },
+    { href: "/admin/withdrawals", label: "Payouts ready", count: withdrawalPayout, Icon: WalletCards },
+    {
+      href: `/admin/commissions?from=${weekStart}&to=${today}`,
+      label: "Commission distributions",
+      count: commissionPreview.filter(
+        (row) => row.distributedAmount === null && row.suggestedCommission.gt(0),
+      ).length,
+      Icon: Gift,
+    },
+  ];
+  const exceptions = [
+    { href: "/admin/deposits", label: "Deposits needing correction", count: depositExceptions },
+    { href: "/admin/withdrawals", label: "Payout details on hold", count: withdrawalExceptions },
+  ].filter((item) => item.count > 0);
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">
@@ -110,9 +158,56 @@ export default async function AdminOverviewPage() {
         ))}
       </section>
 
+      <section aria-labelledby="operations-strip-heading" className="space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="eyebrow">Active work</p>
+            <h2 id="operations-strip-heading" className="mt-1 font-serif text-xl text-ink">
+              Operations queue
+            </h2>
+          </div>
+          <p className="text-xs text-ink-faint">Open a stage to continue processing</p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {operationStages.map(({ href, label, count, Icon }) => (
+            <Link key={label} href={href} className="glass-card glass-card-hover flex min-w-0 items-center gap-3 rounded-xl p-4">
+              <span className={cn("flex size-10 shrink-0 items-center justify-center rounded-full border", count > 0 ? "border-gold-500 bg-gold-600 text-white" : "border-stone-200 bg-stone-100 text-ink-faint")}>
+                <Icon className="size-4" aria-hidden />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-semibold text-ink">{label}</span>
+                <span className="mt-0.5 block text-xs text-ink-faint">{count} waiting</span>
+              </span>
+              <ArrowRight className="size-4 shrink-0 text-gold-600" aria-hidden />
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {exceptions.length > 0 && (
+        <section className="rounded-2xl border-2 border-rose-300 bg-rose-50 p-4" aria-labelledby="exceptions-heading">
+          <div className="flex items-start gap-3">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-rose-600 text-white">
+              <CircleAlert className="size-5" aria-hidden />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="eyebrow text-rose-700">Needs intervention</p>
+              <h2 id="exceptions-heading" className="mt-1 font-serif text-xl text-rose-950">Resolve operational exceptions</h2>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {exceptions.map((item) => (
+                  <Link key={item.label} href={item.href} className="rounded-full border border-rose-300 bg-white px-3 py-2 text-sm font-semibold text-rose-800 hover:bg-rose-100">
+                    {item.count} {item.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       <section
-        className="mx-auto grid w-full max-w-xl grid-cols-2 gap-3 sm:gap-4 lg:max-w-none lg:grid-cols-4"
-        aria-label="Pending administration tasks"
+        className="grid w-full grid-cols-2 gap-3 sm:gap-4"
+        aria-label="KYC and support queues"
       >
         {queues.map((queue) => (
           <Link

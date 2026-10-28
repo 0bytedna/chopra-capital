@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/cn";
 import { formatInr, formatUsdt } from "@/lib/money";
 import { TransactionBatchEditAction } from "@/components/admin/TransactionBatchEditAction";
+import { reportingDayEnd, reportingDayStart } from "@/lib/reportingCalendar";
 
 export const metadata: Metadata = { title: "Admin · Transactions" };
 
@@ -45,6 +46,11 @@ type Props = {
     type?: string | string[];
     method?: string | string[];
     status?: string | string[];
+    q?: string | string[];
+    from?: string | string[];
+    to?: string | string[];
+    min?: string | string[];
+    max?: string | string[];
   }>;
 };
 
@@ -133,6 +139,15 @@ export default async function AdminTransactionsPage({ searchParams }: Props) {
   const requestedType = one(query.type);
   const requestedMethod = one(query.method);
   const requestedStatus = one(query.status);
+  const search = one(query.q)?.trim() ?? "";
+  const from = /^\d{4}-\d{2}-\d{2}$/.test(one(query.from) ?? "") ? one(query.from)! : "";
+  const to = /^\d{4}-\d{2}-\d{2}$/.test(one(query.to) ?? "") ? one(query.to)! : "";
+  const numeric = (value: string | undefined) => value?.trim() ? Number(value) : Number.NaN;
+  const min = numeric(one(query.min));
+  const max = numeric(one(query.max));
+  const createdAt = from || to ? { ...(from ? { gte: reportingDayStart(from) } : {}), ...(to ? { lte: reportingDayEnd(to) } : {}) } : undefined;
+  const userFilter = search ? { OR: [{ fullName: { contains: search } }, { email: { contains: search } }] } : undefined;
+  const amountFilter = Number.isFinite(min) || Number.isFinite(max) ? { ...(Number.isFinite(min) ? { gte: min } : {}), ...(Number.isFinite(max) ? { lte: max } : {}) } : undefined;
   const selectedType: TransactionType = isTransactionType(requestedType)
     ? requestedType
     : "DEPOSITS";
@@ -159,6 +174,9 @@ export default async function AdminTransactionsPage({ searchParams }: Props) {
       selectedType === "DEPOSITS"
         ? prisma.deposit.findMany({
             where: {
+              createdAt,
+              amount: amountFilter,
+              user: userFilter,
               method: selectedMethod === "ALL" ? undefined : selectedMethod,
               status:
                 selectedDepositStatus === "ALL"
@@ -180,6 +198,9 @@ export default async function AdminTransactionsPage({ searchParams }: Props) {
       selectedType === "WITHDRAWALS"
         ? prisma.withdrawal.findMany({
             where: {
+              createdAt,
+              amount: amountFilter,
+              user: userFilter,
               method: selectedMethod === "ALL" ? undefined : selectedMethod,
               status:
                 selectedWithdrawalStatus === "ALL"
@@ -194,6 +215,8 @@ export default async function AdminTransactionsPage({ searchParams }: Props) {
       selectedType === "CONVERSIONS"
         ? prisma.depositAllocationBatch.findMany({
             where: {
+              createdAt,
+              totalUsdt: amountFilter,
               method:
                 conversionMethod === "ALL"
                   ? { in: ["BANK", "CASH"] }
@@ -209,6 +232,7 @@ export default async function AdminTransactionsPage({ searchParams }: Props) {
         : Promise.resolve([]),
       selectedType === "BROKER"
         ? prisma.brokerTransferBatch.findMany({
+            where: { createdAt, totalReceivedUsdt: amountFilter },
             orderBy: { createdAt: "desc" },
             take: 100,
             include: {
@@ -257,6 +281,17 @@ export default async function AdminTransactionsPage({ searchParams }: Props) {
           </Link>
         ))}
       </nav>
+
+      <form method="get" className="glass-card grid gap-3 rounded-xl p-4 sm:grid-cols-2 xl:grid-cols-[1.4fr_0.8fr_0.8fr_0.7fr_0.7fr_auto_auto]">
+        <input type="hidden" name="type" value={selectedType} />
+        <input name="q" defaultValue={search} placeholder="Investor name or email" className="h-10 rounded-lg border border-stone-200 bg-white px-3 text-sm text-ink" disabled={selectedType === "CONVERSIONS" || selectedType === "BROKER"} />
+        <input name="from" type="date" defaultValue={from} className="h-10 rounded-lg border border-stone-200 bg-white px-3 font-mono text-xs text-ink" />
+        <input name="to" type="date" defaultValue={to} className="h-10 rounded-lg border border-stone-200 bg-white px-3 font-mono text-xs text-ink" />
+        <input name="min" type="number" min="0" step="0.01" defaultValue={Number.isFinite(min) ? min : ""} placeholder="Min amount" className="h-10 rounded-lg border border-stone-200 bg-white px-3 text-sm text-ink" />
+        <input name="max" type="number" min="0" step="0.01" defaultValue={Number.isFinite(max) ? max : ""} placeholder="Max amount" className="h-10 rounded-lg border border-stone-200 bg-white px-3 text-sm text-ink" />
+        <button type="submit" className="h-10 rounded-lg bg-gold-600 px-4 text-sm font-semibold text-white">Apply</button>
+        <Link href={`/admin/transactions?type=${selectedType}`} className="inline-flex h-10 items-center justify-center rounded-lg border border-stone-200 px-4 text-sm font-semibold text-ink-dim">Clear</Link>
+      </form>
 
       {selectedType !== "BROKER" && (
         <form

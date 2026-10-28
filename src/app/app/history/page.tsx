@@ -5,7 +5,7 @@ import { getWithdrawalReferenceRate } from "@/lib/withdrawal-rate";
 import { formatInr, formatSignedUsdt, formatUsdt } from "@/lib/money";
 import {
   getUserTradingActivity,
-  USER_VISIBLE_TRADING_TYPES,
+  USER_VISIBLE_ACCOUNT_TYPES,
   type UserTradingActivityType,
 } from "@/lib/userTradingActivity";
 import {
@@ -28,7 +28,7 @@ function one(value: string | string[] | undefined): string | undefined {
 }
 
 function tradingType(value: string | undefined): UserTradingActivityType | undefined {
-  return USER_VISIBLE_TRADING_TYPES.find((type) => type === value);
+  return USER_VISIBLE_ACCOUNT_TYPES.find((type) => type === value);
 }
 
 function reportingDay(value: string | undefined): string {
@@ -76,15 +76,15 @@ export default async function HistoryPage({
   ]);
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8">
+    <div className="mx-auto w-full max-w-7xl space-y-8">
       <header>
         <p className="eyebrow">Account activity</p>
         <h1 className="mt-2 font-serif text-2xl text-ink sm:text-3xl">
           Account <em className="gold-text italic">transactions</em>
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-dim">
-          Review trading activity and manage eligible deposit or withdrawal requests.
-          Completed records remain available as your account history.
+          Review every approved balance movement and manage eligible deposit or
+          withdrawal requests. Pool-level figures remain private.
         </p>
       </header>
 
@@ -94,9 +94,7 @@ export default async function HistoryPage({
             id: entry.id,
             type: entry.type,
             amount: formatSignedUsdt(entry.userAmount),
-            poolAmount: formatSignedUsdt(entry.poolAmount),
-            sharePercent: entry.poolShare.mul(100).toFixed(2),
-            note: entry.note,
+            balanceAfter: formatUsdt(entry.balanceAfter),
             createdAt: entry.createdAt.toISOString(),
           }))}
           tradingPagination={{

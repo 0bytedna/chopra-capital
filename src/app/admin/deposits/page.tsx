@@ -6,6 +6,7 @@ import { cn } from "@/lib/cn";
 import { BulkDepositAllocationForm } from "@/components/admin/BulkDepositAllocationForm";
 import { BrokerTransferForm } from "@/components/admin/BrokerTransferForm";
 import { DepositReviewActions } from "@/components/admin/ReviewDecisionButtons";
+import { InvestorQuickView } from "@/components/admin/InvestorQuickView";
 import { adminConfirmDeposit, adminRejectDeposit, adminRequestDepositCorrection } from "../actions";
 
 export const metadata: Metadata = { title: "Admin · Deposits" };
@@ -93,17 +94,17 @@ export default async function AdminDepositsPage({ searchParams }: Props) {
       prisma.deposit.findMany({
         where: { method: approvalMethod, status: "PENDING" },
         orderBy: { createdAt: "asc" },
-        include: { user: { select: { fullName: true } } },
+        include: { user: { select: { id: true, fullName: true } } },
       }),
       prisma.deposit.findMany({
         where: { method: conversionMethod, status: "RECEIVED" },
         orderBy: { createdAt: "asc" },
-        include: { user: { select: { fullName: true } } },
+        include: { user: { select: { id: true, fullName: true } } },
       }),
       prisma.deposit.findMany({
         where: { status: "QUEUED" },
         orderBy: { createdAt: "asc" },
-        include: { user: { select: { fullName: true } } },
+        include: { user: { select: { id: true, fullName: true } } },
       }),
     ]);
 
@@ -252,7 +253,7 @@ function DepositReviewTable({
     network: string | null;
     txHash: string | null;
     reference: string | null;
-    user: { fullName: string | null };
+    user: { id: string; fullName: string | null };
   }>;
 }) {
   return (
@@ -284,9 +285,7 @@ function DepositReviewTable({
             return (
               <tr key={deposit.id} className="hover:bg-vault-950/25">
                 <td className="px-4 py-3">
-                  <p className="whitespace-nowrap text-[clamp(0.72rem,3.2vw,0.875rem)] font-medium text-ink">
-                    {deposit.user.fullName ?? "Unnamed investor"}
-                  </p>
+                  <InvestorQuickView id={deposit.user.id} name={deposit.user.fullName ?? "Unnamed investor"} />
                 </td>
                 <td className="currency-value whitespace-nowrap px-4 py-3 text-right text-[clamp(0.7rem,3vw,0.875rem)] text-ink">
                   {sourceAmountLabel(deposit)}

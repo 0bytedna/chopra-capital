@@ -9,6 +9,7 @@ import { AttentionPanel } from "@/components/app/UserNotifications";
 import { Mt5AccountDetails, type Mt5Detail } from "@/components/mt5/Mt5AccountDetails";
 import { mt5InvestorAccount } from "@/lib/mt5";
 import { prisma } from "@/lib/prisma";
+import { ChevronDown } from "lucide-react";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
@@ -22,6 +23,12 @@ export default async function DashboardPage() {
   ]);
   const balance = metrics.units.mul(metrics.nav);
   const totalProfit = metrics.bookedProfit.add(metrics.unrealizedProfit);
+  const latestPoint = performance.series.at(-1);
+  const previousPoint = performance.series.at(-2) ?? latestPoint;
+  const profitTrend =
+    Number(latestPoint?.profit ?? 0) - Number(previousPoint?.profit ?? 0);
+  const balanceTrend =
+    Number(latestPoint?.value ?? 0) - Number(previousPoint?.value ?? 0);
   const mt5 = mt5InvestorAccount();
   const accountDetails: Mt5Detail[] = [
     ["Broker Name", mt5.brokerName],
@@ -31,7 +38,7 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="mx-auto w-full max-w-7xl space-y-6">
       <AttentionPanel center={notifications} />
       <AccountMetricCards
         initialProfit={toNumber(totalProfit)}
@@ -41,6 +48,8 @@ export default async function DashboardPage() {
         initialQueued={toNumber(metrics.queued)}
         initialPendingInr={toNumber(metrics.pendingInr)}
         initialCommission={toNumber(commissionWallet?.balance)}
+        initialProfitTrend={profitTrend}
+        initialBalanceTrend={balanceTrend}
       />
       <PortfolioChart
         initialSeries={performance.series}
@@ -51,18 +60,21 @@ export default async function DashboardPage() {
         trading results, fees and company profit-share entries. Every administrator change
         is recorded in the audit trail.
       </p>
-      <section
-        className="glass-card overflow-hidden rounded-2xl"
-        aria-labelledby="trading-account-title"
-      >
-        <div className="border-b border-stone-200 px-5 py-4">
-          <p className="eyebrow">Company trading account</p>
-          <h2 id="trading-account-title" className="mt-1 font-serif text-lg text-ink">
-            MT5 live account details
-          </h2>
+      <details className="group glass-card overflow-hidden rounded-2xl">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 select-none [&::-webkit-details-marker]:hidden">
+          <div>
+            <p className="eyebrow">Company trading account</p>
+            <h2 className="mt-1 font-serif text-lg text-ink">MT5 live account details</h2>
+          </div>
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-gold-600/20 bg-white text-gold-600">
+            <ChevronDown className="size-4 transition-transform group-open:rotate-180" aria-hidden />
+            <span className="sr-only">Expand or collapse MT5 account details</span>
+          </span>
+        </summary>
+        <div className="border-t border-stone-200">
+          <Mt5AccountDetails details={accountDetails} />
         </div>
-        <Mt5AccountDetails details={accountDetails} />
-      </section>
+      </details>
     </div>
   );
 }

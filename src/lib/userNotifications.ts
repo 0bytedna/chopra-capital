@@ -209,6 +209,9 @@ export const getUserNotificationCenter = cache(
             : "UPCOMING",
       },
     ];
+    const visibleJourney = journey.every((step) => step.state === "COMPLETE")
+      ? []
+      : journey;
 
     if (depositCorrections.length > 0) {
       urgentCount += depositCorrections.length;
@@ -286,7 +289,7 @@ export const getUserNotificationCenter = cache(
     }
 
     return {
-      journey,
+      journey: visibleJourney,
       actionItems,
       updates,
       recommendations,

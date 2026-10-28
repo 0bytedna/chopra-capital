@@ -55,7 +55,7 @@ export function HistoryTabs({
           )}
         >
           <CircleDollarSign className="hidden size-3.5 sm:block" aria-hidden />
-          Trading
+          Audit trail
           <span className="rounded-full bg-vault-950/70 px-1.5 py-0.5 font-mono text-[0.68rem] sm:px-2 sm:text-xs">
             {tradingPagination.totalCount}
           </span>

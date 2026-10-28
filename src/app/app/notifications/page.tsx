@@ -16,13 +16,15 @@ export default async function NotificationsPage() {
   const center = await getUserNotificationCenter(user.id);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-4">
+    <div className="mx-auto w-full max-w-7xl space-y-4">
       <h1 className="sr-only">Notifications</h1>
       <AutoReadNotifications unreadCount={center.unreadCount} />
 
-      <section aria-label="Your account journey">
-        <AccountJourney steps={center.journey} />
-      </section>
+      {center.journey.length > 0 && (
+        <section aria-label="Your account journey">
+          <AccountJourney steps={center.journey} />
+        </section>
+      )}
 
       {center.actionItems.length > 0 && (
         <section aria-labelledby="action-notifications-title" className="space-y-3">

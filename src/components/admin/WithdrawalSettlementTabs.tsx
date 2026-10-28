@@ -265,7 +265,7 @@ function BulkConversionForm({
         </div>
       </div>
 
-      <div className="grid gap-x-3 gap-y-2 rounded-xl border border-gold-500/25 bg-gold-600/6 p-3 sm:grid-cols-[minmax(0,1fr)_14rem]">
+      <div className="sticky bottom-2 z-20 grid gap-x-3 gap-y-2 rounded-xl border border-gold-500/30 bg-white/95 p-3 shadow-xl backdrop-blur sm:grid-cols-[minmax(0,1fr)_14rem]">
         <label
           htmlFor={"bulk-inr-" + method.toLowerCase()}
           className="text-xs uppercase tracking-[0.14em] text-ink-dim sm:col-span-2"

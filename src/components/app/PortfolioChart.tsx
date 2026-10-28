@@ -243,7 +243,7 @@ function GraphCard({
         </div>
       </div>
 
-      <div className="mt-5 space-y-3 border-t border-gold-600/15 pt-4">
+      <div className="mt-5 space-y-3 border-t border-gold-600/15 pt-4 lg:sticky lg:top-40 lg:z-10 lg:-mx-2 lg:rounded-xl lg:bg-white/95 lg:px-2 lg:pb-2 lg:backdrop-blur xl:grid xl:grid-cols-[auto_minmax(28rem,1fr)] xl:items-end xl:gap-x-5 xl:gap-y-2 xl:space-y-0">
         <div
           className="flex w-fit max-w-full overflow-x-auto rounded-full border border-gold-600/20 p-0.5"
           role="group"
@@ -296,18 +296,18 @@ function GraphCard({
             />
           </label>
         </div>
-        <p className="text-right text-xs text-ink-faint" aria-live="polite">
+        <p className="text-right text-xs text-ink-faint xl:col-span-2" aria-live="polite">
           {loading ? "Updating…" : "Auto-refreshes every 15 seconds"}
         </p>
       </div>
 
-      <div className="mt-3 h-64 min-w-0" aria-label={`${title} in USD over time`}>
+      <div className="mt-3 h-72 min-w-0 lg:h-[24rem]" aria-label={`${title} in USD over time`}>
         <ResponsiveContainer
           width="100%"
           height="100%"
           minWidth={0}
-          minHeight={256}
-          initialDimension={{ width: 320, height: 256 }}
+          minHeight={288}
+          initialDimension={{ width: 320, height: 288 }}
         >
           <AreaChart data={series} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
             <defs>
@@ -363,7 +363,7 @@ export function PortfolioChart({
   return (
     <section className="min-w-0 space-y-3" aria-label={ariaLabel}>
       <div
-        className="grid grid-cols-2 rounded-xl border border-stone-200 bg-white p-1 shadow-sm"
+        className="grid grid-cols-2 rounded-xl border border-stone-200 bg-white p-1 shadow-sm lg:sticky lg:top-24 lg:z-20"
         role="tablist"
         aria-label="Select account graph"
       >

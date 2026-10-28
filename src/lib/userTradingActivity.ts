@@ -1,10 +1,10 @@
 import "server-only";
 
-import type { Prisma, TradingAdjustmentType } from "@prisma/client";
+import type { LedgerType, TradingAdjustmentType } from "@prisma/client";
 import { D, ZERO, type Dec } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 
-export const USER_VISIBLE_TRADING_TYPES = [
+const USER_VISIBLE_TRADING_TYPES = [
   "TRADING_PROFIT",
   "TRADING_LOSS",
   "SERVER_FEE",
@@ -13,15 +13,26 @@ export const USER_VISIBLE_TRADING_TYPES = [
   "OTHER_DECREASE",
 ] as const satisfies readonly TradingAdjustmentType[];
 
+const USER_VISIBLE_LEDGER_TYPES = [
+  "DEPOSIT",
+  "WITHDRAWAL",
+  "FEE",
+  "ADJUSTMENT",
+] as const satisfies readonly LedgerType[];
+
+export const USER_VISIBLE_ACCOUNT_TYPES = [
+  ...USER_VISIBLE_TRADING_TYPES,
+  ...USER_VISIBLE_LEDGER_TYPES,
+] as const;
+
 export type UserTradingActivityType =
-  (typeof USER_VISIBLE_TRADING_TYPES)[number];
+  (typeof USER_VISIBLE_ACCOUNT_TYPES)[number];
 
 export type UserTradingActivity = {
   id: string;
   type: UserTradingActivityType;
   userAmount: Dec;
-  poolAmount: Dec;
-  poolShare: Dec;
+  balanceAfter: Dec;
   note: string;
   createdAt: Date;
 };
@@ -35,6 +46,8 @@ export type UserTradingActivityPage = {
   hasPreviousPage: boolean;
 };
 
+type UnbalancedActivity = Omit<UserTradingActivity, "balanceAfter">;
+
 export async function getUserTradingActivity(
   userId: string,
   options: {
@@ -47,80 +60,44 @@ export async function getUserTradingActivity(
 ): Promise<UserTradingActivityPage> {
   const requestedPage = Math.max(1, Math.trunc(options.page ?? 1));
   const pageSize = Math.min(100, Math.max(1, Math.trunc(options.pageSize ?? 25)));
-  const where: Prisma.TradingAccountEntryWhereInput = {
-    type: {
-      in: options.type ? [options.type] : [...USER_VISIBLE_TRADING_TYPES],
-    },
-    ...(options.from || options.to
-      ? {
-          createdAt: {
-            ...(options.from ? { gte: options.from } : {}),
-            ...(options.to ? { lte: options.to } : {}),
-          },
-        }
-      : {}),
-  };
-  const visibleEntryCount = await prisma.tradingAccountEntry.count({
-    where,
-  });
-  const pageCount = Math.max(1, Math.ceil(visibleEntryCount / pageSize));
-  const page = Math.min(requestedPage, pageCount);
-  const recentEntries = await prisma.tradingAccountEntry.findMany({
-    where,
-    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-    skip: (page - 1) * pageSize,
-    take: pageSize + 1,
-    select: {
-      id: true,
-      type: true,
-      amount: true,
-      note: true,
-      createdAt: true,
-    },
-  });
 
-  const hasNextPage = recentEntries.length > pageSize;
-  const pageEntries = recentEntries.slice(0, pageSize);
-  if (pageEntries.length === 0) {
-    return {
-      activity: [],
-      page,
-      pageCount,
-      totalCount: visibleEntryCount,
-      hasNextPage: false,
-      hasPreviousPage: page > 1,
-    };
-  }
-
-  const entries = pageEntries.reverse();
-  const latestEntryAt = entries[entries.length - 1].createdAt;
-  const [userUnitEvents, poolUnitEvents] = await Promise.all([
-    prisma.ledgerEntry.findMany({
-      where: {
-        userId,
-        units: { not: null },
-        createdAt: { lte: latestEntryAt },
-      },
-      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
-      select: { id: true, units: true, createdAt: true },
-    }),
-    prisma.ledgerEntry.findMany({
-      where: {
-        units: { not: null },
-        createdAt: { lte: latestEntryAt },
-      },
-      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
-      select: { id: true, units: true, createdAt: true },
-    }),
-  ]);
+  const [tradingEntries, userLedger, userUnitEvents, poolUnitEvents] =
+    await Promise.all([
+      prisma.tradingAccountEntry.findMany({
+        where: { type: { in: [...USER_VISIBLE_TRADING_TYPES] } },
+        orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+        select: { id: true, type: true, amount: true, note: true, createdAt: true },
+      }),
+      prisma.ledgerEntry.findMany({
+        where: { userId, type: { in: [...USER_VISIBLE_LEDGER_TYPES] } },
+        orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+        select: { id: true, type: true, amount: true, note: true, createdAt: true },
+      }),
+      prisma.ledgerEntry.findMany({
+        where: { userId, units: { not: null } },
+        orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+        select: { units: true, createdAt: true },
+      }),
+      prisma.ledgerEntry.findMany({
+        where: { units: { not: null } },
+        orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+        select: { units: true, createdAt: true },
+      }),
+    ]);
 
   let userUnits = ZERO;
   let poolUnits = ZERO;
   let userCursor = 0;
   let poolCursor = 0;
-  const activity: UserTradingActivity[] = [];
+  const events: UnbalancedActivity[] = userLedger.map((entry) => ({
+    id: `ledger-${entry.id}`,
+    type: entry.type as UserTradingActivityType,
+    userAmount: D(entry.amount),
+    note: entry.note ?? "Account movement",
+    createdAt: entry.createdAt,
+  }));
 
-  for (const entry of entries) {
+  for (const entry of tradingEntries) {
     while (
       userCursor < userUnitEvents.length &&
       userUnitEvents[userCursor].createdAt <= entry.createdAt
@@ -135,27 +112,45 @@ export async function getUserTradingActivity(
       poolUnits = poolUnits.add(D(poolUnitEvents[poolCursor].units ?? 0));
       poolCursor += 1;
     }
-
     if (userUnits.lte(0) || poolUnits.lte(0)) continue;
-    const poolShare = userUnits.div(poolUnits);
-    const poolAmount = D(entry.amount);
-    activity.push({
-      id: entry.id,
-      type: entry.type as UserTradingActivity["type"],
-      userAmount: poolAmount.mul(poolShare),
-      poolAmount,
-      poolShare,
+    events.push({
+      id: `trading-${entry.id}`,
+      type: entry.type as UserTradingActivityType,
+      userAmount: D(entry.amount).mul(userUnits.div(poolUnits)),
       note: entry.note,
       createdAt: entry.createdAt,
     });
   }
 
+  events.sort((a, b) => {
+    const time = a.createdAt.getTime() - b.createdAt.getTime();
+    return time || a.id.localeCompare(b.id);
+  });
+
+  let balance = ZERO;
+  const completeActivity: UserTradingActivity[] = events.map((event) => {
+    balance = balance.add(event.userAmount);
+    return { ...event, balanceAfter: balance };
+  });
+
+  const filtered = completeActivity.filter((entry) => {
+    if (options.type && entry.type !== options.type) return false;
+    if (options.from && entry.createdAt < options.from) return false;
+    if (options.to && entry.createdAt > options.to) return false;
+    return true;
+  });
+  const totalCount = filtered.length;
+  const pageCount = Math.max(1, Math.ceil(totalCount / pageSize));
+  const page = Math.min(requestedPage, pageCount);
+  const descending = filtered.reverse();
+  const activity = descending.slice((page - 1) * pageSize, page * pageSize);
+
   return {
-    activity: activity.reverse(),
+    activity,
     page,
     pageCount,
-    totalCount: visibleEntryCount,
-    hasNextPage,
+    totalCount,
+    hasNextPage: page < pageCount,
     hasPreviousPage: page > 1,
   };
 }

@@ -6,6 +6,7 @@ import { ArrowRight, BellRing, X } from "lucide-react";
 
 export function AccountActivityPanel({
   unreadCount,
+  items,
 }: {
   unreadCount: number;
   items: Array<{ id: string; title: string }>;
@@ -25,6 +26,14 @@ export function AccountActivityPanel({
         <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-gold-600 text-white shadow-sm">
           <BellRing className="size-5" aria-hidden />
         </span>
+        <div className="hidden min-w-0 flex-1 sm:block">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gold-700">
+            {updateLabel}
+          </p>
+          <p className="mt-0.5 truncate text-sm font-medium text-ink">
+            {items[0]?.title ?? "New account activity is available"}
+          </p>
+        </div>
         <Link
           href="/app/notifications"
           aria-label={`Review ${updateLabel}`}

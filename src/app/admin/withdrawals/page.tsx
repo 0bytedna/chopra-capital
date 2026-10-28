@@ -11,6 +11,7 @@ import { BulkBrokerWithdrawalForm } from "@/components/admin/BulkBrokerWithdrawa
 import { WithdrawalReviewActions } from "@/components/admin/ReviewDecisionButtons";
 import { WithdrawalSettlementTabs } from "@/components/admin/WithdrawalSettlementTabs";
 import { WithdrawalDistributionPanels } from "@/components/admin/WithdrawalDistributionPanels";
+import { InvestorQuickView } from "@/components/admin/InvestorQuickView";
 import {
   adminApproveWithdrawal,
   adminRejectWithdrawal,
@@ -20,6 +21,7 @@ import {
 export const metadata: Metadata = { title: "Admin · Withdrawals" };
 
 const investorSelect = {
+  id: true,
   fullName: true,
   mobile: true,
   bankingDetail: {
@@ -161,9 +163,7 @@ export default async function AdminWithdrawalsPage() {
                 {requested.map((withdrawal) => (
                   <tr key={withdrawal.id} className="hover:bg-vault-950/25">
                     <td className="px-4 py-3">
-                      <p className="whitespace-nowrap text-[clamp(0.72rem,3.2vw,0.875rem)] font-medium text-ink">
-                        {withdrawal.user.fullName ?? "Unnamed investor"}
-                      </p>
+                      <InvestorQuickView id={withdrawal.user.id} name={withdrawal.user.fullName ?? "Unnamed investor"} />
                     </td>
                     <td className="currency-value whitespace-nowrap px-4 py-3 text-right text-[clamp(0.7rem,3vw,0.875rem)] text-ink">
                       {requestedAmountLabel(withdrawal.amount)}
