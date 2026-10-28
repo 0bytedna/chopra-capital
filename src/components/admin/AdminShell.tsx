@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   Activity,
   ReceiptText,
+  Gift,
 } from "lucide-react";
 import { signout } from "@/app/(auth)/actions";
 import { BrandMark } from "@/components/brand/BrandMark";
@@ -25,6 +26,7 @@ import { cn } from "@/lib/cn";
 const items = [
   { href: "/admin", label: "Overview", Icon: Gauge },
   { href: "/admin/trading", label: "Trading", Icon: Activity },
+  { href: "/admin/commissions", label: "Commissions", Icon: Gift },
   { href: "/admin/deposits", label: "Deposits", Icon: ArrowDownToLine },
   { href: "/admin/withdrawals", label: "Withdrawals", Icon: ArrowUpFromLine },
   { href: "/admin/transactions", label: "Transactions", Icon: ReceiptText },

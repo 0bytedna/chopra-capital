@@ -42,36 +42,117 @@ export async function recordTradingAdjustment(input: {
   amount: Dec;
   note: string;
   adminId: string;
+  effectiveAt?: Date;
 }) {
   if (input.amount.lte(0)) throw new Error("Enter an amount greater than zero.");
   if (!input.note.trim()) throw new Error("Enter an audit note for this adjustment.");
   const signed = signedAmount(input.type, input.amount);
 
+  const effectiveAt = input.effectiveAt ?? new Date();
+  if (Number.isNaN(effectiveAt.getTime())) throw new Error("Choose a valid effective date.");
+  if (effectiveAt.getTime() > Date.now() + 60_000) {
+    throw new Error("The effective date cannot be in the future.");
+  }
+
   return prisma.$transaction(async (tx) => {
-    const before = await tx.poolState.upsert({ where: { id: "pool" }, update: {}, create: { id: "pool" } });
-    const balanceAfter = D(before.tradingBalance).add(signed);
-    const equityAfter = balanceAfter;
-    if (balanceAfter.lt(0) || equityAfter.lt(0)) throw new Error("This adjustment would make the trading account negative.");
-    const totalUnits = D(before.totalUnits);
-    const nav = totalUnits.gt(0) && equityAfter.gt(0) ? equityAfter.div(totalUnits) : D(before.lastNav);
+    const [pool, entries] = await Promise.all([
+      tx.poolState.upsert({
+        where: { id: "pool" },
+        update: {},
+        create: { id: "pool" },
+      }),
+      tx.tradingAccountEntry.findMany({
+        orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+      }),
+    ]);
+
+    const insertionIndex = entries.findIndex(
+      (entry) => entry.createdAt.getTime() > effectiveAt.getTime(),
+    );
+    const laterEntries =
+      insertionIndex < 0 ? [] : entries.slice(insertionIndex);
+    const balanceBefore =
+      insertionIndex < 0
+        ? D(pool.tradingBalance)
+        : D(entries[insertionIndex].balanceBefore);
+    const entryBalanceAfter = balanceBefore.add(signed);
+    if (entryBalanceAfter.lt(0)) {
+      throw new Error("This adjustment would make the trading account negative on the selected date.");
+    }
+    for (const entry of laterEntries) {
+      if (
+        D(entry.balanceBefore).add(signed).lt(0) ||
+        D(entry.balanceAfter).add(signed).lt(0) ||
+        D(entry.equityBefore).add(signed).lt(0) ||
+        D(entry.equityAfter).add(signed).lt(0)
+      ) {
+        throw new Error("This adjustment would make a later account balance negative.");
+      }
+    }
+
+    await tx.tradingAccountEntry.create({
+      data: {
+        type: input.type,
+        amount: signed,
+        balanceBefore,
+        balanceAfter: entryBalanceAfter,
+        equityBefore: balanceBefore,
+        equityAfter: entryBalanceAfter,
+        note: input.note.trim(),
+        adminId: input.adminId,
+        createdAt: effectiveAt,
+      },
+    });
+
+    for (const entry of laterEntries) {
+      await tx.tradingAccountEntry.update({
+        where: { id: entry.id },
+        data: {
+          balanceBefore: D(entry.balanceBefore).add(signed),
+          balanceAfter: D(entry.balanceAfter).add(signed),
+          equityBefore: D(entry.equityBefore).add(signed),
+          equityAfter: D(entry.equityAfter).add(signed),
+        },
+      });
+    }
+
+    const finalBalance = D(pool.tradingBalance).add(signed);
+    const totalUnits = D(pool.totalUnits);
+    const nav =
+      totalUnits.gt(0) && finalBalance.gt(0)
+        ? finalBalance.div(totalUnits)
+        : D(pool.lastNav);
     const after = await tx.poolState.update({
       where: { id: "pool" },
-      data: { tradingBalance: balanceAfter, tradingEquity: equityAfter, lastNav: nav },
+      data: {
+        tradingBalance: finalBalance,
+        tradingEquity: finalBalance,
+        lastNav: nav,
+      },
     });
-    await tx.tradingAccountEntry.create({ data: {
-      type: input.type,
-      amount: signed,
-      balanceBefore: before.tradingBalance,
-      balanceAfter,
-      equityBefore: before.tradingBalance,
-      equityAfter,
-      note: input.note.trim(),
-      adminId: input.adminId,
-    }});
+
+    const effectiveDay = snapshotDayKey(effectiveAt);
+    const snapshots = await tx.navSnapshot.findMany({
+      where: { day: { gte: effectiveDay } },
+    });
+    for (const snapshot of snapshots) {
+      const equity = D(snapshot.equity).add(signed);
+      const snapshotUnits = D(snapshot.totalUnits);
+      await tx.navSnapshot.update({
+        where: { day: snapshot.day },
+        data: {
+          equity,
+          nav:
+            snapshotUnits.gt(0) && equity.gt(0)
+              ? equity.div(snapshotUnits)
+              : snapshot.nav,
+        },
+      });
+    }
     await tx.navSnapshot.upsert({
       where: { day: snapshotDayKey() },
-      update: { nav, equity: equityAfter, totalUnits },
-      create: { day: snapshotDayKey(), nav, equity: equityAfter, totalUnits },
+      update: { nav, equity: finalBalance, totalUnits },
+      create: { day: snapshotDayKey(), nav, equity: finalBalance, totalUnits },
     });
     return after;
   });

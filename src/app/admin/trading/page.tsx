@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Gift } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { getCurrentNav } from "@/lib/nav";
 import { D, toNumber, formatUsdt } from "@/lib/money";
@@ -12,6 +13,7 @@ import {
   type EditableTradingAdjustmentType,
 } from "@/lib/tradingAccount";
 import { adminRecordTradingAdjustment } from "../actions";
+import { reportingDayKey } from "@/lib/reportingCalendar";
 
 export const metadata: Metadata = { title: "Admin · Trading" };
 
@@ -90,7 +92,11 @@ export default async function AdminTradingPage({
           >
             Record a balance change
           </h2>
-          <TradingAdjustmentFields key={poolNav.balance.toString()} currentBalance={toNumber(poolNav.balance)} />
+          <TradingAdjustmentFields
+            key={poolNav.balance.toString()}
+            currentBalance={toNumber(poolNav.balance)}
+            defaultEffectiveDay={reportingDayKey()}
+          />
           <label className="mt-3 block space-y-1.5 text-xs text-ink-faint">
             Audit note
             <input
@@ -102,6 +108,27 @@ export default async function AdminTradingPage({
             />
           </label>
         </AdminActionForm>
+      </section>
+
+      <section className="glass-card flex flex-col gap-4 rounded-2xl p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+        <div className="flex items-start gap-3">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-full border border-gold-600/25 bg-gold-600/10">
+            <Gift className="size-4 text-gold-500" aria-hidden />
+          </span>
+          <div>
+            <p className="eyebrow">Referral commissions</p>
+            <h2 className="mt-1 font-serif text-xl text-ink">Calculate and distribute</h2>
+            <p className="mt-1 text-xs leading-5 text-ink-faint">
+              Review eligible referrals, adjust suggested amounts and credit separate commission wallets.
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/admin/commissions"
+          className="inline-flex min-h-10 items-center justify-center rounded-lg bg-gold-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-gold-700"
+        >
+          Open commissions
+        </Link>
       </section>
 
       <section className="glass-card overflow-hidden rounded-2xl">

@@ -29,6 +29,7 @@ enum KycStatus {
 
 model User {
   id               String  @id @default(cuid())
+  publicId         String? @unique
   email            String  @unique
   passwordHash     String
   role             Role    @default(USER)
@@ -38,6 +39,7 @@ model User {
   // cash are enabled by an admin per investor.
   bankTransferEnabled Boolean @default(false)
   cashEnabled         Boolean @default(false)
+  referralEnabled     Boolean @default(false)
 
   fullName String?
   mobile   String?
@@ -57,28 +59,34 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  wallet                        Wallet?
-  ledger                        LedgerEntry[]
-  deposits                      Deposit[]
-  depositAllocationBatches      DepositAllocationBatch[]  @relation("DepositAllocationAdmin")
-  brokerTransferBatches         BrokerTransferBatch[]     @relation("BrokerTransferAdmin")
-  withdrawals                   Withdrawal[]
-  tickets                       Ticket[]
-  ticketMessages                TicketMessage[]
-  notifications                 AccountNotification[]
-  kycDocuments                  KycDocument[]
-  bankingDetail                 BankingDetail?
-  internalTransfersSent         InternalTransfer[]        @relation("InternalTransferFrom")
-  internalTransfersReceived     InternalTransfer[]        @relation("InternalTransferTo")
-  internalTransfersAdministered InternalTransfer[]        @relation("InternalTransferAdmin")
-  profitShareAllocations        ProfitShareAllocation[]
-  profitSharePosition           ProfitSharePosition?
-  companyProfitShareRuns        ProfitShareRun[]          @relation("ProfitShareCompany")
-  administeredProfitShareRuns   ProfitShareRun[]          @relation("ProfitShareAdmin")
-  reversedProfitShareRuns       ProfitShareRun[]          @relation("ProfitShareReversalAdmin")
-  tradingAccountEntries         TradingAccountEntry[]     @relation("TradingAccountEntryAdmin")
-  financialOperationAudits      FinancialOperationAudit[] @relation("FinancialOperationAuditUser")
-  administeredFinancialAudits   FinancialOperationAudit[] @relation("FinancialOperationAuditAdmin")
+  wallet                          Wallet?
+  ledger                          LedgerEntry[]
+  deposits                        Deposit[]
+  depositAllocationBatches        DepositAllocationBatch[]  @relation("DepositAllocationAdmin")
+  brokerTransferBatches           BrokerTransferBatch[]     @relation("BrokerTransferAdmin")
+  withdrawals                     Withdrawal[]
+  tickets                         Ticket[]
+  ticketMessages                  TicketMessage[]
+  notifications                   AccountNotification[]
+  kycDocuments                    KycDocument[]
+  bankingDetail                   BankingDetail?
+  internalTransfersSent           InternalTransfer[]        @relation("InternalTransferFrom")
+  internalTransfersReceived       InternalTransfer[]        @relation("InternalTransferTo")
+  internalTransfersAdministered   InternalTransfer[]        @relation("InternalTransferAdmin")
+  profitShareAllocations          ProfitShareAllocation[]
+  profitSharePosition             ProfitSharePosition?
+  companyProfitShareRuns          ProfitShareRun[]          @relation("ProfitShareCompany")
+  administeredProfitShareRuns     ProfitShareRun[]          @relation("ProfitShareAdmin")
+  reversedProfitShareRuns         ProfitShareRun[]          @relation("ProfitShareReversalAdmin")
+  tradingAccountEntries           TradingAccountEntry[]     @relation("TradingAccountEntryAdmin")
+  financialOperationAudits        FinancialOperationAudit[] @relation("FinancialOperationAuditUser")
+  administeredFinancialAudits     FinancialOperationAudit[] @relation("FinancialOperationAuditAdmin")
+  referralsMade                   Referral[]                @relation("ReferralReferrer")
+  referralReceived                Referral?                 @relation("ReferralReferred")
+  commissionWallet                CommissionWallet?
+  referralCommissionsEarned       ReferralCommission[]      @relation("ReferralCommissionReferrer")
+  referralCommissionSources       ReferralCommission[]      @relation("ReferralCommissionReferred")
+  administeredReferralCommissions ReferralCommission[]      @relation("ReferralCommissionAdmin")
 }
 
 model FinancialOperationAudit {
@@ -260,6 +268,51 @@ model InternalTransfer {
 
   @@index([fromUserId, createdAt])
   @@index([toUserId, createdAt])
+  @@index([adminId, createdAt])
+}
+
+model Referral {
+  id             String               @id @default(cuid())
+  referrerId     String
+  referrer       User                 @relation("ReferralReferrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  referredUserId String               @unique
+  referredUser   User                 @relation("ReferralReferred", fields: [referredUserId], references: [id], onDelete: Cascade)
+  commissions    ReferralCommission[]
+  createdAt      DateTime             @default(now())
+
+  @@index([referrerId, createdAt])
+}
+
+model CommissionWallet {
+  userId      String   @id
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  balance     Decimal  @default(0)
+  totalEarned Decimal  @default(0)
+  updatedAt   DateTime @updatedAt
+}
+
+model ReferralCommission {
+  id             String   @id @default(cuid())
+  referralId     String
+  referral       Referral @relation(fields: [referralId], references: [id], onDelete: Restrict)
+  referrerId     String
+  referrer       User     @relation("ReferralCommissionReferrer", fields: [referrerId], references: [id], onDelete: Restrict)
+  referredUserId String
+  referredUser   User     @relation("ReferralCommissionReferred", fields: [referredUserId], references: [id], onDelete: Restrict)
+  periodStart    String
+  periodEnd      String
+  ratePercent    Decimal
+  eligibleProfit Decimal
+  amount         Decimal
+  note           String?
+  adminId        String
+  admin          User     @relation("ReferralCommissionAdmin", fields: [adminId], references: [id], onDelete: Restrict)
+  distributedAt  DateTime @default(now())
+  createdAt      DateTime @default(now())
+
+  @@unique([referralId, periodStart, periodEnd])
+  @@index([referrerId, createdAt])
+  @@index([referredUserId, createdAt])
   @@index([adminId, createdAt])
 }
 

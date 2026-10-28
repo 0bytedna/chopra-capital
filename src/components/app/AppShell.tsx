@@ -15,6 +15,7 @@ import {
   LogOut,
   Menu,
   X,
+  Gift,
 } from "lucide-react";
 import { signout } from "@/app/(auth)/actions";
 import { BrandMark } from "@/components/brand/BrandMark";
@@ -47,6 +48,7 @@ const groups = [
       { href: "/app/deposit", label: "Deposit", Icon: ArrowDownToLine },
       { href: "/app/withdraw", label: "Withdraw", Icon: ArrowUpFromLine },
       { href: "/app/history", label: "Transactions", Icon: History },
+      { href: "/app/referrals", label: "Referrals", Icon: Gift },
     ],
   },
   {

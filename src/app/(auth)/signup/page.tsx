@@ -4,7 +4,14 @@ import { SignupForm } from "./SignupForm";
 
 export const metadata: Metadata = { title: "Open an account" };
 
-export default function SignupPage() {
+export default async function SignupPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ref?: string | string[] }>;
+}) {
+  const query = await searchParams;
+  const referralCode =
+    typeof query.ref === "string" ? query.ref.trim().toUpperCase() : "";
   return (
     <div>
       <p className="eyebrow">Open an account</p>
@@ -14,7 +21,7 @@ export default function SignupPage() {
       <p className="mt-2 text-sm text-ink-dim">
         Create your investor account. Verification (KYC) follows before your first allocation.
       </p>
-      <SignupForm />
+      <SignupForm referralCode={referralCode} />
       <p className="mt-5 text-center text-sm text-ink-faint">
         Already have an account?{" "}
         <Link href="/signin" className="text-gold-400 hover:text-gold-300">

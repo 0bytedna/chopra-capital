@@ -10,10 +10,12 @@ import {
   CircleDollarSign,
   Clock3,
   FileText,
+  Gift,
   Landmark,
   Mail,
   ShieldCheck,
   WalletCards,
+  Users,
 } from "lucide-react";
 import { CollapsibleCard } from "@/components/admin/CollapsibleCard";
 import { DepositMethodsToggle } from "@/components/admin/DepositMethodsToggle";
@@ -185,7 +187,22 @@ export default async function AdminInvestorRecordPage({
       kycNote: true,
       bankTransferEnabled: true,
       cashEnabled: true,
+      publicId: true,
+      referralEnabled: true,
       twoFactorEnabled: true,
+      commissionWallet: true,
+      referralReceived: {
+        include: {
+          referrer: { select: { id: true, fullName: true, email: true } },
+        },
+      },
+      referralsMade: {
+        orderBy: { createdAt: "desc" },
+        include: {
+          referredUser: { select: { id: true, fullName: true, email: true } },
+          commissions: { select: { amount: true } },
+        },
+      },
       createdAt: true,
       updatedAt: true,
       bankingDetail: true,
@@ -292,6 +309,7 @@ export default async function AdminInvestorRecordPage({
           bankTransferEnabled: investor.bankTransferEnabled,
           cashEnabled: investor.cashEnabled,
           twoFactorEnabled: investor.twoFactorEnabled,
+          referralEnabled: investor.referralEnabled,
           bankingDetail: investor.bankingDetail,
         }}
         queued={metrics.queued.toFixed(2)}
@@ -353,6 +371,53 @@ export default async function AdminInvestorRecordPage({
           firstActivityDate={performance.firstActivityDate}
           endpoint={`/api/admin/investors/${encodeURIComponent(investor.id)}/portfolio`}
         />
+      </CollapsibleCard>
+      <CollapsibleCard title="Referrals & commission" Icon={Gift}>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <MetricCard
+            label="Commission wallet"
+            value={`${formatUsdt(investor.commissionWallet?.balance)} USD`}
+            detail="Kept outside the broker pool"
+            Icon={Gift}
+          />
+          <MetricCard
+            label="Total commission"
+            value={`${formatUsdt(investor.commissionWallet?.totalEarned)} USD`}
+            detail="Lifetime distributed commission"
+            Icon={CircleDollarSign}
+          />
+          <MetricCard
+            label="Referred investors"
+            value={String(investor.referralsMade.length)}
+            detail={investor.referralEnabled ? "Referral access enabled" : "Referral access disabled"}
+            Icon={Users}
+          />
+        </div>
+        <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3">
+          <Detail label="Investor ID" value={investor.publicId ?? "Not assigned"} mono />
+          <Detail label="Referred by" value={investor.referralReceived ? investor.referralReceived.referrer.fullName ?? investor.referralReceived.referrer.email : "No referrer"} />
+        </dl>
+        <div className="mt-4 divide-y divide-gold-600/10 border-t border-gold-600/15">
+          {investor.referralsMade.map((referral) => {
+            const earned = referral.commissions.reduce(
+              (total, commission) => total + Number(commission.amount),
+              0,
+            );
+            return (
+              <div key={referral.id} className="flex items-center justify-between gap-4 py-3">
+                <Link href={`/admin/investors/${referral.referredUser.id}`} className="min-w-0 truncate text-sm text-ink hover:text-gold-600">
+                  {referral.referredUser.fullName ?? referral.referredUser.email}
+                </Link>
+                <span className="currency-value shrink-0 text-sm text-positive">
+                  {formatUsdt(earned)} USD
+                </span>
+              </div>
+            );
+          })}
+          {investor.referralsMade.length === 0 && (
+            <p className="py-4 text-sm text-ink-faint">No referred investors.</p>
+          )}
+        </div>
       </CollapsibleCard>
       <section className="grid gap-4 xl:grid-cols-2" aria-label="Funding history">
         <CollapsibleCard

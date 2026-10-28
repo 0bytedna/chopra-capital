@@ -1,6 +1,7 @@
 import "server-only";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { newPublicUserId } from "@/lib/referrals";
 
 export const BUILTIN_ADMIN_EMAIL = (process.env.ADMIN_EMAIL ?? "admin@chopracapital.com").trim().toLowerCase();
 
@@ -14,7 +15,7 @@ export async function ensureBuiltinAdminForSignin(email: string) {
 
   const existing = await prisma.user.findUnique({ where: { email: BUILTIN_ADMIN_EMAIL } });
   if (!existing) {
-    return prisma.user.create({ data: { email: BUILTIN_ADMIN_EMAIL, passwordHash: await bcrypt.hash(password, 12), role: "ADMIN", fullName: "Administrator", kycStatus: "APPROVED" } });
+    return prisma.user.create({ data: { publicId: newPublicUserId(), email: BUILTIN_ADMIN_EMAIL, passwordHash: await bcrypt.hash(password, 12), role: "ADMIN", fullName: "Administrator", kycStatus: "APPROVED" } });
   }
   const passwordMatchesEnvironment = await bcrypt.compare(password, existing.passwordHash);
   if (existing.role !== "ADMIN" || !passwordMatchesEnvironment) {

@@ -19,6 +19,7 @@ type WithdrawalItems = ComponentProps<typeof WithdrawalHistory>["withdrawals"];
 export function HistoryTabs({
   tradingActivity,
   tradingPagination,
+  tradingFilters,
   deposits,
   withdrawals,
   twoFactorEnabled,
@@ -26,6 +27,7 @@ export function HistoryTabs({
 }: {
   tradingActivity: TradingItems;
   tradingPagination: ComponentProps<typeof TradingHistory>["pagination"];
+  tradingFilters: ComponentProps<typeof TradingHistory>["filters"];
   deposits: DepositItems;
   withdrawals: WithdrawalItems;
   twoFactorEnabled: boolean;
@@ -55,7 +57,7 @@ export function HistoryTabs({
           <CircleDollarSign className="hidden size-3.5 sm:block" aria-hidden />
           Trading
           <span className="rounded-full bg-vault-950/70 px-1.5 py-0.5 font-mono text-[0.68rem] sm:px-2 sm:text-xs">
-            {tradingActivity.length}
+            {tradingPagination.totalCount}
           </span>
         </button>
         <button
@@ -98,7 +100,11 @@ export function HistoryTabs({
 
       <div className="mt-6" role="tabpanel">
         {tab === "TRADING" ? (
-          <TradingHistory activity={tradingActivity} pagination={tradingPagination} />
+          <TradingHistory
+            activity={tradingActivity}
+            pagination={tradingPagination}
+            filters={tradingFilters}
+          />
         ) : tab === "DEPOSITS" ? (
           <DepositHistory deposits={deposits} />
         ) : (

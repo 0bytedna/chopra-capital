@@ -6,6 +6,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getFullSession } from "@/lib/auth";
 import { getPortfolioMetrics, getPortfolioSeries } from "@/lib/portfolio";
 import { toNumber } from "@/lib/money";
+import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   const session = await getFullSession();
@@ -17,9 +18,10 @@ export async function GET(request: NextRequest) {
   const from = searchParams.get("from") ?? undefined;
   const to = searchParams.get("to") ?? undefined;
 
-  const [series, metrics] = await Promise.all([
+  const [series, metrics, commissionWallet] = await Promise.all([
     getPortfolioSeries(session.sub, from, to),
     getPortfolioMetrics(session.sub),
+    prisma.commissionWallet.findUnique({ where: { userId: session.sub } }),
   ]);
 
   return NextResponse.json({
@@ -29,6 +31,7 @@ export async function GET(request: NextRequest) {
       currentValue: toNumber(metrics.currentValue),
       queued: toNumber(metrics.queued),
       pendingInr: toNumber(metrics.pendingInr),
+      commission: toNumber(commissionWallet?.balance),
       inPool: toNumber(metrics.units.mul(metrics.nav)),
       totalDeposits: toNumber(metrics.totalDeposits),
       netWithdrawals: toNumber(metrics.netWithdrawals),

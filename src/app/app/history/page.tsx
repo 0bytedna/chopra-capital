@@ -3,7 +3,16 @@ import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getWithdrawalReferenceRate } from "@/lib/withdrawal-rate";
 import { formatInr, formatSignedUsdt, formatUsdt } from "@/lib/money";
-import { getUserTradingActivity } from "@/lib/userTradingActivity";
+import {
+  getUserTradingActivity,
+  USER_VISIBLE_TRADING_TYPES,
+  type UserTradingActivityType,
+} from "@/lib/userTradingActivity";
+import {
+  reportingDayEnd,
+  reportingDayKey,
+  reportingDayStart,
+} from "@/lib/reportingCalendar";
 import { HistoryTabs } from "./HistoryTabs";
 
 export const metadata: Metadata = { title: "Transactions" };
@@ -14,15 +23,45 @@ function requestedPage(value: string | string[] | undefined): number {
   return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : 1;
 }
 
+function one(value: string | string[] | undefined): string | undefined {
+  return typeof value === "string" ? value : undefined;
+}
+
+function tradingType(value: string | undefined): UserTradingActivityType | undefined {
+  return USER_VISIBLE_TRADING_TYPES.find((type) => type === value);
+}
+
+function reportingDay(value: string | undefined): string {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return "";
+  try {
+    return reportingDayKey(reportingDayStart(value)) === value ? value : "";
+  } catch {
+    return "";
+  }
+}
+
 export default async function HistoryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tradingPage?: string | string[] }>;
+  searchParams: Promise<{
+    tradingPage?: string | string[];
+    tradingType?: string | string[];
+    from?: string | string[];
+    to?: string | string[];
+  }>;
 }) {
   const user = await requireUser();
   const query = await searchParams;
+  const activeTradingType = tradingType(one(query.tradingType));
+  const from = reportingDay(one(query.from));
+  const to = reportingDay(one(query.to));
   const [tradingActivityPage, deposits, withdrawals, currentInrRate] = await Promise.all([
-    getUserTradingActivity(user.id, { page: requestedPage(query.tradingPage) }),
+    getUserTradingActivity(user.id, {
+      page: requestedPage(query.tradingPage),
+      type: activeTradingType,
+      from: from ? reportingDayStart(from) : undefined,
+      to: to ? reportingDayEnd(to) : undefined,
+    }),
     prisma.deposit.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "desc" },
@@ -62,8 +101,15 @@ export default async function HistoryPage({
           }))}
           tradingPagination={{
             page: tradingActivityPage.page,
+            pageCount: tradingActivityPage.pageCount,
+            totalCount: tradingActivityPage.totalCount,
             hasNextPage: tradingActivityPage.hasNextPage,
             hasPreviousPage: tradingActivityPage.hasPreviousPage,
+          }}
+          tradingFilters={{
+            type: activeTradingType ?? "ALL",
+            from,
+            to,
           }}
           twoFactorEnabled={user.twoFactorEnabled}
           withdrawalMethods={{ bank: user.bankTransferEnabled, cash: user.cashEnabled }}

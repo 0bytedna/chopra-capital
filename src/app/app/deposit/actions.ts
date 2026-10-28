@@ -7,6 +7,7 @@ import { depositSchema } from "@/lib/validation";
 import { D } from "@/lib/money";
 import { getDepositEligibility, type FinancialRestriction } from "@/lib/financialEligibility";
 import { isDuplicateTransactionHash, transactionHashFingerprint } from "@/lib/depositSecurity";
+import { refundCommissionInvestmentDeposit } from "@/lib/referrals";
 
 export type DepositFormState = { error?: string; success?: string; restriction?: FinancialRestriction };
 
@@ -73,6 +74,9 @@ export async function editDeposit(_prev: DepositFormState, formData: FormData): 
 
   const deposit = await prisma.deposit.findFirst({ where: { id, userId: user.id } });
   if (!deposit) return { error: "Deposit not found." };
+  if (deposit.network === "COMMISSION_WALLET") {
+    return { error: "Commission-wallet investment requests cannot be edited. Cancel the request and submit it again instead." };
+  }
   const isCorrection = deposit.status === "NEEDS_CORRECTION";
   if (deposit.status !== "PENDING" && !isCorrection) {
     return { error: "Only pending deposits or correction requests can be edited." };
@@ -157,9 +161,13 @@ export async function cancelDeposit(_prev: DepositFormState, formData: FormData)
   if (!deposit) return { error: "Deposit not found." };
   if (deposit.status !== "PENDING") return { error: "Only pending deposits can be cancelled." };
 
-  await prisma.deposit.update({
-    where: { id: deposit.id },
-    data: { status: "CANCELLED" },
+  await prisma.$transaction(async (tx) => {
+    const result = await tx.deposit.updateMany({
+      where: { id: deposit.id, userId: user.id, status: "PENDING" },
+      data: { status: "CANCELLED" },
+    });
+    if (result.count !== 1) throw new Error("Deposit is no longer pending.");
+    await refundCommissionInvestmentDeposit(tx, deposit);
   });
 
   revalidatePath("/app/deposit");

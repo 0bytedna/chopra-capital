@@ -39,6 +39,7 @@ const statusClass: Record<Deposit["status"], string> = {
 };
 
 function methodLabel(deposit: Deposit): string {
+  if (deposit.network === "COMMISSION_WALLET") return "Referral commission wallet";
   if (deposit.method === "CRYPTO") return `Crypto${deposit.network ? ` · ${deposit.network}` : ""}`;
   if (deposit.method === "BANK") return `Bank transfer${deposit.reference ? ` · UTR ${deposit.reference}` : ""}`;
   return "Cash";
@@ -189,10 +190,14 @@ export function DepositHistory({ deposits }: Props) {
   return (
     <ul className="mt-4 space-y-2.5">
       {deposits.map((deposit) => {
-        const canEdit = deposit.status === "PENDING" || deposit.status === "NEEDS_CORRECTION";
+        const isCommissionInvestment = deposit.network === "COMMISSION_WALLET";
+        const canEdit =
+          !isCommissionInvestment &&
+          (deposit.status === "PENDING" || deposit.status === "NEEDS_CORRECTION");
         const canCancel = deposit.status === "PENDING";
         const editing = canEdit && editingId === deposit.id;
-        const cancelling = canEdit && cancellingId === deposit.id;
+        const cancelling = canCancel && cancellingId === deposit.id;
+        const hasActions = canEdit || canCancel;
 
         return (
           <li key={deposit.id} className="glass-card rounded-xl px-4 py-3.5">
@@ -219,12 +224,14 @@ export function DepositHistory({ deposits }: Props) {
                 {deposit.status === "CONFIRMED" ? ` · ${deposit.amount} USD invested` : ""}
                 {deposit.adminNote ? ` · ${deposit.adminNote}` : ""}
               </p>
-              {canEdit && !editing && !cancelling && (
+              {hasActions && !editing && !cancelling && (
                 <div className="mt-3 flex flex-wrap items-center gap-2 sm:justify-end">
-                  <Button type="button" variant="ghost" size="sm" onClick={() => setEditingId(deposit.id)}>
-                    <Pencil className="size-3.5" aria-hidden />
-                    {deposit.status === "NEEDS_CORRECTION" ? "Correct details" : "Edit"}
-                  </Button>
+                  {canEdit && (
+                    <Button type="button" variant="ghost" size="sm" onClick={() => setEditingId(deposit.id)}>
+                      <Pencil className="size-3.5" aria-hidden />
+                      {deposit.status === "NEEDS_CORRECTION" ? "Correct details" : "Edit"}
+                    </Button>
+                  )}
                   {canCancel && (
                     <Button type="button" variant="danger" size="sm" onClick={() => setCancellingId(deposit.id)}>
                       <Ban className="size-3.5" aria-hidden />

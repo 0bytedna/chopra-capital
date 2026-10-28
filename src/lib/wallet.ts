@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
 import { D, ZERO, type Dec } from "@/lib/money";
 import { getCurrentNav, getSettingDecimal, upsertDailySnapshot, snapshotDayKey } from "@/lib/nav";
+import { refundCommissionInvestmentDeposit } from "@/lib/referrals";
 
 export async function ensureWallet(userId: string) {
   return prisma.wallet.upsert({
@@ -497,11 +498,16 @@ export async function investQueuedDepositBatch(
 }
 
 export async function rejectDeposit(depositId: string, adminNote?: string) {
-  const deposit = await prisma.deposit.findUniqueOrThrow({ where: { id: depositId } });
-  if (deposit.status !== "PENDING") throw new Error("Deposit is not pending");
-  await prisma.deposit.update({
-    where: { id: depositId },
-    data: { status: "REJECTED", adminNote: adminNote || null },
+  return prisma.$transaction(async (tx) => {
+    const deposit = await tx.deposit.findUniqueOrThrow({ where: { id: depositId } });
+    if (deposit.status !== "PENDING") throw new Error("Deposit is not pending");
+    const result = await tx.deposit.updateMany({
+      where: { id: depositId, status: "PENDING" },
+      data: { status: "REJECTED", adminNote: adminNote || null },
+    });
+    if (result.count !== 1) throw new Error("Deposit is no longer pending");
+    await refundCommissionInvestmentDeposit(tx, deposit);
+    return deposit;
   });
 }
 
@@ -1219,6 +1225,7 @@ export async function rejectQueuedDeposit(
         note: "Queued deposit rejected by administrator before broker deposit",
       },
     });
+    await refundCommissionInvestmentDeposit(tx, deposit);
     await createFinancialAudit(tx, {
       adminId,
       userId: deposit.userId,

@@ -7,6 +7,7 @@ import {
   CircleDollarSign,
   Clock3,
   WalletCards,
+  Gift,
   type LucideIcon,
 } from "lucide-react";
 
@@ -17,6 +18,7 @@ type AccountMetrics = {
   withdrawals: number;
   queuedUsd: number;
   pendingInr: number;
+  commission: number;
 };
 
 type PortfolioResponse = {
@@ -28,6 +30,7 @@ type PortfolioResponse = {
     unrealizedProfit?: number;
     queued?: number;
     pendingInr?: number;
+    commission?: number;
   };
 };
 
@@ -79,6 +82,7 @@ export function AccountMetricCards({
   initialWithdrawals,
   initialQueued,
   initialPendingInr,
+  initialCommission,
 }: {
   initialProfit: number;
   initialBalance: number;
@@ -86,6 +90,7 @@ export function AccountMetricCards({
   initialWithdrawals: number;
   initialQueued: number;
   initialPendingInr: number;
+  initialCommission: number;
 }) {
   const [metrics, setMetrics] = useState<AccountMetrics>({
     profit: initialProfit,
@@ -94,6 +99,7 @@ export function AccountMetricCards({
     withdrawals: initialWithdrawals,
     queuedUsd: initialQueued,
     pendingInr: initialPendingInr,
+    commission: initialCommission,
   });
 
   useEffect(() => {
@@ -111,6 +117,7 @@ export function AccountMetricCards({
         const unrealizedProfit = payload.metrics?.unrealizedProfit;
         const queuedUsd = payload.metrics?.queued;
         const pendingInr = payload.metrics?.pendingInr;
+        const commission = payload.metrics?.commission;
         if (
           !active ||
           !Number.isFinite(balance) ||
@@ -120,6 +127,7 @@ export function AccountMetricCards({
           !Number.isFinite(unrealizedProfit) ||
           !Number.isFinite(queuedUsd) ||
           !Number.isFinite(pendingInr)
+          || !Number.isFinite(commission)
         ) return;
         setMetrics({
           profit: Number(bookedProfit) + Number(unrealizedProfit),
@@ -128,6 +136,7 @@ export function AccountMetricCards({
           withdrawals: Number(withdrawals),
           queuedUsd: Number(queuedUsd),
           pendingInr: Number(pendingInr),
+          commission: Number(commission),
         });
       } catch {
         // Preserve the last valid figures during a temporary network failure.
@@ -144,7 +153,7 @@ export function AccountMetricCards({
 
   return (
     <section
-      className="grid grid-cols-2 gap-2 md:grid-cols-5"
+      className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-6"
       aria-label="Account figures"
     >
       <MetricSummary label="Profits" Icon={CircleDollarSign}>
@@ -186,6 +195,15 @@ export function AccountMetricCards({
           aria-live="polite"
         >
           {formattedUsd(metrics.withdrawals)}
+          <span className="ml-1 text-[0.65rem] text-ink-faint sm:text-xs">USD</span>
+        </p>
+      </MetricSummary>
+      <MetricSummary label="Commission" Icon={Gift}>
+        <p
+          className="currency-value mt-2 max-w-full whitespace-nowrap text-[clamp(0.72rem,9.5cqi,1.35rem)] leading-tight tracking-[-0.035em] text-positive"
+          aria-live="polite"
+        >
+          {formattedUsd(metrics.commission)}
           <span className="ml-1 text-[0.65rem] text-ink-faint sm:text-xs">USD</span>
         </p>
       </MetricSummary>

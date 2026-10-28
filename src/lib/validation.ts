@@ -30,6 +30,12 @@ export const signupSchema = z.object({
   fullName: z.string().trim().min(2, "Please enter your full name").max(100),
   email: z.string().trim().toLowerCase().email("Please enter a valid email"),
   password: passwordSchema,
+  referralCode: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .max(32, "Referral ID is too long")
+    .regex(/^$|^CC-[A-Z0-9]+$/, "Enter a valid referral ID"),
 });
 
 export const signinSchema = z.object({

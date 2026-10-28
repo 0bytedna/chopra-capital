@@ -269,7 +269,9 @@ function DepositReviewTable({
         <tbody className="divide-y divide-gold-600/10">
           {deposits.map((deposit) => {
             const reference =
-              deposit.method === "CRYPTO"
+              deposit.network === "COMMISSION_WALLET"
+                ? "Referral commission wallet"
+                : deposit.method === "CRYPTO"
                 ? deposit.txHash
                   ? `${deposit.network ?? "USDT"} · ${deposit.txHash}`
                   : `${deposit.network ?? "USDT"} · No hash supplied`
@@ -302,6 +304,7 @@ function DepositReviewTable({
                     approveAction={adminConfirmDeposit}
                     correctionAction={adminRequestDepositCorrection}
                     rejectAction={adminRejectDeposit}
+                    allowCorrection={deposit.network !== "COMMISSION_WALLET"}
                   />
                 </td>
               </tr>

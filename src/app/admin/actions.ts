@@ -43,6 +43,11 @@ import {
   recordTradingAdjustment,
   type EditableTradingAdjustmentType,
 } from "@/lib/tradingAccount";
+import {
+  reportingDayEnd,
+  reportingDayKey,
+  reportingDayStart,
+} from "@/lib/reportingCalendar";
 import { stageRequiredBankPayoutCorrections } from "@/lib/payoutDetails";
 import { bankingDetailsSchema, cryptoWalletSchema } from "@/lib/validation";
 import {
@@ -51,7 +56,11 @@ import {
   validateWithdrawalSchedule,
   type WithdrawalSchedule,
 } from "@/lib/withdrawalSchedule";
-
+import {
+  distributeReferralCommissions,
+  getReferralCommissionRate,
+  setReferralCommissionRate,
+} from "@/lib/referrals";
 export type AdminFormState = { error?: string; success?: string };
 
 function fail(err: unknown): AdminFormState {
@@ -115,11 +124,21 @@ export async function adminRecordTradingAdjustment(_prev: AdminFormState, formDa
   const allowed = ["TRADING_PROFIT", "TRADING_LOSS", "SERVER_FEE", "ADMIN_SHARE", "OTHER_INCREASE", "OTHER_DECREASE"] as const;
   if (!allowed.includes(type as (typeof allowed)[number])) return { error: "Choose a valid reason." };
   try {
+    const effectiveDay = String(formData.get("effectiveDay") ?? "");
+    const today = reportingDayKey();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(effectiveDay)) {
+      return { error: "Choose a valid effective date." };
+    }
+    if (effectiveDay > today) {
+      return { error: "The effective date cannot be in the future." };
+    }
     await recordTradingAdjustment({
       type: type as (typeof allowed)[number],
       amount: D(String(formData.get("amount") ?? "")),
       note: String(formData.get("note") ?? ""),
       adminId: admin.id,
+      effectiveAt:
+        effectiveDay === today ? new Date() : reportingDayEnd(effectiveDay),
     });
     revalidatePath("/admin");
     revalidatePath("/admin/trading");
@@ -331,6 +350,95 @@ export async function adminResetInvestorTwoFactor(
   }
 }
 
+export async function adminSetInvestorReferralAccess(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  await requireAdmin();
+  const userId = String(formData.get("userId") ?? "");
+  const enabled = String(formData.get("enabled") ?? "") === "true";
+  if (!userId) return { error: "Investor not found." };
+  try {
+    const updated = await prisma.user.updateMany({
+      where: { id: userId, role: "USER", isCompanyAccount: false },
+      data: { referralEnabled: enabled },
+    });
+    if (updated.count !== 1) return { error: "Investor not found." };
+    revalidatePath(`/admin/investors/${userId}`);
+    revalidatePath("/admin/investors");
+    revalidatePath("/app/referrals");
+    return {
+      success: enabled
+        ? "Referral access enabled for this investor."
+        : "Referral access disabled. Existing commission history was preserved.",
+    };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+export async function adminUpdateReferralCommissionRate(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  await requireAdmin();
+  try {
+    const rate = D(String(formData.get("rate") ?? ""));
+    await setReferralCommissionRate(rate);
+    revalidatePath("/admin/commissions");
+    return { success: `Referral commission rate updated to ${rate.toString()}%.` };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+export async function adminDistributeReferralCommissions(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  const admin = await requireAdmin();
+  const periodStart = String(formData.get("periodStart") ?? "");
+  const periodEnd = String(formData.get("periodEnd") ?? "");
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(periodStart) ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(periodEnd) ||
+    periodEnd < periodStart
+  ) {
+    return { error: "Choose a valid commission period." };
+  }
+  const referralIds = formData.getAll("referralIds").map(String).filter(Boolean);
+  if (referralIds.length === 0) return { error: "Select at least one commission." };
+
+  try {
+    const amounts = referralIds.map((referralId) => ({
+      referralId,
+      amount: D(String(formData.get(`amount:${referralId}`) ?? "")),
+    }));
+    const rate = await getReferralCommissionRate();
+    const result = await distributeReferralCommissions({
+      adminId: admin.id,
+      periodStart,
+      periodEnd,
+      from: reportingDayStart(periodStart),
+      to: reportingDayEnd(periodEnd),
+      rate,
+      note: String(formData.get("note") ?? ""),
+      amounts,
+    });
+    revalidatePath("/admin/commissions");
+    revalidatePath("/admin/investors");
+    revalidatePath("/admin/trading");
+    revalidatePath("/app");
+    revalidatePath("/app/referrals");
+    revalidatePath("/app/notifications");
+    return {
+      success: `${result.total.toFixed(2)} USD distributed across ${result.count} referral commission${result.count === 1 ? "" : "s"}.`,
+    };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
 export async function adminSetInvestorBalances(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
   const admin = await requireAdmin();
   const userId = String(formData.get("userId") ?? "");
@@ -376,6 +484,12 @@ export async function adminDeleteInvestor(_prev: AdminFormState, formData: FormD
     const investor = await prisma.user.findUnique({ where: { id: userId }, select: { role: true, isCompanyAccount: true } });
     if (!investor || investor.role !== "USER" || investor.isCompanyAccount) return { error: "Only investor accounts can be deleted." };
     await prisma.$transaction(async (tx) => {
+      await tx.referralCommission.deleteMany({
+        where: { OR: [{ referrerId: userId }, { referredUserId: userId }] },
+      });
+      await tx.referral.deleteMany({
+        where: { OR: [{ referrerId: userId }, { referredUserId: userId }] },
+      });
       await tx.internalTransfer.deleteMany({ where: { OR: [{ fromUserId: userId }, { toUserId: userId }] } });
       await tx.profitShareAllocation.deleteMany({ where: { userId } });
       await tx.ticketMessage.deleteMany({ where: { authorId: userId } });
@@ -708,9 +822,12 @@ export async function adminRequestDepositCorrection(
   const note = String(formData.get("note") ?? "").trim();
   if (!id || !note) return { error: "Explain what the investor needs to correct." };
 
-  const deposit = await prisma.deposit.findUnique({ where: { id }, select: { method: true, status: true } });
+  const deposit = await prisma.deposit.findUnique({ where: { id }, select: { method: true, status: true, network: true } });
   if (!deposit) return { error: "Deposit not found." };
   if (deposit.status !== "PENDING") return { error: "Only pending deposits can be sent back for correction." };
+  if (deposit.network === "COMMISSION_WALLET") {
+    return { error: "Commission-wallet deposits do not have external payment details to correct." };
+  }
   if (deposit.method === "CASH") return { error: "Cash deposits do not have a UTR or transaction hash to correct." };
 
   const result = await prisma.deposit.updateMany({

@@ -39,7 +39,13 @@ function money(value: number): string {
   return value.toFixed(2);
 }
 
-export function TradingAdjustmentFields({ currentBalance }: { currentBalance: number }) {
+export function TradingAdjustmentFields({
+  currentBalance,
+  defaultEffectiveDay,
+}: {
+  currentBalance: number;
+  defaultEffectiveDay: string;
+}) {
   const [type, setType] = useState<AdjustmentType>("TRADING_PROFIT");
   const [amount, setAmount] = useState("");
   const [newBalance, setNewBalance] = useState("");
@@ -85,7 +91,23 @@ export function TradingAdjustmentFields({ currentBalance }: { currentBalance: nu
   }
 
   return (
-    <div className="mt-4 grid gap-3 sm:grid-cols-3">
+    <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <label className="space-y-1.5 text-xs text-ink-faint">
+        Effective date
+        <input
+          name="effectiveDay"
+          type="date"
+          defaultValue={defaultEffectiveDay}
+          max={defaultEffectiveDay}
+          required
+          onClick={(event) => {
+            const input = event.currentTarget;
+            if (typeof input.showPicker === "function") input.showPicker();
+          }}
+          className={inputClass}
+        />
+      </label>
+
       <label className="space-y-1.5 text-xs text-ink-faint">
         Reason
         <select

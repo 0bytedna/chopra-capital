@@ -123,12 +123,14 @@ export function DepositReviewActions({
   approveAction,
   correctionAction,
   rejectAction,
+  allowCorrection = true,
 }: {
   id: string;
   method: "CRYPTO" | "BANK" | "CASH";
   approveAction: Action;
   correctionAction: Action;
   rejectAction: Action;
+  allowCorrection?: boolean;
 }) {
   const [approveState, approveFormAction, approving] = useActionState<
     AdminFormState,
@@ -168,7 +170,7 @@ export function DepositReviewActions({
           </IconButton>
         </form>
 
-        {method !== "CASH" && (
+        {method !== "CASH" && allowCorrection && (
           <form
             action={correctionFormAction}
             onSubmit={(event) => {

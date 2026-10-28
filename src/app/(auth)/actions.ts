@@ -8,6 +8,7 @@ import { verifyTotpOnce } from "@/lib/totp";
 import { signupSchema, signinSchema, totpCodeSchema } from "@/lib/validation";
 import { BUILTIN_ADMIN_EMAIL, ensureBuiltinAdminForSignin } from "@/lib/builtinAdmin";
 import { authRateLimit, rateLimitMessage } from "@/lib/rateLimit";
+import { newPublicUserId } from "@/lib/referrals";
 
 export type AuthFormState = { error?: string };
 
@@ -23,22 +24,57 @@ export async function signup(_prev: AuthFormState, formData: FormData): Promise<
     fullName: formData.get("fullName"),
     email: formData.get("email"),
     password: formData.get("password"),
+    referralCode: formData.get("referralCode") ?? "",
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Please check the form" };
   }
-  const { fullName, email, password } = parsed.data;
+  const { fullName, email, password, referralCode } = parsed.data;
 
   const passwordHash = await bcrypt.hash(password, 12);
   const existing = await prisma.user.findUnique({ where: { email }, select: { id: true } });
+  const referrer = referralCode
+    ? await prisma.user.findFirst({
+        where: {
+          publicId: referralCode,
+          role: "USER",
+          isCompanyAccount: false,
+          referralEnabled: true,
+        },
+        select: { id: true },
+      })
+    : null;
+  if (referralCode && !referrer) {
+    return { error: "This referral ID is invalid or is not enabled for referrals." };
+  }
   if (email !== BUILTIN_ADMIN_EMAIL && !existing) {
-    try {
-      await prisma.user.create({
-        data: { email, passwordHash, fullName, wallet: { create: {} } },
-      });
-    } catch (error) {
-      if ((error as { code?: string }).code !== "P2002") throw error;
+    let created = false;
+    for (let attempt = 0; attempt < 5 && !created; attempt += 1) {
+      try {
+        await prisma.user.create({
+          data: {
+            publicId: newPublicUserId(),
+            email,
+            passwordHash,
+            fullName,
+            wallet: { create: {} },
+            commissionWallet: { create: {} },
+            ...(referrer
+              ? { referralReceived: { create: { referrerId: referrer.id } } }
+              : {}),
+          },
+        });
+        created = true;
+      } catch (error) {
+        if ((error as { code?: string }).code !== "P2002") throw error;
+        const duplicateEmail = await prisma.user.findUnique({
+          where: { email },
+          select: { id: true },
+        });
+        if (duplicateEmail) break;
+      }
     }
+    if (!created) return { error: "The account could not be created. Please try again." };
   }
   redirect("/signin?registered=1");
 }

@@ -1,10 +1,10 @@
 import "server-only";
 
-import type { TradingAdjustmentType } from "@prisma/client";
+import type { Prisma, TradingAdjustmentType } from "@prisma/client";
 import { D, ZERO, type Dec } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 
-const USER_VISIBLE_TRADING_TYPES = [
+export const USER_VISIBLE_TRADING_TYPES = [
   "TRADING_PROFIT",
   "TRADING_LOSS",
   "SERVER_FEE",
@@ -13,9 +13,12 @@ const USER_VISIBLE_TRADING_TYPES = [
   "OTHER_DECREASE",
 ] as const satisfies readonly TradingAdjustmentType[];
 
+export type UserTradingActivityType =
+  (typeof USER_VISIBLE_TRADING_TYPES)[number];
+
 export type UserTradingActivity = {
   id: string;
-  type: (typeof USER_VISIBLE_TRADING_TYPES)[number];
+  type: UserTradingActivityType;
   userAmount: Dec;
   poolAmount: Dec;
   poolShare: Dec;
@@ -26,23 +29,44 @@ export type UserTradingActivity = {
 export type UserTradingActivityPage = {
   activity: UserTradingActivity[];
   page: number;
+  pageCount: number;
+  totalCount: number;
   hasNextPage: boolean;
   hasPreviousPage: boolean;
 };
 
 export async function getUserTradingActivity(
   userId: string,
-  options: { page?: number; pageSize?: number } = {},
+  options: {
+    page?: number;
+    pageSize?: number;
+    type?: UserTradingActivityType;
+    from?: Date;
+    to?: Date;
+  } = {},
 ): Promise<UserTradingActivityPage> {
   const requestedPage = Math.max(1, Math.trunc(options.page ?? 1));
   const pageSize = Math.min(100, Math.max(1, Math.trunc(options.pageSize ?? 25)));
+  const where: Prisma.TradingAccountEntryWhereInput = {
+    type: {
+      in: options.type ? [options.type] : [...USER_VISIBLE_TRADING_TYPES],
+    },
+    ...(options.from || options.to
+      ? {
+          createdAt: {
+            ...(options.from ? { gte: options.from } : {}),
+            ...(options.to ? { lte: options.to } : {}),
+          },
+        }
+      : {}),
+  };
   const visibleEntryCount = await prisma.tradingAccountEntry.count({
-    where: { type: { in: [...USER_VISIBLE_TRADING_TYPES] } },
+    where,
   });
   const pageCount = Math.max(1, Math.ceil(visibleEntryCount / pageSize));
   const page = Math.min(requestedPage, pageCount);
   const recentEntries = await prisma.tradingAccountEntry.findMany({
-    where: { type: { in: [...USER_VISIBLE_TRADING_TYPES] } },
+    where,
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     skip: (page - 1) * pageSize,
     take: pageSize + 1,
@@ -61,6 +85,8 @@ export async function getUserTradingActivity(
     return {
       activity: [],
       page,
+      pageCount,
+      totalCount: visibleEntryCount,
       hasNextPage: false,
       hasPreviousPage: page > 1,
     };
@@ -127,6 +153,8 @@ export async function getUserTradingActivity(
   return {
     activity: activity.reverse(),
     page,
+    pageCount,
+    totalCount: visibleEntryCount,
     hasNextPage,
     hasPreviousPage: page > 1,
   };

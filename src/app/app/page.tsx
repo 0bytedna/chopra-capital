@@ -8,15 +8,17 @@ import { PortfolioChart } from "@/components/app/PortfolioChart";
 import { AttentionPanel } from "@/components/app/UserNotifications";
 import { Mt5AccountDetails, type Mt5Detail } from "@/components/mt5/Mt5AccountDetails";
 import { mt5InvestorAccount } from "@/lib/mt5";
+import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
 export default async function DashboardPage() {
   const user = await requireUser();
-  const [metrics, performance, notifications] = await Promise.all([
+  const [metrics, performance, notifications, commissionWallet] = await Promise.all([
     getPortfolioMetrics(user.id),
     getPortfolioSeries(user.id),
     getUserNotificationCenter(user.id),
+    prisma.commissionWallet.findUnique({ where: { userId: user.id } }),
   ]);
   const balance = metrics.units.mul(metrics.nav);
   const totalProfit = metrics.bookedProfit.add(metrics.unrealizedProfit);
@@ -38,6 +40,7 @@ export default async function DashboardPage() {
         initialWithdrawals={toNumber(metrics.netWithdrawals)}
         initialQueued={toNumber(metrics.queued)}
         initialPendingInr={toNumber(metrics.pendingInr)}
+        initialCommission={toNumber(commissionWallet?.balance)}
       />
       <PortfolioChart
         initialSeries={performance.series}

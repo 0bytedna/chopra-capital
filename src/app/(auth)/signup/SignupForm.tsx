@@ -6,7 +6,7 @@ import { Field } from "@/components/ui/Field";
 import { Alert } from "@/components/ui/Alert";
 import { SubmitButton } from "@/components/ui/SubmitButton";
 
-export function SignupForm() {
+export function SignupForm({ referralCode = "" }: { referralCode?: string }) {
   const [state, action] = useActionState<AuthFormState, FormData>(signup, {});
 
   return (
@@ -14,6 +14,14 @@ export function SignupForm() {
       {state.error && <Alert tone="error">{state.error}</Alert>}
       <Field label="Full name" name="fullName" autoComplete="name" required placeholder="As it appears on your ID" />
       <Field label="Email" name="email" type="email" autoComplete="email" required placeholder="you@example.com" />
+      <Field
+        label="Referral ID"
+        name="referralCode"
+        defaultValue={referralCode}
+        autoComplete="off"
+        placeholder="CC-XXXXXXXXXX"
+        hint="Optional. Enter the ID shared by the person who referred you."
+      />
       <Field
         label="Password"
         name="password"
