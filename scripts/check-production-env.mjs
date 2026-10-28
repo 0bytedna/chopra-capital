@@ -58,19 +58,10 @@ if (process.env.WITHDRAWAL_WINDOW_TEST_MODE?.trim().toLowerCase() === "true") {
 const backupDirectory = process.env.SERVER_BACKUP_DIR?.trim() ?? "";
 if (!backupDirectory) {
   warnings.push(
-    "SERVER_BACKUP_DIR is empty; one-click and scheduled server backups are disabled.",
+    "SERVER_BACKUP_DIR is empty; one-click server backups are disabled.",
   );
 } else if (!path.isAbsolute(backupDirectory)) {
   errors.push("SERVER_BACKUP_DIR must be an absolute path.");
-}
-
-const backupSecret = process.env.BACKUP_CRON_SECRET?.trim() ?? "";
-if (!backupSecret) {
-  warnings.push(
-    "BACKUP_CRON_SECRET is empty; the midnight systemd backup timer is disabled.",
-  );
-} else if (backupSecret.length < 32) {
-  errors.push("BACKUP_CRON_SECRET must contain at least 32 characters.");
 }
 
 const backupRetention = process.env.SERVER_BACKUP_RETENTION?.trim() ?? "";

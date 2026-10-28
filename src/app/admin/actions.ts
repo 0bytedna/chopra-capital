@@ -292,6 +292,45 @@ export async function adminResetInvestorPassword(_prev: AdminFormState, formData
   } catch (error) { return fail(error); }
 }
 
+export async function adminResetInvestorTwoFactor(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  await requireAdmin();
+  const userId = String(formData.get("userId") ?? "");
+  if (!userId) return { error: "Investor not found." };
+
+  try {
+    const investor = await prisma.user.findFirst({
+      where: { id: userId, role: "USER", isCompanyAccount: false },
+      select: { twoFactorEnabled: true, twoFactorSecret: true },
+    });
+    if (!investor) return { error: "Investor not found." };
+    if (!investor.twoFactorEnabled && !investor.twoFactorSecret) {
+      return { error: "Two-factor authentication is already disabled for this investor." };
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        twoFactorEnabled: false,
+        twoFactorSecret: null,
+        lastTotpStep: null,
+        sessionVersion: { increment: 1 },
+      },
+    });
+
+    revalidatePath(`/admin/investors/${userId}`);
+    revalidatePath("/app/profile");
+    return {
+      success:
+        "Two-factor authentication reset. The investor has been signed out and can enrol a new authenticator after signing in again.",
+    };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
 export async function adminSetInvestorBalances(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
   const admin = await requireAdmin();
   const userId = String(formData.get("userId") ?? "");

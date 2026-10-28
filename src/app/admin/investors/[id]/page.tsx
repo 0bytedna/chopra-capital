@@ -291,6 +291,7 @@ export default async function AdminInvestorRecordPage({
           kycNote: investor.kycNote,
           bankTransferEnabled: investor.bankTransferEnabled,
           cashEnabled: investor.cashEnabled,
+          twoFactorEnabled: investor.twoFactorEnabled,
           bankingDetail: investor.bankingDetail,
         }}
         queued={metrics.queued.toFixed(2)}

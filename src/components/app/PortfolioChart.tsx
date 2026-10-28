@@ -44,6 +44,14 @@ const PRESETS = [
 type PresetKey = (typeof PRESETS)[number]["key"];
 type GraphKey = "profit" | "value";
 
+function openDatePicker(input: HTMLInputElement): void {
+  try {
+    input.showPicker();
+  } catch {
+    // Browsers without a programmatic picker still retain the native input behavior.
+  }
+}
+
 function fmtAxisDate(date: string): string {
   return new Date(`${date}T00:00:00Z`).toLocaleDateString("en-US", {
     month: "short",
@@ -268,7 +276,8 @@ function GraphCard({
               min={firstActivityDate}
               max={to}
               onChange={(event) => changeFrom(event.target.value)}
-              className="w-full min-w-0 rounded-lg border border-gold-600/20 bg-vault-900/80 px-3 py-2 font-mono text-xs text-ink [color-scheme:light] focus:border-gold-500/50 focus:outline-none focus:ring-2 focus:ring-gold-500/25"
+              onClick={(event) => openDatePicker(event.currentTarget)}
+              className="w-full min-w-0 cursor-pointer rounded-lg border border-gold-600/20 bg-vault-900/80 px-3 py-2 font-mono text-xs text-ink [color-scheme:light] focus:border-gold-500/50 focus:outline-none focus:ring-2 focus:ring-gold-500/25"
             />
           </label>
           <span className="text-sm font-semibold text-ink-dim" aria-hidden>
@@ -282,7 +291,8 @@ function GraphCard({
               min={from}
               max={today}
               onChange={(event) => changeTo(event.target.value)}
-              className="w-full min-w-0 rounded-lg border border-gold-600/20 bg-vault-900/80 px-3 py-2 font-mono text-xs text-ink [color-scheme:light] focus:border-gold-500/50 focus:outline-none focus:ring-2 focus:ring-gold-500/25"
+              onClick={(event) => openDatePicker(event.currentTarget)}
+              className="w-full min-w-0 cursor-pointer rounded-lg border border-gold-600/20 bg-vault-900/80 px-3 py-2 font-mono text-xs text-ink [color-scheme:light] focus:border-gold-500/50 focus:outline-none focus:ring-2 focus:ring-gold-500/25"
             />
           </label>
         </div>
