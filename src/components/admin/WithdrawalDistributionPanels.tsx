@@ -439,7 +439,7 @@ export function WithdrawalDistributionPanels({
             className={cn(
               "min-w-0 rounded-lg px-2 py-2 text-xs transition-colors sm:text-sm",
               active === tab.id
-                ? "bg-gold-100 text-gold-700"
+                ? "bg-white font-semibold text-ink shadow-sm ring-2 ring-inset ring-gold-500"
                 : "text-ink-dim hover:bg-stone-50 hover:text-ink",
             )}
           >

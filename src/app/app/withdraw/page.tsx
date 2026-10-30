@@ -65,7 +65,6 @@ export default async function WithdrawPage() {
           <CalendarClock className="mt-0.5 size-4 shrink-0 text-gold-500" aria-hidden />
           <p className="leading-5">
             Requests: <strong className="text-ink">{withdrawalScheduleLabel(schedule)}</strong>
-            <br />Admin processing: <strong className="text-ink">Any day</strong>
           </p>
         </div>
       </section>

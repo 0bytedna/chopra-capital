@@ -96,7 +96,7 @@ function NavLinks({
                     className={cn(
                       "relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
                       active
-                        ? "bg-gold-100 text-ink font-semibold shadow-sm ring-1 ring-inset ring-gold-300"
+                        ? "bg-white text-ink font-semibold shadow-sm ring-2 ring-inset ring-gold-500"
                         : "text-ink-dim hover:bg-ink/5 hover:text-ink",
                     )}
                   >

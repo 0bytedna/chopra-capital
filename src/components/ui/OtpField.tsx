@@ -5,7 +5,7 @@ import { ClipboardPaste } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const standardInputClass =
-  "min-w-0 w-full rounded-lg border border-gold-600/20 bg-vault-900/80 py-2.5 pl-3.5 pr-12 text-sm text-ink placeholder:text-ink-faint transition-colors focus:border-gold-500/50 focus:outline-none focus:ring-2 focus:ring-gold-500/25";
+  "min-w-0 w-full rounded-lg border border-stone-300 bg-white py-2.5 pl-3.5 pr-12 text-sm font-medium text-ink placeholder:text-ink-faint transition-colors focus:border-gold-600 focus:outline-none focus:ring-2 focus:ring-gold-500/20";
 const lightInputClass =
   "min-w-0 h-11 w-full rounded-xl border border-stone-300 bg-white py-2.5 pl-3 pr-12 text-sm text-ink outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-100";
 

@@ -271,7 +271,7 @@ export default async function AdminTransactionsPage({ searchParams }: Props) {
             className={cn(
               "min-w-0 truncate rounded-lg px-1.5 py-2.5 text-center text-[11px] font-medium transition-colors sm:px-3 sm:text-sm",
               selectedType === type
-                ? "bg-gold-100 text-gold-700"
+                ? "bg-white font-semibold text-ink shadow-sm ring-2 ring-inset ring-gold-500"
                 : "text-ink-dim hover:bg-stone-50",
             )}
             aria-current={selectedType === type ? "page" : undefined}

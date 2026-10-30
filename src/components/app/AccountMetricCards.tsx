@@ -94,7 +94,7 @@ function MetricSummary({
   trend?: number;
 }) {
   return (
-    <article className="glass-card h-full min-w-0 rounded-xl p-3 [container-type:inline-size] sm:min-h-28 sm:p-4 xl:min-h-32 xl:p-5">
+    <article className="glass-card h-full min-w-0 rounded-xl px-4 py-3 [container-type:inline-size] sm:min-h-28 sm:p-4 xl:min-h-32 xl:p-5">
       <div className="flex items-center justify-between gap-2">
         <p className="min-w-0 text-[clamp(0.68rem,7.5cqi,0.8125rem)] leading-tight uppercase tracking-[0.12em] text-ink-faint">{label}</p>
         <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-gold-600/25 bg-gold-600/10">
@@ -332,7 +332,7 @@ export function AccountMetricCards({
       </MetricSummary>
     ),
     queue: (
-      <div className="col-span-2 h-full min-w-0 md:col-span-1 xl:col-span-1">
+      <div className="h-full min-w-0">
         <MetricSummary label="In queue" Icon={Clock3}>
           <div className="mt-2 space-y-1" aria-live="polite">
             <p className="currency-value max-w-full whitespace-nowrap text-[clamp(0.72rem,9.5cqi,1.5rem)] leading-tight tracking-[-0.035em] text-ink">
@@ -390,7 +390,7 @@ export function AccountMetricCards({
           })}
         </div>
       )}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
         {visibleTiles.map((key) => (
           <div key={key} className={key === "queue" ? "contents" : "min-w-0"}>
             {tiles[key]}
