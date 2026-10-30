@@ -97,6 +97,7 @@ export default async function AdminWithdrawalsPage() {
           </span>
         </summary>
         <AdminActionForm
+          key={`${schedule.weekday}-${schedule.startTime}-${schedule.endTime}`}
           action={adminUpdateWithdrawalSchedule}
           showSuccess={false}
           submitLabel="Save schedule"
@@ -143,7 +144,7 @@ export default async function AdminWithdrawalsPage() {
         </AdminActionForm>
       </details>
 
-      <section className="space-y-3">
+      <section className="glass-card space-y-3 rounded-2xl border-gold-500/20 p-4 sm:p-5">
         <div>
           <p className="eyebrow">Step 1 - Approval</p>
         </div>
@@ -185,7 +186,7 @@ export default async function AdminWithdrawalsPage() {
         )}
       </section>
 
-      <section className="space-y-3">
+      <section className="glass-card space-y-3 rounded-2xl border-gold-500/20 p-4 sm:p-5">
         <div>
           <p className="eyebrow">Step 2 - Broker Withdrawal</p>
         </div>
@@ -197,7 +198,7 @@ export default async function AdminWithdrawalsPage() {
           }))}
         />
       </section>
-      <section className="space-y-3">
+      <section className="glass-card space-y-3 rounded-2xl border-gold-500/25 p-4 sm:p-5">
         <div>
           <p className="eyebrow">Step 3 - INR to USDT Conversion</p>
         </div>
@@ -218,7 +219,7 @@ export default async function AdminWithdrawalsPage() {
           }))}
         />
       </section>
-      <section className="space-y-3">
+      <section className="glass-card space-y-3 rounded-2xl border-gold-500/30 p-4 sm:p-5">
         <div>
           <p className="eyebrow">Step 4 - Funds Distribution</p>
         </div>
