@@ -184,34 +184,34 @@ export function TradingHistory({
         </div>
       ) : (
         <>
-          <div className="mt-4 hidden overflow-x-auto rounded-xl border border-stone-200 bg-white sm:block">
+          <div className="mt-4 overflow-x-auto rounded-xl border border-stone-200 bg-white">
             <table className="w-full min-w-[46rem] text-left text-xs">
-              <thead className="border-b border-gold-600/15 bg-stone-50 text-ink-faint">
+              <thead className="border-b border-stone-200 bg-stone-100 text-ink-faint">
                 <tr>
-                  <th className="px-4 py-3 font-medium">Time</th>
-                  <th className="px-4 py-3 font-medium">Entry</th>
-                  <th className="px-4 py-3 text-right font-medium">Your change</th>
-                  <th className="px-4 py-3 text-right font-medium">Balance after</th>
+                  <th className="px-3 py-2 font-medium">Time</th>
+                  <th className="px-3 py-2 font-medium">Entry</th>
+                  <th className="px-3 py-2 text-right font-medium">Your change</th>
+                  <th className="px-3 py-2 text-right font-medium">Balance after</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gold-600/10">
+              <tbody className="divide-y divide-stone-200">
                 {activity.map((item) => {
                   const positive = item.amount.startsWith("+");
                   return (
-                    <tr key={item.id}>
-                      <td className="whitespace-nowrap px-4 py-3 text-ink-faint">
+                    <tr key={item.id} className="bg-white even:bg-stone-50 hover:bg-stone-100">
+                      <td className="whitespace-nowrap px-3 py-2 text-ink-faint">
                         {formatDate(item.createdAt)}
                       </td>
-                      <td className="px-4 py-3 font-medium text-ink">{LABELS[item.type]}</td>
+                      <td className="px-3 py-2 font-medium text-ink">{LABELS[item.type]}</td>
                       <td
                         className={cn(
-                          "currency-value whitespace-nowrap px-4 py-3 text-right font-semibold",
+                          "currency-value whitespace-nowrap px-3 py-2 text-right font-semibold",
                           positive ? "text-positive" : "text-negative",
                         )}
                       >
                         {item.amount} USD
                       </td>
-                      <td className="currency-value whitespace-nowrap px-4 py-3 text-right font-semibold text-ink">
+                      <td className="currency-value whitespace-nowrap px-3 py-2 text-right font-semibold text-ink">
                         {item.balanceAfter} USD
                       </td>
                     </tr>
@@ -221,38 +221,6 @@ export function TradingHistory({
             </table>
           </div>
 
-          <div className="mt-4 space-y-3 sm:hidden">
-            {activity.map((item) => {
-              const positive = item.amount.startsWith("+");
-              return (
-                <article
-                  key={item.id}
-                  className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <h3 className="text-sm font-semibold text-ink">{LABELS[item.type]}</h3>
-                      <p className="mt-1 text-xs text-ink-faint">{formatDate(item.createdAt)}</p>
-                    </div>
-                    <p
-                      className={cn(
-                        "currency-value shrink-0 text-sm font-bold",
-                        positive ? "text-positive" : "text-negative",
-                      )}
-                    >
-                      {item.amount} USD
-                    </p>
-                  </div>
-                  <dl className="mt-3 border-t border-gold-600/10 pt-3 text-xs">
-                    <div>
-                      <dt className="text-ink-faint">Balance after</dt>
-                      <dd className="currency-value mt-1 font-semibold text-ink">{item.balanceAfter} USD</dd>
-                    </div>
-                  </dl>
-                </article>
-              );
-            })}
-          </div>
         </>
       )}
 

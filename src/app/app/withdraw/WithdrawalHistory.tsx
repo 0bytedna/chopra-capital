@@ -372,9 +372,9 @@ export function WithdrawalHistory({
                   <dt className="text-xs uppercase tracking-[0.12em] text-ink-faint">Processing week</dt>
                   <dd className="mt-1 font-mono text-xs text-ink">{withdrawal.weekKey}</dd>
                 </div>
-                <div className="rounded-lg bg-vault-950/35 px-3 py-2 sm:col-span-2">
+                <div className="rounded-lg border border-stone-200 bg-stone-100 px-3 py-2 sm:col-span-2">
                   <dt className="text-xs uppercase tracking-[0.12em] text-ink-faint">Destination</dt>
-                  <dd className="mt-1 break-all font-mono text-xs text-ink">{withdrawal.address}</dd>
+                  <dd className="mt-2 break-all rounded-md border border-stone-300 bg-white p-2 font-mono text-xs text-ink">{withdrawal.address}</dd>
                 </div>
                 {withdrawal.adminNote && withdrawal.status !== "REJECTED" && (
                   <div className="rounded-lg bg-vault-950/35 px-3 py-2 sm:col-span-2">

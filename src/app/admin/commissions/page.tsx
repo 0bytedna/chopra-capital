@@ -324,8 +324,8 @@ export default async function AdminCommissionsPage({
         </label>
       </AdminActionForm>
 
-      <section className="glass-card overflow-hidden rounded-2xl">
-        <div className="border-b border-gold-600/15 px-5 py-4">
+      <section className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
+        <div className="border-b border-stone-200 bg-white px-5 py-4">
           <p className="eyebrow">Audit trail</p>
           <h2 className="mt-1 font-serif text-xl text-ink">
             Recent commission distributions
@@ -334,40 +334,34 @@ export default async function AdminCommissionsPage({
         {history.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[60rem] text-left text-xs">
-              <thead className="border-b border-gold-600/15 bg-stone-50 text-ink-faint">
+              <thead className="border-b border-stone-200 bg-stone-100 text-ink-faint">
                 <tr>
-                  <th className="px-5 py-3">Time</th>
-                  <th className="px-5 py-3">Referrer</th>
-                  <th className="px-5 py-3">Referred investor</th>
-                  <th className="px-5 py-3">Period</th>
-                  <th className="px-5 py-3 text-right">Profit basis</th>
-                  <th className="px-5 py-3 text-right">Commission</th>
-                  <th className="px-5 py-3">Admin / note</th>
+                  <th className="px-3 py-2">Time</th><th className="px-3 py-2">Referrer</th><th className="px-3 py-2">Referred investor</th><th className="px-3 py-2">Period</th><th className="px-3 py-2 text-right">Profit basis</th><th className="px-3 py-2 text-right">Commission</th><th className="px-3 py-2">Admin / note</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gold-600/10">
+              <tbody className="divide-y divide-stone-200 bg-white">
                 {history.map((commission) => (
-                  <tr key={commission.id}>
-                    <td className="whitespace-nowrap px-5 py-3 text-ink-faint">
+                  <tr key={commission.id} className="bg-white even:bg-stone-50 hover:bg-stone-100">
+                    <td className="whitespace-nowrap px-3 py-2 text-ink-faint">
                       {formatDate(commission.distributedAt)}
                     </td>
-                    <td className="px-5 py-3 text-ink">
+                    <td className="px-3 py-2 text-ink">
                       {commission.referrer.fullName ?? commission.referrer.email}
                     </td>
-                    <td className="px-5 py-3 text-ink">
+                    <td className="px-3 py-2 text-ink">
                       {commission.referredUser.fullName ??
                         commission.referredUser.email}
                     </td>
-                    <td className="whitespace-nowrap px-5 py-3 text-ink-dim">
+                    <td className="whitespace-nowrap px-3 py-2 text-ink-dim">
                       {commission.periodStart} – {commission.periodEnd}
                     </td>
-                    <td className="currency-value px-5 py-3 text-right text-ink-dim">
+                    <td className="currency-value px-3 py-2 text-right text-ink-dim">
                       {formatUsdt(commission.eligibleProfit)} USD
                     </td>
-                    <td className="currency-value px-5 py-3 text-right font-semibold text-positive">
+                    <td className="currency-value px-3 py-2 text-right font-semibold text-positive">
                       +{formatUsdt(commission.amount)} USD
                     </td>
-                    <td className="max-w-64 px-5 py-3 text-ink-dim">
+                    <td className="max-w-64 px-3 py-2 text-ink-dim">
                       <p>{commission.admin.fullName ?? commission.admin.email}</p>
                       <p className="mt-1 text-ink-faint">
                         {commission.note ?? "No note"}
@@ -384,7 +378,7 @@ export default async function AdminCommissionsPage({
           </p>
         )}
         {historyPageCount > 1 && (
-          <nav className="flex items-center justify-between gap-4 border-t border-gold-600/15 px-5 py-4" aria-label="Commission audit trail pages">
+          <nav className="flex items-center justify-between gap-4 border-t border-stone-200 bg-stone-50 px-5 py-3" aria-label="Commission audit trail pages">
             {historyPage > 1 ? (
               <Link href={historyHref(historyPage - 1, periodStart, periodEnd)} className="rounded-lg border border-gold-600/25 px-4 py-2 text-xs font-semibold text-ink hover:bg-gold-600/10">
                 Newer entries

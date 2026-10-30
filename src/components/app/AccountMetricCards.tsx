@@ -8,11 +8,6 @@ import {
   Clock3,
   WalletCards,
   Gift,
-  ChevronLeft,
-  ChevronRight,
-  Eye,
-  EyeOff,
-  Settings2,
   TrendingDown,
   TrendingUp,
   type LucideIcon,
@@ -27,15 +22,6 @@ const DASHBOARD_TILES = [
   "queue",
 ] as const;
 type DashboardTile = (typeof DASHBOARD_TILES)[number];
-const TILE_LABELS: Record<DashboardTile, string> = {
-  profit: "Profits",
-  balance: "Balance",
-  deposits: "Deposits",
-  withdrawals: "Withdrawals",
-  commission: "Commission",
-  queue: "In queue",
-};
-const TILE_PREFERENCE_KEY = "chopra-dashboard-tiles-v1";
 
 type AccountMetrics = {
   profit: number;
@@ -156,65 +142,6 @@ export function AccountMetricCards({
     profitTrend: initialProfitTrend,
     balanceTrend: initialBalanceTrend,
   });
-  const [tileOrder, setTileOrder] = useState<DashboardTile[]>([
-    ...DASHBOARD_TILES,
-  ]);
-  const [hiddenTiles, setHiddenTiles] = useState<DashboardTile[]>([]);
-  const [customizing, setCustomizing] = useState(false);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      try {
-        const saved = JSON.parse(
-          window.localStorage.getItem(TILE_PREFERENCE_KEY) ?? "null",
-        ) as { order?: DashboardTile[]; hidden?: DashboardTile[] } | null;
-        if (!saved) return;
-        const savedOrder = (saved.order ?? []).filter((key) =>
-          DASHBOARD_TILES.includes(key),
-        );
-        setTileOrder([
-          ...savedOrder,
-          ...DASHBOARD_TILES.filter((key) => !savedOrder.includes(key)),
-        ]);
-        setHiddenTiles(
-          (saved.hidden ?? []).filter((key) => DASHBOARD_TILES.includes(key)),
-        );
-      } catch {
-        // Ignore invalid or unavailable browser storage.
-      }
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  function savePreferences(order: DashboardTile[], hidden: DashboardTile[]) {
-    setTileOrder(order);
-    setHiddenTiles(hidden);
-    try {
-      window.localStorage.setItem(
-        TILE_PREFERENCE_KEY,
-        JSON.stringify({ order, hidden }),
-      );
-    } catch {
-      // The dashboard still works when browser storage is unavailable.
-    }
-  }
-
-  function moveTile(key: DashboardTile, direction: -1 | 1) {
-    const index = tileOrder.indexOf(key);
-    const target = index + direction;
-    if (index < 0 || target < 0 || target >= tileOrder.length) return;
-    const next = [...tileOrder];
-    [next[index], next[target]] = [next[target], next[index]];
-    savePreferences(next, hiddenTiles);
-  }
-
-  function toggleTile(key: DashboardTile) {
-    const next = hiddenTiles.includes(key)
-      ? hiddenTiles.filter((item) => item !== key)
-      : [...hiddenTiles, key];
-    savePreferences(tileOrder, next);
-  }
-
   useEffect(() => {
     let active = true;
 
@@ -349,49 +276,10 @@ export function AccountMetricCards({
     ),
   };
 
-  const visibleTiles = tileOrder.filter((key) => !hiddenTiles.includes(key));
-
   return (
     <section aria-label="Account figures">
-      <div className="mb-2 flex justify-end">
-        <button
-          type="button"
-          onClick={() => setCustomizing((current) => !current)}
-          aria-expanded={customizing}
-          className="inline-flex items-center gap-2 rounded-lg border border-gold-600/20 bg-white px-3 py-2 text-xs font-semibold text-ink-dim transition hover:border-gold-400 hover:text-ink"
-        >
-          <Settings2 className="size-3.5" aria-hidden />
-          Customize tiles
-        </button>
-      </div>
-      {customizing && (
-        <div className="mb-3 grid gap-2 rounded-xl border border-gold-600/20 bg-white p-3 sm:grid-cols-2 lg:grid-cols-3">
-          {tileOrder.map((key, index) => {
-            const hidden = hiddenTiles.includes(key);
-            return (
-              <div key={key} className="flex items-center gap-2 rounded-lg bg-stone-50 px-3 py-2">
-                <button
-                  type="button"
-                  onClick={() => toggleTile(key)}
-                  aria-label={`${hidden ? "Show" : "Hide"} ${TILE_LABELS[key]}`}
-                  className="rounded p-1 text-gold-700 hover:bg-gold-100"
-                >
-                  {hidden ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                </button>
-                <span className="min-w-0 flex-1 text-sm font-medium text-ink">{TILE_LABELS[key]}</span>
-                <button type="button" disabled={index === 0} onClick={() => moveTile(key, -1)} aria-label={`Move ${TILE_LABELS[key]} left`} className="rounded p-1 text-ink-dim hover:bg-stone-200 disabled:opacity-30">
-                  <ChevronLeft className="size-4" />
-                </button>
-                <button type="button" disabled={index === tileOrder.length - 1} onClick={() => moveTile(key, 1)} aria-label={`Move ${TILE_LABELS[key]} right`} className="rounded p-1 text-ink-dim hover:bg-stone-200 disabled:opacity-30">
-                  <ChevronRight className="size-4" />
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      )}
       <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
-        {visibleTiles.map((key) => (
+        {DASHBOARD_TILES.map((key) => (
           <div key={key} className={key === "queue" ? "contents" : "min-w-0"}>
             {tiles[key]}
           </div>

@@ -68,12 +68,28 @@ export default async function ReferralsPage() {
         <h1 className="mt-2 font-serif text-3xl text-ink">
           Referrals & <span className="gold-text">commission</span>
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-dim">
-          Referral commission is an additional company-funded reward calculated
-          on the referred investor&apos;s profit after the 30% server and company
-          deduction. It does not reduce their remaining 70% profit.
-        </p>
       </header>
+
+      <section className="glass-card rounded-2xl p-5 sm:p-6">
+        <p className="eyebrow">Your investor ID</p>
+        <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="font-mono text-xl font-bold tracking-wide text-ink">
+              {publicId}
+            </p>
+            <p className="mt-1 text-xs text-ink-faint">
+              New investors can enter this ID on the signup page.
+            </p>
+          </div>
+          {user.referralEnabled ? (
+            <ReferralLink publicId={publicId} />
+          ) : (
+            <span className="rounded-lg border border-gold-600/20 bg-white px-4 py-3 text-sm text-ink-dim">
+              Referral access has not been enabled for this account.
+            </span>
+          )}
+        </div>
+      </section>
 
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {[
@@ -115,27 +131,6 @@ export default async function ReferralsPage() {
         balanceDisplay={formatUsdt(walletBalance)}
         minimum={MINIMUM_COMMISSION_INVESTMENT.toFixed(2)}
       />
-
-      <section className="glass-card rounded-2xl p-5 sm:p-6">
-        <p className="eyebrow">Your investor ID</p>
-        <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="font-mono text-xl font-bold tracking-wide text-ink">
-              {publicId}
-            </p>
-            <p className="mt-1 text-xs text-ink-faint">
-              New investors can enter this ID on the signup page.
-            </p>
-          </div>
-          {user.referralEnabled ? (
-            <ReferralLink publicId={publicId} />
-          ) : (
-            <span className="rounded-lg border border-gold-600/20 bg-gold-600/8 px-4 py-3 text-sm text-ink-dim">
-              Referral access has not been enabled for this account.
-            </span>
-          )}
-        </div>
-      </section>
 
       <section className="glass-card overflow-hidden rounded-2xl">
         <div className="border-b border-gold-600/15 px-5 py-4">

@@ -27,11 +27,6 @@ export function CommissionInvestmentForm({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-semibold text-ink">Invest commission balance</p>
-          <p className="mt-1 text-xs leading-5 text-ink-dim">
-            Submit your full available commission balance as a new deposit. It
-            will enter the main pool only after the normal admin approval and
-            broker-deposit process. Minimum: {minimum} USD.
-          </p>
         </div>
         <form action={action}>
           <button

@@ -6,6 +6,7 @@ import { formatUsdt } from "@/lib/money";
 import { cn } from "@/lib/cn";
 import { PortfolioChart } from "@/components/app/PortfolioChart";
 import { getPoolPortfolioSeries } from "@/lib/poolPortfolio";
+import { CircleDollarSign, Gauge, Layers3, WalletCards } from "lucide-react";
 
 export const metadata: Metadata = { title: "Admin · Overview" };
 
@@ -60,10 +61,10 @@ export default async function AdminOverviewPage() {
     { href: "/admin/tickets", label: "Tickets", count: openTickets },
   ];
   const poolSnapshot = [
-    { label: "Balance", value: formatUsdt(poolNav.balance), suffix: "USD" },
-    { label: "Profits", value: formatUsdt(tradingProfit), suffix: "USD" },
-    { label: "Issued units", value: formatUsdt(poolNav.totalUnits, 6) },
-    { label: "NAV / unit", value: formatUsdt(poolNav.nav) },
+    { label: "Balance", value: formatUsdt(poolNav.balance), suffix: "USD", Icon: WalletCards },
+    { label: "Profits", value: formatUsdt(tradingProfit), suffix: "USD", Icon: CircleDollarSign, positive: Number(tradingProfit) > 0 },
+    { label: "Issued units", value: formatUsdt(poolNav.totalUnits, 6), Icon: Layers3 },
+    { label: "NAV / unit", value: formatUsdt(poolNav.nav), Icon: Gauge },
   ];
   return (
     <div className="mx-auto max-w-7xl space-y-8">
@@ -81,14 +82,18 @@ export default async function AdminOverviewPage() {
         {poolSnapshot.map((item) => (
           <div
             key={item.label}
-            className="glass-card flex min-h-20 min-w-0 flex-row items-center justify-between gap-4 rounded-xl px-4 py-3 [container-type:inline-size] sm:min-h-28 sm:flex-col sm:items-start sm:justify-center sm:gap-0 sm:p-5"
+            className="glass-card h-full min-w-0 rounded-xl px-4 py-3 [container-type:inline-size] sm:min-h-28 sm:p-4 xl:min-h-32 xl:p-5"
           >
-            <p className="text-[clamp(0.75rem,7cqi,0.9rem)] leading-tight uppercase tracking-[0.12em] text-ink-faint">
-              {item.label}
-            </p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="min-w-0 text-[clamp(0.68rem,7.5cqi,0.8125rem)] leading-tight uppercase tracking-[0.12em] text-ink-faint">{item.label}</p>
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-gold-600/25 bg-white">
+                <item.Icon className="size-4 text-gold-700" aria-hidden />
+              </span>
+            </div>
             <p
               className={cn(
-                "currency-value max-w-full whitespace-nowrap text-right leading-none tracking-[-0.035em] text-ink sm:mt-2 sm:text-left",
+                "currency-value mt-2 max-w-full whitespace-nowrap leading-tight tracking-[-0.035em]",
+                item.positive ? "text-positive" : "text-ink",
                 item.value.length > 10
                   ? "text-[clamp(0.95rem,9.5cqi,1.2rem)]"
                   : "text-[clamp(1.15rem,12cqi,1.65rem)]",

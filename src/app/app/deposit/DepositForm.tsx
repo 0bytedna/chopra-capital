@@ -105,7 +105,7 @@ export function DepositForm({
               <option key={option} value={option}>USDT / {option} ({networkMeta[option].chain})</option>
             ))}
           </SelectField>
-          <div className="mt-4 rounded-xl border border-gold-600/20 bg-vault-950/60 p-3.5 sm:p-4">
+          <div className="mt-4 rounded-xl border border-stone-300 bg-stone-100 p-3.5 sm:p-4">
             <p className="text-xs uppercase tracking-[0.16em] text-ink-faint">{network} deposit address</p>
             <div className="mt-3 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
                 {address && qrCodes[network] && (
@@ -115,10 +115,10 @@ export function DepositForm({
                     width={112}
                     height={112}
                     unoptimized
-                    className="size-28 shrink-0 self-center rounded-lg bg-white p-1.5 sm:self-auto"
+                    className="size-28 shrink-0 self-center rounded-lg border border-stone-300 bg-white p-1.5 shadow-sm sm:self-auto"
                   />
                 )}
-              <div className="flex w-full min-w-0 items-start gap-2">
+              <div className="flex w-full min-w-0 items-start gap-2 rounded-lg border border-stone-300 bg-white p-3">
                 <p className="min-w-0 flex-1 break-all font-mono text-sm text-ink">{address || "Address not configured yet - contact support."}</p>
                 {address && <CopyButton value={address} label="Copy address" />}
               </div>

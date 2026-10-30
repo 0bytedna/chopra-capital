@@ -51,12 +51,12 @@ function Step({ n, title, children }: { n: number; title: string; children: Reac
 function PayoutDetailsCard({ method, payout }: { method: Method; payout: PayoutDetails }) {
   if (method === "CRYPTO") {
     return (
-      <div className="rounded-xl border border-gold-600/20 bg-vault-950/60 px-4 py-3">
+      <div className="rounded-xl border border-stone-300 bg-stone-100 px-4 py-3">
         {payout.crypto ? (
           <>
             <p className="text-xs uppercase tracking-[0.16em] text-ink-faint">USDT payout destination</p>
             <p className="mt-1.5 font-mono text-sm text-ink">{payout.crypto.network}</p>
-            <p className="mt-1 break-all font-mono text-xs text-ink-dim">{payout.crypto.address}</p>
+            <p className="mt-2 break-all rounded-lg border border-stone-300 bg-white p-3 font-mono text-xs text-ink">{payout.crypto.address}</p>
           </>
         ) : (
           <p className="text-sm text-ink-faint">Add a USDT address and network in Profile &amp; Security before submitting this request.</p>

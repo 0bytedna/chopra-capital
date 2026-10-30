@@ -163,8 +163,8 @@ export default async function AdminTradingPage({
         </Link>
       </section>
 
-      <section className="glass-card overflow-hidden rounded-2xl">
-        <div className="flex items-center justify-between gap-4 px-5 py-4">
+      <section className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
+        <div className="flex items-center justify-between gap-4 bg-white px-5 py-4">
           <div>
             <p className="eyebrow">Audit trail</p>
             <h2 className="mt-1 font-serif text-xl text-ink">Account changes</h2>
@@ -188,7 +188,7 @@ export default async function AdminTradingPage({
             unit drift {unitsDrift.toFixed(6)}
           </span>
         </div>
-        <form method="get" className="grid gap-3 border-t border-gold-600/15 bg-white px-5 py-4 sm:grid-cols-2 xl:grid-cols-[1fr_1fr_0.8fr_0.8fr_auto_auto]">
+        <form method="get" className="grid gap-3 border-t border-stone-200 bg-stone-50 px-5 py-4 sm:grid-cols-2 xl:grid-cols-[1fr_1fr_0.8fr_0.8fr_auto_auto]">
           <select name="type" defaultValue={selectedType} className="h-10 rounded-lg border border-stone-200 bg-white px-3 text-sm text-ink">
             <option value="">All entry types</option>
             {allowedTypes.map((type) => <option key={type} value={type}>{reasonLabels[type]}</option>)}
@@ -205,29 +205,29 @@ export default async function AdminTradingPage({
         <AdminTablePreferences storageKey="admin-trading-table-v1" allowNotesToggle>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px] text-left text-xs">
-            <thead className="border-y border-gold-600/15 bg-stone-50 text-ink-faint">
+            <thead className="border-y border-stone-200 bg-stone-100 text-ink-faint">
               <tr>
-                <th className="px-5 py-3">Time</th>
-                <th className="px-5 py-3">Reason</th>
-                <th className="px-5 py-3">Change</th>
-                <th className="px-5 py-3">Balance after</th>
-                <th className="optional-note px-5 py-3">Note</th>
-                <th className="px-5 py-3">Administrator</th>
-                <th className="px-5 py-3">Actions</th>
+                <th className="px-3 py-2">Time</th>
+                <th className="px-3 py-2">Reason</th>
+                <th className="px-3 py-2">Change</th>
+                <th className="px-3 py-2">Balance after</th>
+                <th className="optional-note px-3 py-2">Note</th>
+                <th className="px-3 py-2">Administrator</th>
+                <th className="px-3 py-2">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gold-600/10">
+            <tbody className="divide-y divide-stone-200 bg-white">
               {entries.map((entry) => (
-                <tr key={entry.id}>
-                  <td className="px-5 py-3 text-ink-faint">
+                <tr key={entry.id} className="bg-white transition-colors even:bg-stone-50/60 hover:bg-stone-100">
+                  <td className="px-3 py-2 text-ink-faint">
                     {entry.createdAt.toLocaleString("en-IN")}
                   </td>
-                  <td className="px-5 py-3 text-ink">
+                  <td className="px-3 py-2 text-ink">
                     {reasonLabels[entry.type]}
                   </td>
                   <td
                     className={cn(
-                      "currency-value px-5 py-3",
+                      "currency-value px-3 py-2",
                       D(entry.amount).gte(0)
                         ? "text-positive"
                         : "text-negative",
@@ -236,14 +236,14 @@ export default async function AdminTradingPage({
                     {D(entry.amount).gte(0) ? "+" : ""}
                     {formatUsdt(entry.amount)} USD
                   </td>
-                  <td className="currency-value px-5 py-3 text-ink">
+                  <td className="currency-value px-3 py-2 text-ink">
                     {formatUsdt(entry.balanceAfter)}
                   </td>
-                  <td className="optional-note max-w-xs px-5 py-3 text-ink-dim">
+                  <td className="optional-note max-w-xs px-3 py-2 text-ink-dim">
                     {entry.note}
                   </td>
-                  <td className="px-5 py-3 text-ink-dim">{entry.admin.fullName ?? entry.admin.email}</td>
-                  <td className="px-5 py-3">
+                  <td className="px-3 py-2 text-ink-dim">{entry.admin.fullName ?? entry.admin.email}</td>
+                  <td className="px-3 py-2">
                     {editableTradingTypes.has(entry.type) &&
                     !entry.note.startsWith("Investor correction:") ? (
                       <TradingEntryActions
@@ -274,13 +274,13 @@ export default async function AdminTradingPage({
         </AdminTablePreferences>
         {pageCount > 1 && (
           <nav
-            className="flex items-center justify-between gap-4 border-t border-gold-600/15 px-5 py-4"
+            className="flex items-center justify-between gap-4 border-t border-stone-200 bg-white px-5 py-4"
             aria-label="Trading audit trail pages"
           >
             {page > 1 ? (
               <Link
                 href={auditHref(page - 1)}
-                className="rounded-lg border border-gold-600/25 px-4 py-2 text-xs font-semibold text-ink transition hover:bg-gold-600/10"
+                className="rounded-lg border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-ink transition hover:bg-stone-100"
               >
                 Newer entries
               </Link>
@@ -293,7 +293,7 @@ export default async function AdminTradingPage({
             {page < pageCount ? (
               <Link
                 href={auditHref(page + 1)}
-                className="rounded-lg border border-gold-600/25 px-4 py-2 text-xs font-semibold text-ink transition hover:bg-gold-600/10"
+                className="rounded-lg border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-ink transition hover:bg-stone-100"
               >
                 Older entries
               </Link>

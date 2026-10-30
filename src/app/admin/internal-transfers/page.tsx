@@ -85,7 +85,7 @@ export default async function AdminInternalTransfersPage() {
         )}
       </section>
 
-      <section className="glass-card rounded-2xl p-5 sm:p-7" aria-labelledby="transfer-history-heading">
+      <section className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm sm:p-7" aria-labelledby="transfer-history-heading">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="eyebrow">Audit trail</p>
@@ -102,24 +102,18 @@ export default async function AdminInternalTransfersPage() {
         <div className="mt-5 overflow-x-auto">
           {transfers.length > 0 ? (
             <table className="w-full min-w-[60rem] text-left text-xs">
-              <thead className="border-b border-gold-600/15 text-xs uppercase tracking-[0.14em] text-ink-faint">
+              <thead className="border-b border-stone-200 bg-stone-100 text-xs uppercase tracking-[0.12em] text-ink-faint">
                 <tr>
-                  <th className="px-3 py-3 font-medium">Date</th>
-                  <th className="px-3 py-3 font-medium">From</th>
-                  <th className="px-3 py-3 font-medium">To</th>
-                  <th className="px-3 py-3 font-medium">Amount</th>
-                  <th className="px-3 py-3 font-medium">Breakdown</th>
-                  <th className="px-3 py-3 font-medium">NAV</th>
-                  <th className="px-3 py-3 font-medium">Admin / note</th>
+                  <th className="px-3 py-2 font-medium">Date</th><th className="px-3 py-2 font-medium">From</th><th className="px-3 py-2 font-medium">To</th><th className="px-3 py-2 font-medium">Amount</th><th className="px-3 py-2 font-medium">Breakdown</th><th className="px-3 py-2 font-medium">NAV</th><th className="px-3 py-2 font-medium">Admin / note</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gold-600/10">
+              <tbody className="divide-y divide-stone-200 bg-white">
                 {transfers.map((transfer) => (
-                  <tr key={transfer.id} className="align-top">
-                    <td className="whitespace-nowrap px-3 py-4 text-ink-dim">
+                  <tr key={transfer.id} className="align-top bg-white even:bg-stone-50 hover:bg-stone-100">
+                    <td className="whitespace-nowrap px-3 py-2 text-ink-dim">
                       {formatDate(transfer.createdAt)}
                     </td>
-                    <td className="px-3 py-4">
+                    <td className="px-3 py-2">
                       <Link
                         href={`/admin/investors/${transfer.fromUser.id}`}
                         className="text-ink transition-colors hover:text-gold-300"
@@ -128,7 +122,7 @@ export default async function AdminInternalTransfersPage() {
                       </Link>
                       <p className="mt-1 text-xs text-ink-faint">{transfer.fromUser.email}</p>
                     </td>
-                    <td className="px-3 py-4">
+                    <td className="px-3 py-2">
                       <Link
                         href={`/admin/investors/${transfer.toUser.id}`}
                         className="text-ink transition-colors hover:text-gold-300"
@@ -137,10 +131,10 @@ export default async function AdminInternalTransfersPage() {
                       </Link>
                       <p className="mt-1 text-xs text-ink-faint">{transfer.toUser.email}</p>
                     </td>
-                    <td className="currency-value whitespace-nowrap px-3 py-4 text-sm text-ink">
+                    <td className="currency-value whitespace-nowrap px-3 py-2 text-sm text-ink">
                       {formatUsdt(transfer.amount)} USD
                     </td>
-                    <td className="px-3 py-4 text-ink-dim">
+                    <td className="px-3 py-2 text-ink-dim">
                       <p className="currency-value">{formatUsdt(transfer.queuedAmount)} USD queued</p>
                       <p className="currency-value mt-1">{formatUsdt(transfer.investedAmount)} USD invested</p>
                       {D(transfer.units).gt(0) && (
@@ -149,10 +143,10 @@ export default async function AdminInternalTransfersPage() {
                         </p>
                       )}
                     </td>
-                    <td className="currency-value whitespace-nowrap px-3 py-4 text-ink-dim">
+                    <td className="currency-value whitespace-nowrap px-3 py-2 text-ink-dim">
                       {formatUsdt(transfer.navPrice)} USD
                     </td>
-                    <td className="max-w-64 px-3 py-4 text-ink-dim">
+                    <td className="max-w-64 px-3 py-2 text-ink-dim">
                       <p>{transfer.admin.fullName ?? transfer.admin.email}</p>
                       <p className="mt-1 break-words text-xs text-ink-faint">
                         {transfer.note ?? "No note"}
