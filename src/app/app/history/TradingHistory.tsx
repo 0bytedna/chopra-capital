@@ -108,14 +108,11 @@ export function TradingHistory({
     <div>
       <section
         className="rounded-xl border border-gold-600/15 bg-white p-4 sm:p-5"
-        aria-labelledby="user-audit-heading"
+        aria-label="Account audit trail"
       >
         <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="eyebrow">Audit trail</p>
-            <h2 id="user-audit-heading" className="mt-1 font-serif text-xl text-ink">
-              Your complete account history
-            </h2>
           </div>
           <p className="text-xs text-ink-faint">
             {pagination.totalCount} matching entr{pagination.totalCount === 1 ? "y" : "ies"}

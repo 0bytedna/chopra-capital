@@ -20,6 +20,14 @@ export type InvestorAuditEntry = {
 const inputClass = "h-10 min-w-0 rounded-lg border border-stone-300 bg-white px-3 text-sm text-ink";
 const PAGE_SIZE = 5;
 
+function openDatePicker(input: HTMLInputElement): void {
+  try {
+    input.showPicker();
+  } catch {
+    // Browsers without showPicker retain their native date-input behavior.
+  }
+}
+
 export function InvestorAuditTrail({ entries }: { entries: InvestorAuditEntry[] }) {
   const [type, setType] = useState("ALL");
   const [status, setStatus] = useState("ALL");
@@ -47,8 +55,16 @@ export function InvestorAuditTrail({ entries }: { entries: InvestorAuditEntry[] 
       <label className="relative sm:col-span-2 xl:col-span-1"><Search className="pointer-events-none absolute left-3 top-3 size-4 text-ink-faint" aria-hidden /><input value={query} onChange={(event) => { setQuery(event.target.value); setPage(1); }} placeholder="Search reference or note" className={`${inputClass} w-full pl-9`} /></label>
       <select value={type} onChange={(event) => { setType(event.target.value); setPage(1); }} className={inputClass} aria-label="Transaction type"><option value="ALL">All activity</option><option value="DEPOSIT">Deposits</option><option value="WITHDRAWAL">Withdrawals</option><option value="TRANSFER">Transfers</option></select>
       <select value={status} onChange={(event) => { setStatus(event.target.value); setPage(1); }} className={inputClass} aria-label="Transaction status"><option value="ALL">All statuses</option>{statuses.map((value) => <option key={value} value={value}>{value}</option>)}</select>
-      <input type="date" value={from} onChange={(event) => { setFrom(event.target.value); setPage(1); }} className={inputClass} aria-label="From date" />
-      <input type="date" value={to} onChange={(event) => { setTo(event.target.value); setPage(1); }} className={inputClass} aria-label="To date" />
+      <div className="grid grid-cols-2 gap-2 sm:col-span-2 xl:col-span-2">
+        <label className="min-w-0">
+          <span className="sr-only">From date</span>
+          <input type="date" value={from} onChange={(event) => { setFrom(event.target.value); setPage(1); }} onClick={(event) => openDatePicker(event.currentTarget)} placeholder="dd/mm/yyyy" className={`${inputClass} w-full cursor-pointer px-2 font-mono [color-scheme:light] sm:px-3`} aria-label="From date" />
+        </label>
+        <label className="min-w-0">
+          <span className="sr-only">To date</span>
+          <input type="date" value={to} onChange={(event) => { setTo(event.target.value); setPage(1); }} onClick={(event) => openDatePicker(event.currentTarget)} placeholder="dd/mm/yyyy" className={`${inputClass} w-full cursor-pointer px-2 font-mono [color-scheme:light] sm:px-3`} aria-label="To date" />
+        </label>
+      </div>
     </div>
     <div className="overflow-x-auto bg-white">
       <table className="w-full min-w-[48rem] text-left text-xs">

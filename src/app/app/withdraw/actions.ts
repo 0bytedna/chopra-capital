@@ -126,7 +126,6 @@ function requestedUsdAmount(amount: number) {
 export async function requestWithdrawal(_prev: WithdrawFormState, formData: FormData): Promise<WithdrawFormState> {
   const user = await requireUser();
   const controls = await getFinancialControls();
-  if (controls.withdrawalsPaused) return { error: "New withdrawals are temporarily paused. Please try again later." };
   const parsed = parsedRequest(formData);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Please check the form." };
 

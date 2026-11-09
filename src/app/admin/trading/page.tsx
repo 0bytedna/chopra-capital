@@ -150,9 +150,6 @@ export default async function AdminTradingPage({
           <div>
             <p className="eyebrow">Referral commissions</p>
             <h2 className="mt-1 font-serif text-xl text-ink">Calculate and distribute</h2>
-            <p className="mt-1 text-xs leading-5 text-ink-faint">
-              Review eligible referrals, adjust suggested amounts and credit separate commission wallets.
-            </p>
           </div>
         </div>
         <Link

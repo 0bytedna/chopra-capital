@@ -47,8 +47,9 @@ export default async function AdminInvestorRecordPage({ params }: { params: Prom
     where: { id, role: "USER" },
     select: {
       id: true, fullName: true, email: true, mobile: true, kycStatus: true, kycNote: true,
-      depositsEnabled: true, withdrawalsEnabled: true, cryptoEnabled: true,
-      bankTransferEnabled: true, cashEnabled: true, publicId: true, referralEnabled: true,
+      depositBankEnabled: true, depositCryptoEnabled: true, depositCashEnabled: true,
+      withdrawalBankEnabled: true, withdrawalCryptoEnabled: true, withdrawalCashEnabled: true,
+      publicId: true, referralEnabled: true,
       twoFactorEnabled: true, createdAt: true, updatedAt: true, bankingDetail: true, commissionWallet: true,
       kycDocuments: { orderBy: { createdAt: "desc" } },
       referralReceived: { include: { referrer: { select: { id: true, fullName: true, email: true } } } },
@@ -98,7 +99,7 @@ export default async function AdminInvestorRecordPage({ params }: { params: Prom
     <CollapsibleCard title="Audit trail" Icon={FileClock} count={auditEntries.length} contentClassName="p-0"><InvestorAuditTrail entries={auditEntries} /></CollapsibleCard>
 
     <CollapsibleCard title="Account details" Icon={Mail}>
-      <InvestorAdminControls investor={{ id: investor.id, fullName: investor.fullName, email: investor.email, mobile: investor.mobile, kycStatus: investor.kycStatus, kycNote: investor.kycNote, depositsEnabled: investor.depositsEnabled, withdrawalsEnabled: investor.withdrawalsEnabled, cryptoEnabled: investor.cryptoEnabled, bankTransferEnabled: investor.bankTransferEnabled, cashEnabled: investor.cashEnabled, twoFactorEnabled: investor.twoFactorEnabled, referralEnabled: investor.referralEnabled, bankingDetail: investor.bankingDetail }} queued={metrics.queued.toFixed(2)} invested={investedValue.toFixed(2)} />
+      <InvestorAdminControls investor={{ id: investor.id, fullName: investor.fullName, email: investor.email, mobile: investor.mobile, kycStatus: investor.kycStatus, kycNote: investor.kycNote, depositBankEnabled: investor.depositBankEnabled, depositCryptoEnabled: investor.depositCryptoEnabled, depositCashEnabled: investor.depositCashEnabled, withdrawalBankEnabled: investor.withdrawalBankEnabled, withdrawalCryptoEnabled: investor.withdrawalCryptoEnabled, withdrawalCashEnabled: investor.withdrawalCashEnabled, twoFactorEnabled: investor.twoFactorEnabled, referralEnabled: investor.referralEnabled, bankingDetail: investor.bankingDetail }} queued={metrics.queued.toFixed(2)} invested={investedValue.toFixed(2)} />
       <div className="mt-5 border-t border-stone-200 pt-4"><p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-faint">KYC documents</p><div className="mt-3 flex flex-wrap gap-2">{investor.kycDocuments.length > 0 ? investor.kycDocuments.map((document) => <a key={document.id} href={`/api/admin/kyc-file?id=${document.id}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-stone-300 bg-white px-3 py-2 text-xs font-medium text-ink"><FileText className="size-3.5 text-gold-700" aria-hidden />{document.docType} · {formatDate(document.createdAt)}</a>) : <p className="text-xs text-ink-faint">No KYC documents on file.</p>}</div></div>
     </CollapsibleCard>
 

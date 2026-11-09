@@ -57,6 +57,12 @@ export async function signup(_prev: AuthFormState, formData: FormData): Promise<
             email,
             passwordHash,
             fullName,
+            depositBankEnabled: false,
+            depositCryptoEnabled: true,
+            depositCashEnabled: false,
+            withdrawalBankEnabled: false,
+            withdrawalCryptoEnabled: true,
+            withdrawalCashEnabled: false,
             wallet: { create: {} },
             commissionWallet: { create: {} },
             ...(referrer

@@ -75,8 +75,8 @@ export default async function AdminInternalTransfersPage() {
     ...(!controls.withdrawalBankPaused ? ["BANK" as const] : []),
     ...(!controls.withdrawalCashPaused ? ["CASH" as const] : []),
   ];
-  const depositMethods = controls.depositsPaused ? [] : depositAllowedMethods;
-  const withdrawalMethods = controls.withdrawalsPaused ? [] : withdrawalAllowedMethods;
+  const depositMethods = depositAllowedMethods;
+  const withdrawalMethods = withdrawalAllowedMethods;
 
 
   return (

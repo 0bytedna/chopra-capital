@@ -2,8 +2,6 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 
 export const FINANCIAL_CONTROL_KEYS = {
-  depositsPaused: "DEPOSITS_PAUSED",
-  withdrawalsPaused: "WITHDRAWALS_PAUSED",
   depositBankPaused: "DEPOSIT_BANK_PAUSED",
   depositCryptoPaused: "DEPOSIT_CRYPTO_PAUSED",
   depositCashPaused: "DEPOSIT_CASH_PAUSED",
@@ -13,8 +11,6 @@ export const FINANCIAL_CONTROL_KEYS = {
 } as const;
 
 export type FinancialControls = {
-  depositsPaused: boolean;
-  withdrawalsPaused: boolean;
   depositBankPaused: boolean;
   depositCryptoPaused: boolean;
   depositCashPaused: boolean;
@@ -29,8 +25,6 @@ export async function getFinancialControls(): Promise<FinancialControls> {
   });
   const settings = new Map(rows.map((row) => [row.key, row.value]));
   return {
-    depositsPaused: settings.get(FINANCIAL_CONTROL_KEYS.depositsPaused) === "true",
-    withdrawalsPaused: settings.get(FINANCIAL_CONTROL_KEYS.withdrawalsPaused) === "true",
     depositBankPaused: settings.get(FINANCIAL_CONTROL_KEYS.depositBankPaused) === "true",
     depositCryptoPaused: settings.get(FINANCIAL_CONTROL_KEYS.depositCryptoPaused) === "true",
     depositCashPaused: settings.get(FINANCIAL_CONTROL_KEYS.depositCashPaused) === "true",

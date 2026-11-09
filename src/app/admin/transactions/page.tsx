@@ -285,8 +285,16 @@ export default async function AdminTransactionsPage({ searchParams }: Props) {
       <form method="get" className="glass-card grid gap-3 rounded-xl p-4 sm:grid-cols-2 xl:grid-cols-[1.4fr_0.8fr_0.8fr_0.7fr_0.7fr_auto_auto]">
         <input type="hidden" name="type" value={selectedType} />
         <input name="q" defaultValue={search} placeholder="Investor name or email" className="h-10 rounded-lg border border-stone-200 bg-white px-3 text-sm text-ink" disabled={selectedType === "CONVERSIONS" || selectedType === "BROKER"} />
-        <input name="from" type="date" defaultValue={from} className="h-10 rounded-lg border border-stone-200 bg-white px-3 font-mono text-xs text-ink" />
-        <input name="to" type="date" defaultValue={to} className="h-10 rounded-lg border border-stone-200 bg-white px-3 font-mono text-xs text-ink" />
+        <div className="grid grid-cols-2 gap-2 sm:col-span-2 xl:col-span-2">
+          <label className="min-w-0">
+            <span className="sr-only">From date</span>
+            <input name="from" type="date" defaultValue={from} aria-label="From date" placeholder="dd/mm/yyyy" className="h-10 w-full min-w-0 cursor-pointer rounded-lg border border-stone-200 bg-white px-2 font-mono text-sm text-ink [color-scheme:light] sm:px-3" />
+          </label>
+          <label className="min-w-0">
+            <span className="sr-only">To date</span>
+            <input name="to" type="date" defaultValue={to} aria-label="To date" placeholder="dd/mm/yyyy" className="h-10 w-full min-w-0 cursor-pointer rounded-lg border border-stone-200 bg-white px-2 font-mono text-sm text-ink [color-scheme:light] sm:px-3" />
+          </label>
+        </div>
         <input name="min" type="number" min="0" step="0.01" defaultValue={Number.isFinite(min) ? min : ""} placeholder="Min amount" className="h-10 rounded-lg border border-stone-200 bg-white px-3 text-sm text-ink" />
         <input name="max" type="number" min="0" step="0.01" defaultValue={Number.isFinite(max) ? max : ""} placeholder="Max amount" className="h-10 rounded-lg border border-stone-200 bg-white px-3 text-sm text-ink" />
         <div className="grid grid-cols-2 gap-2 sm:col-span-2 xl:col-span-2">

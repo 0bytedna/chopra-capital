@@ -38,17 +38,14 @@ export default async function WithdrawPage() {
       : null,
   };
   const available = toNumber(metrics.currentValue);
-  const globalRestriction = controls.withdrawalsPaused
-    ? { title: "Withdrawals paused", message: "New withdrawals are temporarily paused. Please try again later." }
-    : null;
   const methodRestriction = (method: "BANK" | "CRYPTO" | "CASH") => {
     const paused = method === "BANK" ? controls.withdrawalBankPaused : method === "CRYPTO" ? controls.withdrawalCryptoPaused : controls.withdrawalCashPaused;
     return paused ? { title: `${method === "BANK" ? "Bank transfers" : method === "CRYPTO" ? "Crypto" : "Cash"} paused`, message: "This payment method is temporarily unavailable." } : null;
   };
   const restrictions = {
-    CRYPTO: globalRestriction ?? methodRestriction("CRYPTO") ?? getWithdrawalEligibility(user, banking, "CRYPTO").restriction,
-    BANK: globalRestriction ?? methodRestriction("BANK") ?? getWithdrawalEligibility(user, banking, "BANK").restriction,
-    CASH: globalRestriction ?? methodRestriction("CASH") ?? getWithdrawalEligibility(user, banking, "CASH").restriction,
+    CRYPTO: methodRestriction("CRYPTO") ?? getWithdrawalEligibility(user, banking, "CRYPTO").restriction,
+    BANK: methodRestriction("BANK") ?? getWithdrawalEligibility(user, banking, "BANK").restriction,
+    CASH: methodRestriction("CASH") ?? getWithdrawalEligibility(user, banking, "CASH").restriction,
   };
 
   return (
@@ -81,9 +78,9 @@ export default async function WithdrawPage() {
           referenceRate={toNumber(inrRate)}
           payout={payout}
           restrictions={restrictions}
-          cryptoEnabled={user.withdrawalsEnabled && !controls.withdrawalsPaused && user.cryptoEnabled && !controls.withdrawalCryptoPaused}
-          bankEnabled={user.withdrawalsEnabled && !controls.withdrawalsPaused && user.bankTransferEnabled && !controls.withdrawalBankPaused}
-          cashEnabled={user.withdrawalsEnabled && !controls.withdrawalsPaused && user.cashEnabled && !controls.withdrawalCashPaused}
+          cryptoEnabled={user.withdrawalCryptoEnabled && !controls.withdrawalCryptoPaused}
+          bankEnabled={user.withdrawalBankEnabled && !controls.withdrawalBankPaused}
+          cashEnabled={user.withdrawalCashEnabled && !controls.withdrawalCashPaused}
           twoFactorEnabled={user.twoFactorEnabled}
         />
       </section>

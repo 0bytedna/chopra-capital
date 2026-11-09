@@ -82,10 +82,6 @@ export default async function HistoryPage({
         <h1 className="mt-2 font-serif text-2xl text-ink sm:text-3xl">
           Account <em className="gold-text italic">transactions</em>
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-dim">
-          Review every approved balance movement and manage eligible deposit or
-          withdrawal requests. Pool-level figures remain private.
-        </p>
       </header>
 
       <section className="glass-card rounded-2xl p-4 sm:p-7">
@@ -110,7 +106,7 @@ export default async function HistoryPage({
             to,
           }}
           twoFactorEnabled={user.twoFactorEnabled}
-          withdrawalMethods={{ bank: user.bankTransferEnabled, cash: user.cashEnabled }}
+          withdrawalMethods={{ bank: user.withdrawalBankEnabled, cash: user.withdrawalCashEnabled }}
           deposits={deposits.map((deposit) => ({
             id: deposit.id,
             method: deposit.method,

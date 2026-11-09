@@ -41,6 +41,12 @@ model User {
   cryptoEnabled       Boolean @default(true)
   bankTransferEnabled Boolean @default(false)
   cashEnabled         Boolean @default(false)
+  depositBankEnabled       Boolean @default(false)
+  depositCryptoEnabled     Boolean @default(true)
+  depositCashEnabled       Boolean @default(false)
+  withdrawalBankEnabled    Boolean @default(false)
+  withdrawalCryptoEnabled  Boolean @default(true)
+  withdrawalCashEnabled    Boolean @default(false)
   referralEnabled     Boolean @default(false)
 
   fullName String?

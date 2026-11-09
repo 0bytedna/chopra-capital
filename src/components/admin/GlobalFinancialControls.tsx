@@ -4,30 +4,23 @@ import type { FinancialControls } from "@/lib/financialControls";
 
 export function GlobalFinancialControls({ controls }: { controls: FinancialControls }) {
   return (
-    <AdminActionForm
-      action={adminUpdateGlobalFinancialControls}
-      submitLabel="Save global controls"
-      pendingLabel="Saving…"
-      variant="gold"
-      confirmMessage="Update deposit and withdrawal availability for every investor?"
-      className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm sm:p-5"
-    >
-      <div>
+    <details className="group rounded-xl border border-stone-200 bg-white shadow-sm">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 sm:p-5 [&::-webkit-details-marker]:hidden">
+        <div>
         <p className="eyebrow">Universal controls</p>
-        <h2 className="mt-1.5 text-lg font-semibold text-ink">Pause new investor requests</h2>
-        <p className="mt-1 text-xs text-ink-faint">Existing requests remain available for processing.</p>
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <label className="flex items-center gap-3 rounded-lg border border-stone-200 bg-stone-50 p-3 text-sm text-ink">
-          <input type="checkbox" name="depositsPaused" defaultChecked={controls.depositsPaused} />
-          <span><strong className="block">Pause deposits</strong><span className="text-xs text-ink-faint">Block all new deposit requests</span></span>
-        </label>
-        <label className="flex items-center gap-3 rounded-lg border border-stone-200 bg-stone-50 p-3 text-sm text-ink">
-          <input type="checkbox" name="withdrawalsPaused" defaultChecked={controls.withdrawalsPaused} />
-          <span><strong className="block">Pause withdrawals</strong><span className="text-xs text-ink-faint">Block all new withdrawal requests</span></span>
-        </label>
-      </div>
-      <div className="grid gap-4 lg:grid-cols-2">
+          <h2 className="mt-1.5 text-lg font-semibold text-ink">Payment-method availability</h2>
+        </div>
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-lg text-ink transition-transform group-open:rotate-180" aria-hidden>⌄</span>
+      </summary>
+      <AdminActionForm
+        action={adminUpdateGlobalFinancialControls}
+        submitLabel="Save global controls"
+        pendingLabel="Saving…"
+        variant="gold"
+        confirmMessage="Update payment-method availability for every investor?"
+        className="space-y-4 border-t border-stone-200 p-4 sm:p-5"
+      >
+        <div className="grid gap-4 lg:grid-cols-2">
         <fieldset>
           <legend className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-faint">Deposit methods</legend>
           <div className="mt-2 grid gap-2 sm:grid-cols-3">
@@ -44,7 +37,8 @@ export function GlobalFinancialControls({ controls }: { controls: FinancialContr
             <label className="flex items-center gap-2 rounded-lg border border-stone-200 bg-stone-50 p-3 text-sm text-ink"><input type="checkbox" name="withdrawalCashPaused" defaultChecked={controls.withdrawalCashPaused} />Pause cash</label>
           </div>
         </fieldset>
-      </div>
-    </AdminActionForm>
+        </div>
+      </AdminActionForm>
+    </details>
   );
 }

@@ -92,17 +92,7 @@ export default async function AdminKycPage() {
               <AdminActionForm action={adminKycDecision} submitLabel="Approve identity" pendingLabel="Approving…">
                 <input type="hidden" name="userId" value={u.id} />
                 <input type="hidden" name="decision" value="APPROVED" />
-                <fieldset className="space-y-2 rounded-xl border border-gold-600/15 bg-vault-950/40 p-3">
-                  <legend className="px-1 text-xs uppercase tracking-[0.14em] text-ink-dim">Enable account methods</legend>
-                  <label className="flex items-center gap-2 text-sm text-ink-dim">
-                    <input type="checkbox" name="bankTransferEnabled" defaultChecked={u.bankTransferEnabled} />
-                    Bank transfer / UPI (deposits and withdrawals)
-                  </label>
-                  <label className="flex items-center gap-2 text-sm text-ink-dim">
-                    <input type="checkbox" name="cashEnabled" defaultChecked={u.cashEnabled} />
-                    Cash (deposits and withdrawals)
-                  </label>
-                </fieldset>
+                <p className="text-sm text-ink-dim">Approve the submitted identity documents. Deposit and withdrawal methods are managed separately from the investor page.</p>
               </AdminActionForm>
               <AdminActionForm action={adminKycDecision} submitLabel="Reject" variant="danger" pendingLabel="Rejecting…">
                 <input type="hidden" name="userId" value={u.id} />

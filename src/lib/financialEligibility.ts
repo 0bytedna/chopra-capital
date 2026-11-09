@@ -1,7 +1,7 @@
 import type { BankingDetail, User } from "@prisma/client";
 import { NETWORKS } from "@/lib/config";
 
-type EligibilityUser = Pick<User, "kycStatus" | "depositsEnabled" | "withdrawalsEnabled" | "cryptoEnabled" | "bankTransferEnabled" | "cashEnabled">;
+type EligibilityUser = Pick<User, "kycStatus" | "withdrawalBankEnabled" | "withdrawalCryptoEnabled" | "withdrawalCashEnabled">;
 
 type EligibilityBanking = Pick<
   BankingDetail,
@@ -45,9 +45,6 @@ function getKycEligibility(user: EligibilityUser): FinancialEligibility {
 export function getDepositEligibility(user: EligibilityUser): FinancialEligibility {
   const kycEligibility = getKycEligibility(user);
   if (!kycEligibility.eligible) return kycEligibility;
-  if (!user.depositsEnabled) {
-    return { eligible: false, restriction: { title: "Deposits unavailable", message: "Deposits are currently disabled on your account. Contact support for assistance." } };
-  }
   return { eligible: true, restriction: null };
 }
 
@@ -59,15 +56,11 @@ export function getWithdrawalEligibility(
   const kycEligibility = getKycEligibility(user);
   if (!kycEligibility.eligible) return kycEligibility;
 
-  if (!user.withdrawalsEnabled) {
-    return { eligible: false, restriction: { title: "Withdrawals unavailable", message: "Withdrawals are currently disabled on your account. Contact support for assistance." } };
-  }
-
-  if (method === "CRYPTO" && !user.cryptoEnabled) {
+  if (method === "CRYPTO" && !user.withdrawalCryptoEnabled) {
     return { eligible: false, restriction: { title: "Crypto unavailable", message: "Crypto transactions are not enabled on your account. Contact support." } };
   }
 
-  if (method === "BANK" && !user.bankTransferEnabled) {
+  if (method === "BANK" && !user.withdrawalBankEnabled) {
     return {
       eligible: false,
       restriction: {
@@ -77,7 +70,7 @@ export function getWithdrawalEligibility(
     };
   }
 
-  if (method === "CASH" && !user.cashEnabled) {
+  if (method === "CASH" && !user.withdrawalCashEnabled) {
     return {
       eligible: false,
       restriction: {

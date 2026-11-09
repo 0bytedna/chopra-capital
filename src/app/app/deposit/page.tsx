@@ -28,9 +28,7 @@ export default async function DepositPage() {
     getFinancialControls(),
   ]);
   const qrCodes = { TRC20: trc20Qr, ERC20: erc20Qr, BEP20: bep20Qr };
-  const eligibility = controls.depositsPaused
-    ? { eligible: false, restriction: { title: "Deposits paused", message: "New deposits are temporarily paused. Please try again later." } }
-    : getDepositEligibility(user);
+  const eligibility = getDepositEligibility(user);
 
   return (
     <div className="mx-auto max-w-3xl space-y-7">
@@ -49,9 +47,9 @@ export default async function DepositPage() {
           addresses={addresses}
           qrCodes={qrCodes}
           restriction={eligibility.restriction}
-          cryptoEnabled={user.depositsEnabled && !controls.depositsPaused && user.cryptoEnabled && !controls.depositCryptoPaused}
-          bankEnabled={user.depositsEnabled && !controls.depositsPaused && user.bankTransferEnabled && !controls.depositBankPaused}
-          cashEnabled={user.depositsEnabled && !controls.depositsPaused && user.cashEnabled && !controls.depositCashPaused}
+          cryptoEnabled={user.depositCryptoEnabled && !controls.depositCryptoPaused}
+          bankEnabled={user.depositBankEnabled && !controls.depositBankPaused}
+          cashEnabled={user.depositCashEnabled && !controls.depositCashPaused}
           bank={bankDepositDetails()}
           cashInstruction={cashDepositInstruction}
         />
