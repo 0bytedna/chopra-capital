@@ -38,7 +38,7 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-6">
+    <div className="mx-auto w-full max-w-[100rem] space-y-4 sm:space-y-6">
       <AttentionPanel center={notifications} />
       <AccountMetricCards
         initialProfit={toNumber(totalProfit)}

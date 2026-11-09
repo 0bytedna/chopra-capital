@@ -13,7 +13,6 @@ export const metadata: Metadata = { title: "Admin · Overview" };
 export default async function AdminOverviewPage() {
   const [
     poolNav,
-    tradingProfitAgg,
     pendingDeposits,
     pendingWithdrawals,
     pendingKyc,
@@ -21,10 +20,6 @@ export default async function AdminOverviewPage() {
     poolPortfolio,
   ] = await Promise.all([
     getCurrentNav(),
-    prisma.tradingAccountEntry.aggregate({
-      where: { type: { in: ["TRADING_PROFIT", "TRADING_LOSS"] } },
-      _sum: { amount: true },
-    }),
     prisma.deposit.count({
       where: { status: { in: ["PENDING", "RECEIVED", "QUEUED"] } },
     }),
@@ -53,7 +48,7 @@ export default async function AdminOverviewPage() {
     getPoolPortfolioSeries(),
   ]);
 
-  const tradingProfit = tradingProfitAgg._sum.amount ?? 0;
+  const tradingProfit = poolPortfolio.profitInRange;
   const queues = [
     { href: "/admin/deposits", label: "Deposits", count: pendingDeposits },
     { href: "/admin/withdrawals", label: "Withdrawals", count: pendingWithdrawals },
@@ -67,7 +62,7 @@ export default async function AdminOverviewPage() {
     { label: "NAV / unit", value: formatUsdt(poolNav.nav), Icon: Gauge },
   ];
   return (
-    <div className="mx-auto max-w-7xl space-y-8">
+    <div className="mx-auto max-w-7xl space-y-5 sm:space-y-8">
       <header>
         <p className="eyebrow">Operations</p>
         <h1 className="mt-2 font-serif text-3xl text-ink">
@@ -82,17 +77,17 @@ export default async function AdminOverviewPage() {
         {poolSnapshot.map((item) => (
           <div
             key={item.label}
-            className="glass-card h-full min-w-0 rounded-xl px-4 py-3 [container-type:inline-size] sm:min-h-28 sm:p-4 xl:min-h-32 xl:p-5"
+            className="glass-card h-full min-w-0 rounded-xl px-3 py-2 [container-type:inline-size] sm:min-h-28 sm:p-4 xl:min-h-32 xl:p-5"
           >
             <div className="flex items-center justify-between gap-2">
               <p className="min-w-0 text-[clamp(0.68rem,7.5cqi,0.8125rem)] leading-tight uppercase tracking-[0.12em] text-ink-faint">{item.label}</p>
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-gold-600/25 bg-white">
-                <item.Icon className="size-4 text-gold-700" aria-hidden />
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-gold-600/25 bg-white sm:size-8">
+                <item.Icon className="size-3.5 text-gold-700 sm:size-4" aria-hidden />
               </span>
             </div>
             <p
               className={cn(
-                "currency-value mt-2 max-w-full whitespace-nowrap leading-tight tracking-[-0.035em]",
+                "currency-value mt-1 max-w-full whitespace-nowrap leading-tight tracking-[-0.035em] sm:mt-2",
                 item.positive ? "text-positive" : "text-ink",
                 item.value.length > 10
                   ? "text-[clamp(0.95rem,9.5cqi,1.2rem)]"
@@ -118,11 +113,11 @@ export default async function AdminOverviewPage() {
           <Link
             key={queue.href}
             href={queue.href}
-            className="glass-card glass-card-hover flex min-h-20 flex-row items-center gap-4 rounded-xl px-4 py-3 text-left sm:min-h-36 sm:flex-col sm:justify-center sm:gap-0 sm:rounded-2xl sm:p-5 sm:text-center lg:min-h-32 lg:p-4"
+            className="glass-card glass-card-hover flex min-h-16 flex-row items-center gap-3 rounded-xl px-3 py-2 text-left sm:min-h-36 sm:flex-col sm:justify-center sm:gap-0 sm:rounded-2xl sm:p-5 sm:text-center lg:min-h-32 lg:p-4"
           >
             <span
               className={cn(
-                "flex size-12 shrink-0 items-center justify-center rounded-full border font-mono text-xl font-semibold shadow-lg sm:size-20 sm:text-3xl lg:size-14 lg:text-2xl",
+                "flex size-10 shrink-0 items-center justify-center rounded-full border font-mono text-lg font-semibold shadow-lg sm:size-20 sm:text-3xl lg:size-14 lg:text-2xl",
                 queue.count > 0
                   ? "border-gold-600 bg-gold-600 text-white shadow-gold-600/20"
                   : "border-stone-200 bg-stone-100 text-ink-faint shadow-stone-200/40",
@@ -131,7 +126,7 @@ export default async function AdminOverviewPage() {
             >
               {queue.count}
             </span>
-            <p className="text-base font-semibold leading-tight text-ink sm:mt-3 sm:text-lg">
+            <p className="text-sm font-semibold leading-tight text-ink sm:mt-3 sm:text-lg">
               {queue.label}
             </p>
           </Link>

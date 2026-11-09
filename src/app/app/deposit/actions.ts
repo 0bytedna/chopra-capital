@@ -8,12 +8,15 @@ import { D } from "@/lib/money";
 import { getDepositEligibility, type FinancialRestriction } from "@/lib/financialEligibility";
 import { isDuplicateTransactionHash, transactionHashFingerprint } from "@/lib/depositSecurity";
 import { refundCommissionInvestmentDeposit } from "@/lib/referrals";
+import { getFinancialControls, isFinancialMethodPaused } from "@/lib/financialControls";
 
 export type DepositFormState = { error?: string; success?: string; restriction?: FinancialRestriction };
 
 
 export async function submitDeposit(_prev: DepositFormState, formData: FormData): Promise<DepositFormState> {
   const user = await requireUser();
+  const controls = await getFinancialControls();
+  if (controls.depositsPaused) return { error: "New deposits are temporarily paused. Please try again later." };
   const eligibility = getDepositEligibility(user);
   if (eligibility.restriction) return { restriction: eligibility.restriction };
 
@@ -30,6 +33,12 @@ export async function submitDeposit(_prev: DepositFormState, formData: FormData)
 
   const { amount, method, network, txHash, reference } = parsed.data;
 
+  if (isFinancialMethodPaused(controls, "DEPOSIT", method)) {
+    return { error: `${method === "BANK" ? "Bank transfers" : method === "CRYPTO" ? "Crypto" : "Cash"} are temporarily paused.` };
+  }
+  if (method === "CRYPTO" && !user.cryptoEnabled) {
+    return { error: "Crypto deposits are not enabled on your account. Contact support." };
+  }
   if (method === "BANK" && !user.bankTransferEnabled) {
     return { error: "Bank transfer deposits are not enabled on your account. Contact support." };
   }
@@ -95,6 +104,9 @@ export async function editDeposit(_prev: DepositFormState, formData: FormData): 
 
   const { amount, method, network, txHash, reference } = parsed.data;
   if (method !== deposit.method) return { error: "The deposit method cannot be changed." };
+  if (method === "CRYPTO" && !user.cryptoEnabled) return { error: "Crypto deposits are not enabled on your account." };
+  if (method === "BANK" && !user.bankTransferEnabled) return { error: "Bank transfer deposits are not enabled on your account." };
+  if (method === "CASH" && !user.cashEnabled) return { error: "Cash deposits are not enabled on your account." };
 
   if (isCorrection) {
     const originalAmount = method === "CRYPTO" ? deposit.reportedUsdtAmount ?? deposit.amount : deposit.inrAmount;

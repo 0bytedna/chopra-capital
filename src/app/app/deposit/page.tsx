@@ -8,6 +8,7 @@ import {
 } from "@/lib/config";
 import { getDepositEligibility } from "@/lib/financialEligibility";
 import { DepositForm } from "./DepositForm";
+import { getFinancialControls } from "@/lib/financialControls";
 
 export const metadata: Metadata = { title: "Deposit" };
 
@@ -18,15 +19,18 @@ export default async function DepositPage() {
     ERC20: depositAddress("ERC20"),
     BEP20: depositAddress("BEP20"),
   };
-  const [trc20Qr, erc20Qr, bep20Qr] = await Promise.all(
-    (["TRC20", "ERC20", "BEP20"] as const).map((network) =>
+  const [[trc20Qr, erc20Qr, bep20Qr], controls] = await Promise.all([
+    Promise.all((["TRC20", "ERC20", "BEP20"] as const).map((network) =>
       addresses[network]
         ? QRCode.toDataURL(addresses[network], { errorCorrectionLevel: "M", margin: 1, width: 160 })
         : Promise.resolve(""),
-    ),
-  );
+    )),
+    getFinancialControls(),
+  ]);
   const qrCodes = { TRC20: trc20Qr, ERC20: erc20Qr, BEP20: bep20Qr };
-  const eligibility = getDepositEligibility(user);
+  const eligibility = controls.depositsPaused
+    ? { eligible: false, restriction: { title: "Deposits paused", message: "New deposits are temporarily paused. Please try again later." } }
+    : getDepositEligibility(user);
 
   return (
     <div className="mx-auto max-w-3xl space-y-7">
@@ -45,8 +49,9 @@ export default async function DepositPage() {
           addresses={addresses}
           qrCodes={qrCodes}
           restriction={eligibility.restriction}
-          bankEnabled={user.bankTransferEnabled}
-          cashEnabled={user.cashEnabled}
+          cryptoEnabled={user.depositsEnabled && !controls.depositsPaused && user.cryptoEnabled && !controls.depositCryptoPaused}
+          bankEnabled={user.depositsEnabled && !controls.depositsPaused && user.bankTransferEnabled && !controls.depositBankPaused}
+          cashEnabled={user.depositsEnabled && !controls.depositsPaused && user.cashEnabled && !controls.depositCashPaused}
           bank={bankDepositDetails()}
           cashInstruction={cashDepositInstruction}
         />

@@ -33,7 +33,7 @@ const items = [
   { href: "/admin/kyc", label: "KYC review", Icon: BadgeCheck },
   { href: "/admin/tickets", label: "Tickets", Icon: LifeBuoy },
   { href: "/admin/investors", label: "Investors", Icon: Users },
-  { href: "/admin/internal-transfers", label: "Internal transfers", Icon: ArrowLeftRight },
+  { href: "/admin/internal-transfers", label: "Transfers", Icon: ArrowLeftRight },
   { href: "/admin/security", label: "Security", Icon: ShieldCheck },
 ];
 

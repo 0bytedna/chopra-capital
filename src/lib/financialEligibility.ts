@@ -1,7 +1,7 @@
 import type { BankingDetail, User } from "@prisma/client";
 import { NETWORKS } from "@/lib/config";
 
-type EligibilityUser = Pick<User, "kycStatus" | "bankTransferEnabled" | "cashEnabled">;
+type EligibilityUser = Pick<User, "kycStatus" | "depositsEnabled" | "withdrawalsEnabled" | "cryptoEnabled" | "bankTransferEnabled" | "cashEnabled">;
 
 type EligibilityBanking = Pick<
   BankingDetail,
@@ -24,7 +24,7 @@ function isFilled(value: string | null | undefined): boolean {
   return Boolean(value?.trim());
 }
 
-export function getDepositEligibility(user: EligibilityUser): FinancialEligibility {
+function getKycEligibility(user: EligibilityUser): FinancialEligibility {
   if (user.kycStatus !== "APPROVED") {
     const message =
       user.kycStatus === "PENDING"
@@ -42,13 +42,30 @@ export function getDepositEligibility(user: EligibilityUser): FinancialEligibili
   return { eligible: true, restriction: null };
 }
 
+export function getDepositEligibility(user: EligibilityUser): FinancialEligibility {
+  const kycEligibility = getKycEligibility(user);
+  if (!kycEligibility.eligible) return kycEligibility;
+  if (!user.depositsEnabled) {
+    return { eligible: false, restriction: { title: "Deposits unavailable", message: "Deposits are currently disabled on your account. Contact support for assistance." } };
+  }
+  return { eligible: true, restriction: null };
+}
+
 export function getWithdrawalEligibility(
   user: EligibilityUser,
   banking: EligibilityBanking | null,
   method: WithdrawalMethod,
 ): FinancialEligibility {
-  const kycEligibility = getDepositEligibility(user);
+  const kycEligibility = getKycEligibility(user);
   if (!kycEligibility.eligible) return kycEligibility;
+
+  if (!user.withdrawalsEnabled) {
+    return { eligible: false, restriction: { title: "Withdrawals unavailable", message: "Withdrawals are currently disabled on your account. Contact support for assistance." } };
+  }
+
+  if (method === "CRYPTO" && !user.cryptoEnabled) {
+    return { eligible: false, restriction: { title: "Crypto unavailable", message: "Crypto transactions are not enabled on your account. Contact support." } };
+  }
 
   if (method === "BANK" && !user.bankTransferEnabled) {
     return {

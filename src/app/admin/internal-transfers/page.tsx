@@ -5,11 +5,14 @@ import {
   InternalTransferForm,
   type TransferInvestorOption,
 } from "@/components/admin/InternalTransferForm";
+import { AdminManualRequestForm } from "@/components/admin/AdminManualRequestForm";
 import { D, formatUsdt, toNumber } from "@/lib/money";
 import { getCurrentNav } from "@/lib/nav";
 import { prisma } from "@/lib/prisma";
+import { adminCreateDepositRequest, adminCreateWithdrawalRequest } from "../actions";
+import { getFinancialControls } from "@/lib/financialControls";
 
-export const metadata: Metadata = { title: "Admin · Internal transfers" };
+export const metadata: Metadata = { title: "Admin · Transfers" };
 
 function formatDate(date: Date) {
   return date.toLocaleString("en-IN", {
@@ -23,10 +26,10 @@ function formatDate(date: Date) {
 }
 
 export default async function AdminInternalTransfersPage() {
-  const [{ nav }, users, transfers] = await Promise.all([
+  const [{ nav }, users, transfers, controls] = await Promise.all([
     getCurrentNav(),
     prisma.user.findMany({
-      where: { role: "USER" },
+      where: { role: "USER", isCompanyAccount: false },
       orderBy: [{ fullName: "asc" }, { email: "asc" }],
       select: {
         id: true,
@@ -43,6 +46,7 @@ export default async function AdminInternalTransfersPage() {
         admin: { select: { fullName: true, email: true } },
       },
     }),
+    getFinancialControls(),
   ]);
 
   const investorOptions: TransferInvestorOption[] = users.map((user) => {
@@ -57,6 +61,22 @@ export default async function AdminInternalTransfersPage() {
       invested: toNumber(invested),
     };
   });
+  const requestInvestorOptions = users.map((user) => ({
+    id: user.id,
+    label: `${user.fullName ?? "Unnamed investor"} · ${user.email}`,
+  }));
+  const depositAllowedMethods = [
+    ...(!controls.depositCryptoPaused ? ["CRYPTO" as const] : []),
+    ...(!controls.depositBankPaused ? ["BANK" as const] : []),
+    ...(!controls.depositCashPaused ? ["CASH" as const] : []),
+  ];
+  const withdrawalAllowedMethods = [
+    ...(!controls.withdrawalCryptoPaused ? ["CRYPTO" as const] : []),
+    ...(!controls.withdrawalBankPaused ? ["BANK" as const] : []),
+    ...(!controls.withdrawalCashPaused ? ["CASH" as const] : []),
+  ];
+  const depositMethods = controls.depositsPaused ? [] : depositAllowedMethods;
+  const withdrawalMethods = controls.withdrawalsPaused ? [] : withdrawalAllowedMethods;
 
 
   return (
@@ -64,10 +84,35 @@ export default async function AdminInternalTransfersPage() {
       <header>
         <p className="eyebrow">Account operations</p>
         <h1 className="mt-2 font-serif text-3xl text-ink">
-          Internal <em className="gold-text italic">transfers</em>
+          Account <em className="gold-text italic">transfers</em>
         </h1>
-
       </header>
+
+      <section className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm sm:p-7" aria-labelledby="investor-requests-heading">
+        <div className="mb-5">
+          <p className="eyebrow">Investor requests</p>
+          <h2 id="investor-requests-heading" className="mt-2 font-serif text-2xl text-ink">
+            Create a request on behalf of an investor
+          </h2>
+          <p className="mt-2 text-sm text-ink-dim">
+            New requests enter Step 1 of the standard deposit or withdrawal workflow.
+          </p>
+        </div>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <AdminManualRequestForm
+            kind="deposit"
+            action={adminCreateDepositRequest}
+            investors={requestInvestorOptions}
+            allowedMethods={depositMethods}
+          />
+          <AdminManualRequestForm
+            kind="withdrawal"
+            action={adminCreateWithdrawalRequest}
+            investors={requestInvestorOptions}
+            allowedMethods={withdrawalMethods}
+          />
+        </div>
+      </section>
 
       <section className="glass-card rounded-2xl p-5 sm:p-7" aria-labelledby="new-transfer-heading">
         <div className="mb-6">
@@ -158,7 +203,7 @@ export default async function AdminInternalTransfersPage() {
             </table>
           ) : (
             <p className="py-10 text-center text-sm text-ink-faint">
-              No internal transfers have been recorded.
+              No transfers have been recorded.
             </p>
           )}
         </div>

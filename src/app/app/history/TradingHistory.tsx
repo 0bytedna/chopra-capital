@@ -141,40 +141,48 @@ export function TradingHistory({
               ))}
             </select>
           </label>
-          <label className="space-y-1 text-xs text-ink-faint">
-            From
-            <input
-              type="date"
-              name="from"
-              defaultValue={filters.from}
-              max={filters.to || undefined}
-              onClick={(event) => openDatePicker(event.currentTarget)}
-              className="h-10 w-full cursor-pointer rounded-lg border border-stone-200 bg-white px-3 font-mono text-xs text-ink outline-none [color-scheme:light] focus:border-gold-400"
-            />
-          </label>
-          <label className="space-y-1 text-xs text-ink-faint">
-            To
-            <input
-              type="date"
-              name="to"
-              defaultValue={filters.to}
-              min={filters.from || undefined}
-              onClick={(event) => openDatePicker(event.currentTarget)}
-              className="h-10 w-full cursor-pointer rounded-lg border border-stone-200 bg-white px-3 font-mono text-xs text-ink outline-none [color-scheme:light] focus:border-gold-400"
-            />
-          </label>
-          <button
-            type="submit"
-            className="h-10 self-end rounded-lg bg-gold-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-gold-700"
-          >
-            Apply
-          </button>
-          <Link
-            href="/app/history"
-            className="inline-flex h-10 items-center justify-center self-end rounded-lg border border-stone-200 px-4 text-sm font-semibold text-ink-dim transition-colors hover:border-gold-400 hover:text-ink"
-          >
-            Clear
-          </Link>
+          <div className="grid self-end grid-cols-2 gap-2 sm:col-span-2 lg:col-span-2">
+            <label className="min-w-0">
+              <span className="sr-only">From date</span>
+              <input
+                type="date"
+                name="from"
+                defaultValue={filters.from}
+                max={filters.to || undefined}
+                placeholder="dd/mm/yyyy"
+                aria-label="From date"
+                onClick={(event) => openDatePicker(event.currentTarget)}
+                className="h-10 w-full min-w-0 cursor-pointer rounded-lg border border-stone-200 bg-white px-2 font-mono text-sm text-ink outline-none [color-scheme:light] focus:border-gold-400 sm:px-3"
+              />
+            </label>
+            <label className="min-w-0">
+              <span className="sr-only">To date</span>
+              <input
+                type="date"
+                name="to"
+                defaultValue={filters.to}
+                min={filters.from || undefined}
+                placeholder="dd/mm/yyyy"
+                aria-label="To date"
+                onClick={(event) => openDatePicker(event.currentTarget)}
+                className="h-10 w-full min-w-0 cursor-pointer rounded-lg border border-stone-200 bg-white px-2 font-mono text-sm text-ink outline-none [color-scheme:light] focus:border-gold-400 sm:px-3"
+              />
+            </label>
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:col-span-2 lg:col-span-2">
+            <button
+              type="submit"
+              className="h-10 w-full rounded-lg bg-gold-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-gold-700"
+            >
+              Apply
+            </button>
+            <Link
+              href="/app/history"
+              className="inline-flex h-10 w-full items-center justify-center rounded-lg border border-stone-200 px-4 text-center text-sm font-semibold text-ink-dim transition-colors hover:border-gold-400 hover:text-ink"
+            >
+              Clear
+            </Link>
+          </div>
         </form>
       </section>
 

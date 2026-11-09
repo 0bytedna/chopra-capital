@@ -14,10 +14,10 @@ import {
 import { D, toNumber } from "@/lib/money";
 import { verifyTotpOnce } from "@/lib/totp";
 import {
-  getDepositEligibility,
   getWithdrawalEligibility,
   type FinancialRestriction,
 } from "@/lib/financialEligibility";
+import { getFinancialControls, isFinancialMethodPaused } from "@/lib/financialControls";
 
 type WithdrawalMethod = "CRYPTO" | "BANK" | "CASH";
 type BankingDetail = {
@@ -125,13 +125,13 @@ function requestedUsdAmount(amount: number) {
 
 export async function requestWithdrawal(_prev: WithdrawFormState, formData: FormData): Promise<WithdrawFormState> {
   const user = await requireUser();
-  const kycEligibility = getDepositEligibility(user);
-  if (kycEligibility.restriction) return { restriction: kycEligibility.restriction };
-
+  const controls = await getFinancialControls();
+  if (controls.withdrawalsPaused) return { error: "New withdrawals are temporarily paused. Please try again later." };
   const parsed = parsedRequest(formData);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Please check the form." };
 
   const { amount, method } = parsed.data;
+  if (isFinancialMethodPaused(controls, "WITHDRAWAL", method)) return { error: `${method === "BANK" ? "Bank withdrawals" : method === "CRYPTO" ? "Crypto withdrawals" : "Cash withdrawals"} are temporarily paused.` };
   const banking = method === "CASH" ? null : await getBankingDetail(user.id);
   const eligibility = getWithdrawalEligibility(user, banking, method);
   if (eligibility.restriction) return { restriction: eligibility.restriction };
@@ -196,8 +196,6 @@ export async function requestWithdrawal(_prev: WithdrawFormState, formData: Form
 
 export async function editWithdrawal(_prev: WithdrawFormState, formData: FormData): Promise<WithdrawFormState> {
   const user = await requireUser();
-  const kycEligibility = getDepositEligibility(user);
-  if (kycEligibility.restriction) return { error: kycEligibility.restriction.message };
   const id = String(formData.get("id") ?? "");
   if (!id) return { error: "Withdrawal request not found." };
 

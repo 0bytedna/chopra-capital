@@ -21,6 +21,7 @@ type Props = {
   payout: PayoutDetails;
   restrictions: Record<Method, FinancialRestriction | null>;
   twoFactorEnabled: boolean;
+  cryptoEnabled: boolean;
   bankEnabled: boolean;
   cashEnabled: boolean;
 };
@@ -230,16 +231,16 @@ export function WithdrawForm({
   payout,
   restrictions,
   twoFactorEnabled,
+  cryptoEnabled,
   bankEnabled,
   cashEnabled,
 }: Props) {
   const [method, setMethod] = useState<Method>("CRYPTO");
   const [formVersion, setFormVersion] = useState(0);
-  const availableMethods = methods.filter(
-    (option) => option.id === "CRYPTO" || (option.id === "BANK" && bankEnabled) || (option.id === "CASH" && cashEnabled),
-  );
-  const activeMethod = availableMethods.some((option) => option.id === method) ? method : "CRYPTO";
-  const activeMethodMeta = availableMethods.find((option) => option.id === activeMethod) ?? availableMethods[0];
+  const methodEnabled: Record<Method, boolean> = { CRYPTO: cryptoEnabled, BANK: bankEnabled, CASH: cashEnabled };
+  const availableMethods = methods.filter((option) => methodEnabled[option.id]);
+  const activeMethod = availableMethods.some((option) => option.id === method) ? method : availableMethods[0]?.id ?? "CRYPTO";
+  const activeMethodMeta = methods.find((option) => option.id === activeMethod) ?? methods[0];
   const restriction = restrictions[activeMethod];
 
   return (
@@ -253,13 +254,15 @@ export function WithdrawForm({
           onChange={(event) => setMethod(event.target.value as Method)}
           hint={activeMethodMeta?.note}
         >
-          {availableMethods.map((option) => (
-            <option key={option.id} value={option.id}>{option.label}</option>
+          {methods.map((option) => (
+            <option key={option.id} value={option.id} disabled={!methodEnabled[option.id]}>{option.label}{methodEnabled[option.id] ? "" : " — unavailable"}</option>
           ))}
         </SelectField>
       </Step>
 
-      <Step n={2} title="Confirm destination and enter amount">
+      {availableMethods.length === 0 && <Alert tone="error">All withdrawal methods are currently unavailable. Contact support.</Alert>}
+
+      {availableMethods.length > 0 && <Step n={2} title="Confirm destination and enter amount">
         <PayoutDetailsCard method={activeMethod} payout={payout} />
         <div className="mt-4">
           <WithdrawalDetailsForm
@@ -271,7 +274,7 @@ export function WithdrawForm({
             onDismiss={() => setFormVersion((version) => version + 1)}
           />
         </div>
-      </Step>
+      </Step>}
     </div>
   );
 }

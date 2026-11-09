@@ -7,7 +7,8 @@ const labelClass = "space-y-1.5 text-xs font-medium text-ink-dim";
 type Props = {
   investor: {
     id: string; fullName: string | null; email: string; mobile: string | null;
-    kycStatus: string; kycNote: string | null; bankTransferEnabled: boolean; cashEnabled: boolean;
+    kycStatus: string; kycNote: string | null; depositsEnabled: boolean; withdrawalsEnabled: boolean;
+    cryptoEnabled: boolean; bankTransferEnabled: boolean; cashEnabled: boolean;
     twoFactorEnabled: boolean; referralEnabled: boolean;
     bankingDetail: { accountNumber: string | null; ifsc: string | null; upiId: string | null; accountType: string | null; usdtAddress: string | null; usdtNetwork: string | null } | null;
   };
@@ -30,9 +31,18 @@ export function InvestorAdminControls({ investor, queued, invested }: Props) {
         <label className={labelClass}>KYC status<select name="kycStatus" defaultValue={investor.kycStatus} className={inputClass}><option value="NOT_SUBMITTED">Not submitted</option><option value="PENDING">Pending</option><option value="APPROVED">Approved</option><option value="REJECTED">Rejected</option></select></label>
         <label className="space-y-1.5 text-xs font-medium text-ink-dim lg:col-span-2">KYC note<input name="kycNote" defaultValue={investor.kycNote ?? ""} className={inputClass} /></label>
       </div>
-      <div className="mt-4 flex flex-wrap gap-5 rounded-lg border border-stone-200 bg-white p-3 text-sm text-ink">
-        <label><input type="checkbox" name="bankTransferEnabled" defaultChecked={investor.bankTransferEnabled} className="mr-2" />Bank deposits and withdrawals</label>
-        <label><input type="checkbox" name="cashEnabled" defaultChecked={investor.cashEnabled} className="mr-2" />Cash deposits and withdrawals</label>
+      <div className="mt-4 grid gap-4 rounded-lg border border-stone-200 bg-white p-4 text-sm text-ink sm:grid-cols-2">
+        <fieldset className="space-y-2">
+          <legend className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-ink-faint">Requests</legend>
+          <label className="flex items-center gap-2"><input type="checkbox" name="depositsEnabled" defaultChecked={investor.depositsEnabled} />Deposits enabled</label>
+          <label className="flex items-center gap-2"><input type="checkbox" name="withdrawalsEnabled" defaultChecked={investor.withdrawalsEnabled} />Withdrawals enabled</label>
+        </fieldset>
+        <fieldset className="space-y-2">
+          <legend className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-ink-faint">Payment methods</legend>
+          <label className="flex items-center gap-2"><input type="checkbox" name="bankTransferEnabled" defaultChecked={investor.bankTransferEnabled} />Bank enabled</label>
+          <label className="flex items-center gap-2"><input type="checkbox" name="cryptoEnabled" defaultChecked={investor.cryptoEnabled} />Crypto enabled</label>
+          <label className="flex items-center gap-2"><input type="checkbox" name="cashEnabled" defaultChecked={investor.cashEnabled} />Cash enabled</label>
+        </fieldset>
       </div>
     </AdminActionForm>
 

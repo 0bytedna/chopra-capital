@@ -11,12 +11,13 @@ import {
   withdrawalScheduleLabel,
 } from "@/lib/withdrawalSchedule";
 import { WithdrawForm, type PayoutDetails } from "./WithdrawForm";
+import { getFinancialControls } from "@/lib/financialControls";
 
 export const metadata: Metadata = { title: "Withdraw" };
 
 export default async function WithdrawPage() {
   const user = await requireUser();
-  const [metrics, banking, inrRate, schedule] = await Promise.all([
+  const [metrics, banking, inrRate, schedule, controls] = await Promise.all([
     getPortfolioMetrics(user.id),
     prisma.bankingDetail.findUnique({
       where: { userId: user.id },
@@ -24,6 +25,7 @@ export default async function WithdrawPage() {
     }),
     getWithdrawalReferenceRate(),
     getWithdrawalSchedule(),
+    getFinancialControls(),
   ]);
 
   const payout: PayoutDetails = {
@@ -36,10 +38,17 @@ export default async function WithdrawPage() {
       : null,
   };
   const available = toNumber(metrics.currentValue);
+  const globalRestriction = controls.withdrawalsPaused
+    ? { title: "Withdrawals paused", message: "New withdrawals are temporarily paused. Please try again later." }
+    : null;
+  const methodRestriction = (method: "BANK" | "CRYPTO" | "CASH") => {
+    const paused = method === "BANK" ? controls.withdrawalBankPaused : method === "CRYPTO" ? controls.withdrawalCryptoPaused : controls.withdrawalCashPaused;
+    return paused ? { title: `${method === "BANK" ? "Bank transfers" : method === "CRYPTO" ? "Crypto" : "Cash"} paused`, message: "This payment method is temporarily unavailable." } : null;
+  };
   const restrictions = {
-    CRYPTO: getWithdrawalEligibility(user, banking, "CRYPTO").restriction,
-    BANK: getWithdrawalEligibility(user, banking, "BANK").restriction,
-    CASH: getWithdrawalEligibility(user, banking, "CASH").restriction,
+    CRYPTO: globalRestriction ?? methodRestriction("CRYPTO") ?? getWithdrawalEligibility(user, banking, "CRYPTO").restriction,
+    BANK: globalRestriction ?? methodRestriction("BANK") ?? getWithdrawalEligibility(user, banking, "BANK").restriction,
+    CASH: globalRestriction ?? methodRestriction("CASH") ?? getWithdrawalEligibility(user, banking, "CASH").restriction,
   };
 
   return (
@@ -49,9 +58,6 @@ export default async function WithdrawPage() {
         <h1 className="mt-2 font-serif text-2xl text-ink sm:text-3xl">
           Withdraw <em className="gold-text italic">weekly</em>
         </h1>
-        <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-dim">
-          Choose a payout method and request an amount in USD. Our team can process approved requests at any time.
-        </p>
       </header>
 
       <section className="glass-card flex flex-col gap-4 rounded-xl px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
@@ -75,8 +81,9 @@ export default async function WithdrawPage() {
           referenceRate={toNumber(inrRate)}
           payout={payout}
           restrictions={restrictions}
-          bankEnabled={user.bankTransferEnabled}
-          cashEnabled={user.cashEnabled}
+          cryptoEnabled={user.withdrawalsEnabled && !controls.withdrawalsPaused && user.cryptoEnabled && !controls.withdrawalCryptoPaused}
+          bankEnabled={user.withdrawalsEnabled && !controls.withdrawalsPaused && user.bankTransferEnabled && !controls.withdrawalBankPaused}
+          cashEnabled={user.withdrawalsEnabled && !controls.withdrawalsPaused && user.cashEnabled && !controls.withdrawalCashPaused}
           twoFactorEnabled={user.twoFactorEnabled}
         />
       </section>

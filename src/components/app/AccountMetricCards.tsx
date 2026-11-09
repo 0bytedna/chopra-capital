@@ -80,17 +80,17 @@ function MetricSummary({
   trend?: number;
 }) {
   return (
-    <article className="glass-card h-full min-w-0 rounded-xl px-4 py-3 [container-type:inline-size] sm:min-h-28 sm:p-4 xl:min-h-32 xl:p-5">
+    <article className="glass-card h-full min-w-0 rounded-xl px-3 py-2 [container-type:inline-size] sm:min-h-28 sm:p-4 xl:min-h-36 xl:p-5">
       <div className="flex items-center justify-between gap-2">
         <p className="min-w-0 text-[clamp(0.68rem,7.5cqi,0.8125rem)] leading-tight uppercase tracking-[0.12em] text-ink-faint">{label}</p>
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-gold-600/25 bg-gold-600/10">
-          <Icon className="size-4 text-gold-400" aria-hidden />
+        <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-gold-600/25 bg-white sm:size-8 xl:size-10">
+          <Icon className="size-3.5 text-gold-700 sm:size-4 xl:size-5" aria-hidden />
         </span>
       </div>
       {children}
       {trend !== undefined && (
         <p
-          className={`mt-2 flex items-center gap-1 text-[0.68rem] font-semibold ${
+          className={`mt-1 flex items-center gap-1 text-[0.65rem] font-semibold sm:mt-2 sm:text-[0.68rem] ${
             trend > 0
               ? "text-positive"
               : trend < 0
@@ -200,7 +200,7 @@ export function AccountMetricCards({
     profit: (
       <MetricSummary label="Profits" Icon={CircleDollarSign} trend={metrics.profitTrend}>
         <p
-          className={`currency-value mt-2 max-w-full whitespace-nowrap text-[clamp(0.72rem,9.5cqi,1.35rem)] leading-tight tracking-[-0.035em] ${
+          className={`currency-value mt-1 max-w-full whitespace-nowrap text-[clamp(0.9rem,9.5cqi,1.75rem)] leading-tight tracking-[-0.035em] sm:mt-2 ${
             metrics.profit > 0
               ? "text-positive"
               : metrics.profit < 0
@@ -217,7 +217,7 @@ export function AccountMetricCards({
     balance: (
       <MetricSummary label="Balance" Icon={WalletCards} trend={metrics.balanceTrend}>
         <p
-          className="currency-value mt-2 max-w-full whitespace-nowrap text-[clamp(0.72rem,9.5cqi,1.5rem)] leading-tight tracking-[-0.035em] text-ink"
+          className="currency-value mt-1 max-w-full whitespace-nowrap text-[clamp(0.9rem,9.5cqi,1.75rem)] leading-tight tracking-[-0.035em] text-ink sm:mt-2"
           aria-live="polite"
         >
           {formattedUsd(metrics.balance)}
@@ -228,7 +228,7 @@ export function AccountMetricCards({
     deposits: (
       <MetricSummary label="Deposits" Icon={ArrowDownToLine}>
         <p
-          className="currency-value mt-2 max-w-full whitespace-nowrap text-[clamp(0.72rem,9.5cqi,1.35rem)] leading-tight tracking-[-0.035em] text-ink"
+          className="currency-value mt-1 max-w-full whitespace-nowrap text-[clamp(0.9rem,9.5cqi,1.75rem)] leading-tight tracking-[-0.035em] text-ink sm:mt-2"
           aria-live="polite"
         >
           {formattedUsd(metrics.deposits)}
@@ -239,7 +239,7 @@ export function AccountMetricCards({
     withdrawals: (
       <MetricSummary label="Withdrawals" Icon={ArrowUpFromLine}>
         <p
-          className="currency-value mt-2 max-w-full whitespace-nowrap text-[clamp(0.72rem,9.5cqi,1.35rem)] leading-tight tracking-[-0.035em] text-ink"
+          className="currency-value mt-1 max-w-full whitespace-nowrap text-[clamp(0.9rem,9.5cqi,1.75rem)] leading-tight tracking-[-0.035em] text-ink sm:mt-2"
           aria-live="polite"
         >
           {formattedUsd(metrics.withdrawals)}
@@ -250,7 +250,7 @@ export function AccountMetricCards({
     commission: (
       <MetricSummary label="Commission" Icon={Gift}>
         <p
-          className="currency-value mt-2 max-w-full whitespace-nowrap text-[clamp(0.72rem,9.5cqi,1.35rem)] leading-tight tracking-[-0.035em] text-positive"
+          className="currency-value mt-1 max-w-full whitespace-nowrap text-[clamp(0.9rem,9.5cqi,1.75rem)] leading-tight tracking-[-0.035em] text-positive sm:mt-2"
           aria-live="polite"
         >
           {formattedUsd(metrics.commission)}
@@ -261,12 +261,12 @@ export function AccountMetricCards({
     queue: (
       <div className="h-full min-w-0">
         <MetricSummary label="In queue" Icon={Clock3}>
-          <div className="mt-2 space-y-1" aria-live="polite">
-            <p className="currency-value max-w-full whitespace-nowrap text-[clamp(0.72rem,9.5cqi,1.5rem)] leading-tight tracking-[-0.035em] text-ink">
+          <div className="mt-1 space-y-0.5 sm:mt-2 sm:space-y-1" aria-live="polite">
+            <p className="currency-value max-w-full whitespace-nowrap text-[clamp(0.9rem,9.5cqi,1.75rem)] leading-tight tracking-[-0.035em] text-ink">
               {formattedUsd(metrics.queuedUsd)}
               <span className="ml-1 text-[0.65rem] text-ink-faint sm:text-xs">USD</span>
             </p>
-            <p className="currency-value max-w-full whitespace-nowrap text-[clamp(0.72rem,9.5cqi,1.5rem)] leading-tight tracking-[-0.035em] text-ink">
+            <p className="currency-value max-w-full whitespace-nowrap text-[clamp(0.9rem,9.5cqi,1.75rem)] leading-tight tracking-[-0.035em] text-ink">
               {formattedInr(metrics.pendingInr)}
               <span className="ml-1 text-[0.65rem] text-ink-faint sm:text-xs">INR</span>
             </p>
@@ -278,7 +278,7 @@ export function AccountMetricCards({
 
   return (
     <section aria-label="Account figures">
-      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 xl:gap-3">
         {DASHBOARD_TILES.map((key) => (
           <div key={key} className={key === "queue" ? "contents" : "min-w-0"}>
             {tiles[key]}

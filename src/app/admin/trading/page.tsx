@@ -188,7 +188,7 @@ export default async function AdminTradingPage({
             unit drift {unitsDrift.toFixed(6)}
           </span>
         </div>
-        <form method="get" className="grid gap-3 border-t border-stone-200 bg-stone-50 px-5 py-4 sm:grid-cols-2 xl:grid-cols-[1fr_1fr_0.8fr_0.8fr_auto_auto]">
+        <form method="get" className="grid gap-3 border-t border-stone-200 bg-stone-50 px-5 py-4 sm:grid-cols-2 xl:grid-cols-[1fr_1fr_0.8fr_0.8fr_auto_auto] xl:items-end">
           <select name="type" defaultValue={selectedType} className="h-10 rounded-lg border border-stone-200 bg-white px-3 text-sm text-ink">
             <option value="">All entry types</option>
             {allowedTypes.map((type) => <option key={type} value={type}>{reasonLabels[type]}</option>)}
@@ -197,10 +197,20 @@ export default async function AdminTradingPage({
             <option value="">All administrators</option>
             {admins.map((admin) => <option key={admin.id} value={admin.id}>{admin.fullName ?? admin.email}</option>)}
           </select>
-          <input name="from" type="date" defaultValue={from} className="h-10 rounded-lg border border-stone-200 bg-white px-3 font-mono text-xs text-ink" />
-          <input name="to" type="date" defaultValue={to} className="h-10 rounded-lg border border-stone-200 bg-white px-3 font-mono text-xs text-ink" />
-          <button type="submit" className="h-10 rounded-lg bg-gold-600 px-4 text-sm font-semibold text-white">Apply</button>
-          <Link href={`/api/admin/trading/export?${new URLSearchParams({ ...(selectedType ? { type: selectedType } : {}), ...(selectedAdmin ? { admin: selectedAdmin } : {}), ...(from ? { from } : {}), ...(to ? { to } : {}) }).toString()}`} className="inline-flex h-10 items-center justify-center rounded-lg border border-gold-600/25 px-4 text-sm font-semibold text-gold-700">Export CSV</Link>
+          <div className="grid grid-cols-2 gap-2 sm:col-span-2 xl:col-span-2">
+            <label className="min-w-0">
+              <span className="sr-only">From date</span>
+              <input name="from" type="date" defaultValue={from} aria-label="From date" placeholder="dd/mm/yyyy" className="h-10 w-full min-w-0 cursor-pointer rounded-lg border border-stone-200 bg-white px-2 font-mono text-sm text-ink [color-scheme:light] sm:px-3" />
+            </label>
+            <label className="min-w-0">
+              <span className="sr-only">To date</span>
+              <input name="to" type="date" defaultValue={to} aria-label="To date" placeholder="dd/mm/yyyy" className="h-10 w-full min-w-0 cursor-pointer rounded-lg border border-stone-200 bg-white px-2 font-mono text-sm text-ink [color-scheme:light] sm:px-3" />
+            </label>
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:col-span-2 xl:col-span-2">
+            <button type="submit" className="h-10 w-full rounded-lg bg-gold-600 px-4 text-sm font-semibold text-white">Apply</button>
+            <Link href={`/api/admin/trading/export?${new URLSearchParams({ ...(selectedType ? { type: selectedType } : {}), ...(selectedAdmin ? { admin: selectedAdmin } : {}), ...(from ? { from } : {}), ...(to ? { to } : {}) }).toString()}`} className="inline-flex h-10 w-full items-center justify-center rounded-lg border border-gold-600/25 px-4 text-center text-sm font-semibold text-gold-700">Export CSV</Link>
+          </div>
         </form>
         <AdminTablePreferences storageKey="admin-trading-table-v1" allowNotesToggle>
         <div className="overflow-x-auto">

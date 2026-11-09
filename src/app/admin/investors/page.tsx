@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { InvestorDirectory } from "@/components/admin/InvestorDirectory";
+import { GlobalFinancialControls } from "@/components/admin/GlobalFinancialControls";
 import { D, formatInr, formatUsdt, toNumber } from "@/lib/money";
 import { getCurrentNav } from "@/lib/nav";
 import { prisma } from "@/lib/prisma";
+import { getFinancialControls } from "@/lib/financialControls";
 
 export const metadata: Metadata = { title: "Admin · Investors" };
 
@@ -33,7 +35,7 @@ function SummaryCard({
 }
 
 export default async function AdminInvestorsPage() {
-  const [users, { nav, totalUnits }, pendingInrGroups] = await Promise.all([
+  const [users, { nav, totalUnits }, pendingInrGroups, financialControls] = await Promise.all([
     prisma.user.findMany({
       where: { role: "USER" },
       orderBy: { createdAt: "asc" },
@@ -67,6 +69,7 @@ export default async function AdminInvestorsPage() {
       },
       _sum: { inrAmount: true },
     }),
+    getFinancialControls(),
   ]);
 
   const totalUnitsNumber = toNumber(totalUnits);
@@ -158,6 +161,8 @@ export default async function AdminInvestorsPage() {
           secondaryValue={`${formatInr(totalPendingInr)} INR`}
         />
       </section>
+
+      <GlobalFinancialControls controls={financialControls} />
 
       <InvestorDirectory rows={rows} />
     </div>

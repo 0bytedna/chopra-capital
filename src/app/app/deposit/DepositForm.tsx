@@ -16,6 +16,7 @@ type Props = {
   addresses: Record<Network, string>;
   qrCodes: Record<Network, string>;
   restriction: FinancialRestriction | null;
+  cryptoEnabled: boolean;
   bankEnabled: boolean;
   cashEnabled: boolean;
   bank: { accountNumber: string; ifsc: string; holder: string; upi: string };
@@ -59,6 +60,7 @@ export function DepositForm({
   addresses,
   qrCodes,
   restriction,
+  cryptoEnabled,
   bankEnabled,
   cashEnabled,
   bank,
@@ -67,12 +69,13 @@ export function DepositForm({
   const [method, setMethod] = useState<Method>("CRYPTO");
   const [network, setNetwork] = useState<Network>("TRC20");
   const [formVersion, setFormVersion] = useState(0);
-  const methods: { id: Method; label: string; note: string }[] = [
-    { id: "CRYPTO", label: "Crypto (USDT)", note: "Processed by end of day" },
-    ...(bankEnabled ? [{ id: "BANK" as const, label: "Bank transfer / UPI", note: "Processed in 4-7 days" }] : []),
-    ...(cashEnabled ? [{ id: "CASH" as const, label: "Cash", note: "Processed in 7-15 days" }] : []),
+  const methods: { id: Method; label: string; note: string; enabled: boolean }[] = [
+    { id: "CRYPTO", label: "Crypto (USDT)", note: "Processed by end of day", enabled: cryptoEnabled },
+    { id: "BANK", label: "Bank transfer / UPI", note: "Processed in 4-7 days", enabled: bankEnabled },
+    { id: "CASH", label: "Cash", note: "Processed in 7-15 days", enabled: cashEnabled },
   ];
-  const activeMethod = methods.some((option) => option.id === method) ? method : "CRYPTO";
+  const enabledMethods = methods.filter((option) => option.enabled);
+  const activeMethod = enabledMethods.some((option) => option.id === method) ? method : enabledMethods[0]?.id ?? "CRYPTO";
   const activeMethodMeta = methods.find((option) => option.id === activeMethod) ?? methods[0];
   const address = addresses[network];
 
@@ -87,12 +90,14 @@ export function DepositForm({
           hint={activeMethodMeta?.note}
         >
           {methods.map((option) => (
-            <option key={option.id} value={option.id}>{option.label}</option>
+            <option key={option.id} value={option.id} disabled={!option.enabled}>{option.label}{option.enabled ? "" : " — unavailable"}</option>
           ))}
         </SelectField>
       </Step>
 
-      {activeMethod === "CRYPTO" && (
+      {enabledMethods.length === 0 && <Alert tone="error">All deposit methods are currently unavailable. Contact support.</Alert>}
+
+      {enabledMethods.length > 0 && activeMethod === "CRYPTO" && (
         <Step n={2} title="Send USDT to the company address">
           <SelectField
             label="USDT network"
@@ -130,7 +135,7 @@ export function DepositForm({
         </Step>
       )}
 
-      {activeMethod === "BANK" && (
+      {enabledMethods.length > 0 && activeMethod === "BANK" && (
         <Step n={2} title="Send via bank transfer / UPI">
           <div className="rounded-xl border border-gold-600/20 bg-vault-950/60 p-3.5 sm:p-4">
             {bank.accountNumber || bank.upi ? (
@@ -150,7 +155,7 @@ export function DepositForm({
         </Step>
       )}
 
-      {activeMethod === "CASH" && (
+      {enabledMethods.length > 0 && activeMethod === "CASH" && (
         <Step n={2} title="Deposit cash at our office">
           <div className="rounded-xl border border-gold-600/20 bg-vault-950/60 p-3.5 sm:p-4">
             <p className="text-sm leading-relaxed text-ink-dim">{cashInstruction}</p>
@@ -161,13 +166,13 @@ export function DepositForm({
         </Step>
       )}
 
-      <DepositDetailsForm
+      {enabledMethods.length > 0 && <DepositDetailsForm
         key={`${activeMethod}-${formVersion}`}
         method={activeMethod}
         network={network}
         restriction={restriction}
         onDismiss={() => setFormVersion((version) => version + 1)}
-      />
+      />}
     </ol>
   );
 }

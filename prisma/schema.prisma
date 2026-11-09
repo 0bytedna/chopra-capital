@@ -35,8 +35,10 @@ model User {
   role             Role    @default(USER)
   isCompanyAccount Boolean @default(false)
 
-  // Deposit methods. Crypto (USDT) is always available; bank transfer and
-  // cash are enabled by an admin per investor.
+  // Financial request and payment-method permissions, controlled by an admin.
+  depositsEnabled     Boolean @default(true)
+  withdrawalsEnabled  Boolean @default(true)
+  cryptoEnabled       Boolean @default(true)
   bankTransferEnabled Boolean @default(false)
   cashEnabled         Boolean @default(false)
   referralEnabled     Boolean @default(false)

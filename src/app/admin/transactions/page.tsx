@@ -289,8 +289,10 @@ export default async function AdminTransactionsPage({ searchParams }: Props) {
         <input name="to" type="date" defaultValue={to} className="h-10 rounded-lg border border-stone-200 bg-white px-3 font-mono text-xs text-ink" />
         <input name="min" type="number" min="0" step="0.01" defaultValue={Number.isFinite(min) ? min : ""} placeholder="Min amount" className="h-10 rounded-lg border border-stone-200 bg-white px-3 text-sm text-ink" />
         <input name="max" type="number" min="0" step="0.01" defaultValue={Number.isFinite(max) ? max : ""} placeholder="Max amount" className="h-10 rounded-lg border border-stone-200 bg-white px-3 text-sm text-ink" />
-        <button type="submit" className="h-10 rounded-lg bg-gold-600 px-4 text-sm font-semibold text-white">Apply</button>
-        <Link href={`/admin/transactions?type=${selectedType}`} className="inline-flex h-10 items-center justify-center rounded-lg border border-stone-200 px-4 text-sm font-semibold text-ink-dim">Clear</Link>
+        <div className="grid grid-cols-2 gap-2 sm:col-span-2 xl:col-span-2">
+          <button type="submit" className="h-10 w-full rounded-lg bg-gold-600 px-4 text-sm font-semibold text-white">Apply</button>
+          <Link href={`/admin/transactions?type=${selectedType}`} className="inline-flex h-10 w-full items-center justify-center rounded-lg border border-stone-200 px-4 text-center text-sm font-semibold text-ink-dim">Clear</Link>
+        </div>
       </form>
 
       {selectedType !== "BROKER" && (

@@ -6,8 +6,10 @@ import bcrypt from "bcryptjs";
 import { isDuplicateTransactionHash, transactionHashFingerprint } from "@/lib/depositSecurity";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { D, formatInr } from "@/lib/money";
+import { D, formatInr, formatUsdt, toNumber } from "@/lib/money";
 import { getCurrentNav } from "@/lib/nav";
+import { getPortfolioMetrics } from "@/lib/portfolio";
+import { currentWeekKey } from "@/lib/config";
 import {
   removeStoredTicketAttachments,
   storeTicketAttachments,
@@ -49,7 +51,7 @@ import {
   reportingDayStart,
 } from "@/lib/reportingCalendar";
 import { stageRequiredBankPayoutCorrections } from "@/lib/payoutDetails";
-import { bankingDetailsSchema, cryptoWalletSchema } from "@/lib/validation";
+import { bankingDetailsSchema, cryptoWalletSchema, depositSchema, withdrawSchema } from "@/lib/validation";
 import {
   WITHDRAWAL_SCHEDULE_SETTING_KEYS,
   isWithdrawalWeekday,
@@ -61,11 +63,150 @@ import {
   getReferralCommissionRate,
   setReferralCommissionRate,
 } from "@/lib/referrals";
+import { FINANCIAL_CONTROL_KEYS, getFinancialControls, isFinancialMethodPaused } from "@/lib/financialControls";
 export type AdminFormState = { error?: string; success?: string };
 
 function fail(err: unknown): AdminFormState {
   return { error: err instanceof Error ? err.message : "Something went wrong" };
 }
+
+export async function adminCreateDepositRequest(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  const admin = await requireAdmin();
+  const userId = String(formData.get("userId") ?? "");
+  const [investor, controls] = await Promise.all([prisma.user.findFirst({
+    where: { id: userId, role: "USER", isCompanyAccount: false },
+    select: { id: true, depositsEnabled: true, cryptoEnabled: true, bankTransferEnabled: true, cashEnabled: true },
+  }), getFinancialControls()]);
+  if (!investor) return { error: "Choose a valid investor." };
+  if (controls.depositsPaused) return { error: "New deposits are paused globally." };
+  if (!investor.depositsEnabled) return { error: "Deposits are disabled for this investor." };
+
+  const parsed = depositSchema.safeParse({
+    amount: formData.get("amount"),
+    method: formData.get("method"),
+    network: formData.get("network") ?? "",
+    txHash: formData.get("txHash") ?? "",
+    reference: formData.get("reference") ?? "",
+  });
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Check the request details." };
+  const { amount, method, network, txHash, reference } = parsed.data;
+  if (isFinancialMethodPaused(controls, "DEPOSIT", method)) return { error: `${method === "BANK" ? "Bank deposits" : method === "CRYPTO" ? "Crypto deposits" : "Cash deposits"} are paused globally.` };
+  if (method === "CRYPTO" && !investor.cryptoEnabled) return { error: "Crypto is disabled for this investor." };
+  if (method === "BANK" && !investor.bankTransferEnabled) return { error: "Bank transfers are disabled for this investor." };
+  if (method === "CASH" && !investor.cashEnabled) return { error: "Cash is disabled for this investor." };
+
+  try {
+    await prisma.deposit.create({
+      data: {
+        userId: investor.id,
+        method,
+        amount: method === "CRYPTO" ? D(amount) : D(0),
+        reportedUsdtAmount: method === "CRYPTO" ? D(amount) : null,
+        inrAmount: method === "CRYPTO" ? null : D(amount),
+        network: method === "CRYPTO" ? network || null : null,
+        txHash: method === "CRYPTO" ? txHash || null : null,
+        txHashFingerprint: method === "CRYPTO" ? transactionHashFingerprint(network ?? "", txHash ?? "") : null,
+        reference: method === "BANK" ? reference : null,
+        adminNote: `Created on behalf of investor by ${admin.email}`,
+      },
+    });
+  } catch (error) {
+    if (isDuplicateTransactionHash(error)) return { error: "This transaction hash has already been submitted." };
+    return fail(error);
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/deposits");
+  revalidatePath("/app/deposit");
+  revalidatePath("/app/history");
+  return { success: "Deposit request created and added to Step 1 - Approval." };
+}
+
+export async function adminCreateWithdrawalRequest(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  const admin = await requireAdmin();
+  const userId = String(formData.get("userId") ?? "");
+  const parsed = withdrawSchema.safeParse({ amount: formData.get("amount"), method: formData.get("method") });
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Check the request details." };
+
+  const [investor, controls] = await Promise.all([prisma.user.findFirst({
+    where: { id: userId, role: "USER", isCompanyAccount: false },
+    select: { id: true, withdrawalsEnabled: true, cryptoEnabled: true, bankTransferEnabled: true, cashEnabled: true, bankingDetail: true },
+  }), getFinancialControls()]);
+  if (!investor) return { error: "Choose a valid investor." };
+  const { amount, method } = parsed.data;
+  if (controls.withdrawalsPaused) return { error: "New withdrawals are paused globally." };
+  if (isFinancialMethodPaused(controls, "WITHDRAWAL", method)) return { error: `${method === "BANK" ? "Bank withdrawals" : method === "CRYPTO" ? "Crypto withdrawals" : "Cash withdrawals"} are paused globally.` };
+  if (!investor.withdrawalsEnabled) return { error: "Withdrawals are disabled for this investor." };
+  if (method === "CRYPTO" && !investor.cryptoEnabled) return { error: "Crypto is disabled for this investor." };
+  if (method === "BANK" && !investor.bankTransferEnabled) return { error: "Bank transfers are disabled for this investor." };
+  if (method === "CASH" && !investor.cashEnabled) return { error: "Cash is disabled for this investor." };
+  const banking = investor.bankingDetail;
+  const cryptoDestination = cryptoWalletSchema.safeParse({
+    usdtAddress: banking?.usdtAddress ?? "",
+    usdtNetwork: banking?.usdtNetwork ?? "",
+  });
+  const destination = method === "CASH"
+    ? { network: "CASH", address: "Cash collection" }
+    : method === "CRYPTO"
+      ? cryptoDestination.success && cryptoDestination.data.usdtAddress
+        ? { network: cryptoDestination.data.usdtNetwork, address: cryptoDestination.data.usdtAddress }
+        : null
+      : banking?.accountNumber?.trim() && banking.ifsc?.trim()
+        ? { network: "BANK", address: `Bank account ending ${banking.accountNumber.trim().slice(-4)}` }
+        : null;
+  if (!destination) return { error: method === "CRYPTO" ? "This investor has no saved USDT payout address and network." : "This investor has no complete bank payout details." };
+
+  const [metrics, pending] = await Promise.all([
+    getPortfolioMetrics(investor.id),
+    prisma.withdrawal.aggregate({
+      where: { userId: investor.id, status: { in: ["REQUESTED", "APPROVED"] } },
+      _sum: { amount: true },
+    }),
+  ]);
+  const requested = D(amount).toDecimalPlaces(6);
+  const available = toNumber(metrics.currentValue);
+  const reserved = toNumber(pending._sum.amount ?? 0);
+  if (toNumber(requested) + reserved > available + 0.01) {
+    return { error: `Request exceeds the investor's available balance of ${formatUsdt(available)} USD after pending withdrawals.` };
+  }
+
+  try {
+    await prisma.withdrawal.create({
+      data: {
+        userId: investor.id,
+        method,
+        amount: requested,
+        network: destination.network,
+        address: destination.address,
+        weekKey: currentWeekKey(),
+        adminNote: `Created on behalf of investor by ${admin.email}`,
+        ...(method === "BANK" && banking ? {
+          payoutAccountNumber: banking.accountNumber,
+          payoutIfsc: banking.ifsc,
+          payoutUpiId: banking.upiId,
+          payoutAccountType: banking.accountType,
+          payoutDetailsApprovedAt: new Date(),
+          payoutDetailAudits: { create: { action: "REQUEST_SNAPSHOT", actorId: admin.id, actorRole: "ADMIN", accountNumber: banking.accountNumber, ifsc: banking.ifsc, upiId: banking.upiId, accountType: banking.accountType, note: "Request created by administrator on behalf of investor" } },
+        } : {}),
+      },
+    });
+  } catch (error) {
+    return fail(error);
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/withdrawals");
+  revalidatePath("/app/withdraw");
+  revalidatePath("/app/history");
+  return { success: "Withdrawal request created and added to Step 1 - Approval." };
+}
+
 export async function adminUpdateWithdrawalSchedule(
   _prev: AdminFormState,
   formData: FormData,
@@ -205,6 +346,48 @@ export async function adminDeleteTradingAdjustment(
 }
 // --- Investor accounts ------------------------------------------------------
 
+export async function adminUpdateGlobalFinancialControls(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  await requireAdmin();
+  const depositsPaused = formData.get("depositsPaused") != null;
+  const withdrawalsPaused = formData.get("withdrawalsPaused") != null;
+  const depositBankPaused = formData.get("depositBankPaused") != null;
+  const depositCryptoPaused = formData.get("depositCryptoPaused") != null;
+  const depositCashPaused = formData.get("depositCashPaused") != null;
+  const withdrawalBankPaused = formData.get("withdrawalBankPaused") != null;
+  const withdrawalCryptoPaused = formData.get("withdrawalCryptoPaused") != null;
+  const withdrawalCashPaused = formData.get("withdrawalCashPaused") != null;
+  try {
+    await prisma.$transaction([
+      prisma.setting.upsert({
+        where: { key: FINANCIAL_CONTROL_KEYS.depositsPaused },
+        update: { value: String(depositsPaused) },
+        create: { key: FINANCIAL_CONTROL_KEYS.depositsPaused, value: String(depositsPaused) },
+      }),
+      prisma.setting.upsert({ where: { key: FINANCIAL_CONTROL_KEYS.depositBankPaused }, update: { value: String(depositBankPaused) }, create: { key: FINANCIAL_CONTROL_KEYS.depositBankPaused, value: String(depositBankPaused) } }),
+      prisma.setting.upsert({ where: { key: FINANCIAL_CONTROL_KEYS.depositCryptoPaused }, update: { value: String(depositCryptoPaused) }, create: { key: FINANCIAL_CONTROL_KEYS.depositCryptoPaused, value: String(depositCryptoPaused) } }),
+      prisma.setting.upsert({ where: { key: FINANCIAL_CONTROL_KEYS.depositCashPaused }, update: { value: String(depositCashPaused) }, create: { key: FINANCIAL_CONTROL_KEYS.depositCashPaused, value: String(depositCashPaused) } }),
+      prisma.setting.upsert({ where: { key: FINANCIAL_CONTROL_KEYS.withdrawalBankPaused }, update: { value: String(withdrawalBankPaused) }, create: { key: FINANCIAL_CONTROL_KEYS.withdrawalBankPaused, value: String(withdrawalBankPaused) } }),
+      prisma.setting.upsert({ where: { key: FINANCIAL_CONTROL_KEYS.withdrawalCryptoPaused }, update: { value: String(withdrawalCryptoPaused) }, create: { key: FINANCIAL_CONTROL_KEYS.withdrawalCryptoPaused, value: String(withdrawalCryptoPaused) } }),
+      prisma.setting.upsert({ where: { key: FINANCIAL_CONTROL_KEYS.withdrawalCashPaused }, update: { value: String(withdrawalCashPaused) }, create: { key: FINANCIAL_CONTROL_KEYS.withdrawalCashPaused, value: String(withdrawalCashPaused) } }),
+      prisma.setting.upsert({
+        where: { key: FINANCIAL_CONTROL_KEYS.withdrawalsPaused },
+        update: { value: String(withdrawalsPaused) },
+        create: { key: FINANCIAL_CONTROL_KEYS.withdrawalsPaused, value: String(withdrawalsPaused) },
+      }),
+    ]);
+    revalidatePath("/admin/investors");
+    revalidatePath("/admin/internal-transfers");
+    revalidatePath("/app/deposit");
+    revalidatePath("/app/withdraw");
+    return { success: "Global deposit and withdrawal controls updated." };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
 export async function adminUpdateInvestorProfile(_prev: AdminFormState, formData: FormData): Promise<AdminFormState> {
   const admin = await requireAdmin();
   const userId = String(formData.get("userId") ?? "");
@@ -247,6 +430,9 @@ export async function adminUpdateInvestorProfile(_prev: AdminFormState, formData
 
           kycStatus: String(formData.get("kycStatus") ?? "NOT_SUBMITTED") as "NOT_SUBMITTED" | "PENDING" | "APPROVED" | "REJECTED",
           kycNote: String(formData.get("kycNote") ?? "").trim() || null,
+          depositsEnabled: formData.get("depositsEnabled") != null,
+          withdrawalsEnabled: formData.get("withdrawalsEnabled") != null,
+          cryptoEnabled: formData.get("cryptoEnabled") != null,
           bankTransferEnabled: formData.get("bankTransferEnabled") != null,
           cashEnabled: formData.get("cashEnabled") != null,
           bankingDetail: {

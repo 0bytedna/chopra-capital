@@ -62,6 +62,21 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Keep native buttons aligned like the shared Button component. This also
+   normalizes icon-and-label buttons that do not use a component wrapper. */
+:where(button, input[type="button"], input[type="submit"], input[type="reset"]) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-align: center;
+  vertical-align: middle;
+}
+
+:where(button, input[type="button"], input[type="submit"], input[type="reset"]):disabled {
+  cursor: not-allowed;
+}
+
 .currency-value {
   font-family: var(--font-sans);
   font-weight: 700;
