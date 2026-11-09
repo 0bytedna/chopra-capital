@@ -347,12 +347,12 @@ export async function adminUpdateGlobalFinancialControls(
   formData: FormData,
 ): Promise<AdminFormState> {
   await requireAdmin();
-  const depositBankPaused = formData.get("depositBankPaused") != null;
-  const depositCryptoPaused = formData.get("depositCryptoPaused") != null;
-  const depositCashPaused = formData.get("depositCashPaused") != null;
-  const withdrawalBankPaused = formData.get("withdrawalBankPaused") != null;
-  const withdrawalCryptoPaused = formData.get("withdrawalCryptoPaused") != null;
-  const withdrawalCashPaused = formData.get("withdrawalCashPaused") != null;
+  const depositBankPaused = formData.get("depositBankEnabled") == null;
+  const depositCryptoPaused = formData.get("depositCryptoEnabled") == null;
+  const depositCashPaused = formData.get("depositCashEnabled") == null;
+  const withdrawalBankPaused = formData.get("withdrawalBankEnabled") == null;
+  const withdrawalCryptoPaused = formData.get("withdrawalCryptoEnabled") == null;
+  const withdrawalCashPaused = formData.get("withdrawalCashEnabled") == null;
   try {
     await prisma.$transaction([
       prisma.setting.upsert({ where: { key: FINANCIAL_CONTROL_KEYS.depositBankPaused }, update: { value: String(depositBankPaused) }, create: { key: FINANCIAL_CONTROL_KEYS.depositBankPaused, value: String(depositBankPaused) } }),
