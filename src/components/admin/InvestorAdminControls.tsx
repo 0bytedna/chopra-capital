@@ -35,15 +35,15 @@ export function InvestorAdminControls({ investor, queued, invested }: Props) {
       <div className="mt-4 grid gap-4 rounded-lg border border-stone-200 bg-white p-4 text-sm text-ink sm:grid-cols-2">
         <fieldset className="space-y-2">
           <legend className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-ink-faint">Deposit methods</legend>
-          <label className="flex items-center gap-2"><input type="checkbox" name="depositBankEnabled" defaultChecked={investor.depositBankEnabled} />Bank deposits</label>
-          <label className="flex items-center gap-2"><input type="checkbox" name="depositCryptoEnabled" defaultChecked={investor.depositCryptoEnabled} />Crypto deposits</label>
-          <label className="flex items-center gap-2"><input type="checkbox" name="depositCashEnabled" defaultChecked={investor.depositCashEnabled} />Cash deposits</label>
+          <label className="flex items-center gap-2"><input type="checkbox" name="depositBankEnabled" defaultChecked={investor.depositBankEnabled} />Bank</label>
+          <label className="flex items-center gap-2"><input type="checkbox" name="depositCryptoEnabled" defaultChecked={investor.depositCryptoEnabled} />Crypto</label>
+          <label className="flex items-center gap-2"><input type="checkbox" name="depositCashEnabled" defaultChecked={investor.depositCashEnabled} />Cash</label>
         </fieldset>
         <fieldset className="space-y-2">
           <legend className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-ink-faint">Withdrawal methods</legend>
-          <label className="flex items-center gap-2"><input type="checkbox" name="withdrawalBankEnabled" defaultChecked={investor.withdrawalBankEnabled} />Bank withdrawals</label>
-          <label className="flex items-center gap-2"><input type="checkbox" name="withdrawalCryptoEnabled" defaultChecked={investor.withdrawalCryptoEnabled} />Crypto withdrawals</label>
-          <label className="flex items-center gap-2"><input type="checkbox" name="withdrawalCashEnabled" defaultChecked={investor.withdrawalCashEnabled} />Cash withdrawals</label>
+          <label className="flex items-center gap-2"><input type="checkbox" name="withdrawalBankEnabled" defaultChecked={investor.withdrawalBankEnabled} />Bank</label>
+          <label className="flex items-center gap-2"><input type="checkbox" name="withdrawalCryptoEnabled" defaultChecked={investor.withdrawalCryptoEnabled} />Crypto</label>
+          <label className="flex items-center gap-2"><input type="checkbox" name="withdrawalCashEnabled" defaultChecked={investor.withdrawalCashEnabled} />Cash</label>
         </fieldset>
       </div>
     </AdminActionForm>
